@@ -13,5 +13,5 @@ HashiCorp Vault `Connector` is provided as a Docker container. Use the `docker.i
 | `DB_PORT`     | Database port                     | ![](https://img.shields.io/badge/-NO-red.svg)      | `5432`        |
 | `DB_NAME`     | Database name                     | ![](https://img.shields.io/badge/-YES-success.svg) | `N/A`         |
 | `DB_USERNAME` | Database user                     | ![](https://img.shields.io/badge/-YES-success.svg) | `N/A`         |
-| `DB_PASSWORD` | Database password                 | ![](https://img.shields.io/badge/-YES-success.svg) | `N/A          |
+| `DB_PASSWORD` | Database password                 | ![](https://img.shields.io/badge/-YES-success.svg) | `N/A`         |
 | `LOG_LEVEL`   | Logging level for the service     | ![](https://img.shields.io/badge/-NO-red.svg)      | `INFO`        |
