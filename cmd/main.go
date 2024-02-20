@@ -2,6 +2,7 @@ package main
 
 import (
 	"CZERTAINLY-HashiCorp-Vault-Connector/cmd/config"
+	"CZERTAINLY-HashiCorp-Vault-Connector/cmd/health"
 	"CZERTAINLY-HashiCorp-Vault-Connector/cmd/info"
 	"CZERTAINLY-HashiCorp-Vault-Connector/cmd/logger"
 	"github.com/gorilla/mux"
@@ -19,12 +20,14 @@ func main() {
 	l.Info("Starting the server version: " + version)
 
 	infoService := info.NewService()
+	healthService := health.NewService()
 
 	// start the server
 	router := mux.NewRouter()
 	router.Use(logMiddleware)
 
 	info.RegisterRoutes(router, infoService)
+	health.RegisterRoutes(router, healthService)
 
 	log.Fatal(http.ListenAndServe(":"+c.Server.Port, router))
 }
