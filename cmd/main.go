@@ -2,10 +2,9 @@ package main
 
 import (
 	"CZERTAINLY-HashiCorp-Vault-Connector/cmd/config"
-	"CZERTAINLY-HashiCorp-Vault-Connector/cmd/health"
-	"CZERTAINLY-HashiCorp-Vault-Connector/cmd/info"
 	"CZERTAINLY-HashiCorp-Vault-Connector/cmd/logger"
-	"github.com/gorilla/mux"
+	authority "CZERTAINLY-HashiCorp-Vault-Connector/generated/authority"
+	discovery "CZERTAINLY-HashiCorp-Vault-Connector/generated/discovery"
 	"go.uber.org/zap"
 	"log"
 	"net/http"
@@ -19,17 +18,34 @@ func main() {
 
 	l.Info("Starting the server version: " + version)
 
-	infoService := info.NewService()
-	healthService := health.NewService()
+	DiscoveryAPIService := discovery.NewDiscoveryAPIService()
+	DiscoveryAPIController := discovery.NewDiscoveryAPIController(DiscoveryAPIService)
 
-	// start the server
-	router := mux.NewRouter()
-	router.Use(logMiddleware)
+	AuthorityManagementAPIService := authority.NewAuthorityManagementAPIService()
+	AuthorityManagementAPIController := authority.NewAuthorityManagementAPIController(AuthorityManagementAPIService)
 
-	info.RegisterRoutes(router, infoService)
-	health.RegisterRoutes(router, healthService)
+	CertificateManagementAPIService := authority.NewCertificateManagementAPIService()
+	CertificateManagementAPIController := authority.NewCertificateManagementAPIController(CertificateManagementAPIService)
 
-	log.Fatal(http.ListenAndServe(":"+c.Server.Port, router))
+	HealthCheckAPIService := discovery.NewHealthCheckAPIService()
+	HealthCheckAPIController := discovery.NewHealthCheckAPIController(HealthCheckAPIService)
+
+	ConnectorAttributesAPIService := discovery.NewConnectorAttributesAPIService()
+	ConnectorAttributesAPIController := discovery.NewConnectorAttributesAPIController(ConnectorAttributesAPIService)
+
+	ConnectorInfoAPIService := discovery.NewConnectorInfoAPIService()
+	ConnectorInfoAPIController := discovery.NewConnectorInfoAPIController(ConnectorInfoAPIService)
+
+
+	topMux := http.NewServeMux()
+	topMux.Handle("/v1", logMiddleware(discovery.NewRouter(ConnectorInfoAPIController)))
+	topMux.Handle("/v1/", logMiddleware(discovery.NewRouter(ConnectorAttributesAPIController, ConnectorInfoAPIController, HealthCheckAPIController)))
+	topMux.Handle("/v1/authorityProvider/", logMiddleware(authority.NewRouter(AuthorityManagementAPIController, CertificateManagementAPIController)))
+	topMux.Handle("/v1/discoveryProvider/", logMiddleware(discovery.NewRouter(DiscoveryAPIController)))
+
+
+	log.Fatal(http.ListenAndServe(":"+c.Server.Port, topMux))
+
 }
 
 func logMiddleware(next http.Handler) http.Handler {

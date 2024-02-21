@@ -1,0 +1,19 @@
+export GO_POST_PROCESS_FILE="gofmt -w"
+
+openapi-generator-cli generate -g go-server -o generated --enable-post-process-file \
+ --additional-properties=packageName=authority,sourceFolder=authority,outputAsLibrary=true \
+ -i ./api/connector-api/doc-openapi-connector-authority-provider-v2.yaml
+
+ openapi-generator-cli generate -g go-server -o generated --enable-post-process-file \
+ --additional-properties=packageName=discovery,sourceFolder=discovery,outputAsLibrary=true \
+ -i ./api/connector-api/doc-openapi-connector-discovery-provider.yaml
+
+
+#  openapi-generator-cli generate -g go-server -o test --enable-post-process-file \
+#  --additional-properties=packageName=authority,sourceFolder=authority \
+#  -i ./api/connector-api/doc-openapi-connector-authority-provider-v2.yaml
+
+#  openapi-generator-cli generate -g go-server -o test --enable-post-process-file \
+#  --additional-properties=packageName=discovery,sourceFolder=discovery \
+#  -i ./api/connector-api/doc-openapi-connector-discovery-provider.yaml
+

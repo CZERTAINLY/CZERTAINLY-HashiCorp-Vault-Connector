@@ -1,0 +1,1571 @@
+openapi: 3.0.1
+info:
+  contact:
+    email: getinfo@czertainly.com
+    name: CZERTAINLY
+    url: https://www.czertainly.com
+  description: REST API for implementations of custom Discovery Provider
+  license:
+    name: MIT License
+    url: https://github.com/3KeyCompany/CZERTAINLY/blob/develop/LICENSE.md
+  title: CZERTAINLY Discovery Provider API
+  version: 2.11.0
+  x-logo:
+    url: images/czertainly_color_H.svg
+externalDocs:
+  description: CZERTAINLY Documentation
+  url: https://docs.czertainly.com
+servers:
+- description: Generated server url
+  url: http://localhost:8080
+tags:
+- description: "Discovery Provider API. Used to schedule and establish certificate\
+    \ discovery process. Once the discovery process is started, the progress and the\
+    \ history of the certificate discovery can be requested. Discovery provides information\
+    \ about discovered certificates and meta data that are specific to implementation\
+    \ of the discovery provider."
+  name: Discovery
+- description: "Connector Information API. Each connector may have multiple functions\
+    \ represented by FunctionGroupCode. For each FunctionGroupCode there is a list\
+    \ of implemented end points. These endpoints must be according the specified interface,\
+    \ this is validated by the core. You can also implement helper end points that\
+    \ are used for callbacks and other relevant operations specific to implementation."
+  name: Connector Info
+- description: "Connector Health check API. Connector returns own status and in some\
+    \ cases can return status of services on which it depends like database, HSM and\
+    \ so on."
+  name: Health check
+- description: Connector Attributes API. Provides information about supported Attributes
+    of the connector. Attributes are specific to implementation and gives information
+    about the data that can be exchanged and properly parsed by the connector. Part
+    of this API is validation of the Attributes.
+  name: Connector Attributes
+paths:
+  /v1/discoveryProvider/{kind}/attributes/validate:
+    post:
+      operationId: validateAttributes
+      parameters:
+      - description: Kind
+        explode: false
+        in: path
+        name: kind
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: '#/components/schemas/RequestAttributeDto'
+              type: array
+        required: true
+      responses:
+        "200":
+          description: Attribute validation completed
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessageDto'
+          description: Bad Request
+        "422":
+          content:
+            application/json:
+              example:
+              - Error Message 1
+              - Error Message 2
+              schema:
+                items:
+                  type: string
+                type: array
+          description: Attribute validation failed
+        "500":
+          description: Internal Server Error
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessageDto'
+          description: Not Found
+      summary: Validate Attributes
+      tags:
+      - Connector Attributes
+  /v1/discoveryProvider/discover:
+    post:
+      operationId: discoverCertificate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DiscoveryRequestDto'
+        required: true
+      responses:
+        "422":
+          content:
+            application/json:
+              example:
+              - Error Message 1
+              - Error Message 2
+              schema:
+                items:
+                  type: string
+                type: array
+          description: Unprocessable entity
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessageDto'
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiscoveryProviderDto'
+          description: Discovery initiated
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessageDto'
+          description: Not Found
+      summary: Initiate certificate Discovery
+      tags:
+      - Discovery
+  /v1/discoveryProvider/discover/{uuid}:
+    delete:
+      operationId: deleteDiscovery
+      parameters:
+      - description: Discovery UUID
+        explode: false
+        in: path
+        name: uuid
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessageDto'
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+        "204":
+          description: Discovery information deleted
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessageDto'
+          description: Not Found
+      summary: Delete Discovery
+      tags:
+      - Discovery
+    post:
+      operationId: getDiscovery
+      parameters:
+      - description: Discovery UUID
+        explode: false
+        in: path
+        name: uuid
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DiscoveryDataRequestDto'
+        required: true
+      responses:
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessageDto'
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiscoveryProviderDto'
+          description: Discovery details retrieved
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessageDto'
+          description: Not Found
+      summary: Get Discovery status and result
+      tags:
+      - Discovery
+  /v1:
+    get:
+      description: Returns map of functional code and implemented end points
+      operationId: listSupportedFunctions
+      responses:
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessageDto'
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/InfoResponse'
+                type: array
+          description: Functions found
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessageDto'
+          description: Not Found
+      summary: List supported functions of the connector
+      tags:
+      - Connector Info
+  /v1/discoveryProvider/{kind}/attributes:
+    get:
+      operationId: listAttributeDefinitions
+      parameters:
+      - description: Kind
+        explode: false
+        in: path
+        name: kind
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessageDto'
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/BaseAttributeDto'
+                type: array
+          description: Attributes retrieved
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessageDto'
+          description: Not Found
+      summary: List available Attributes
+      tags:
+      - Connector Attributes
+  /v1/health:
+    get:
+      operationId: checkHealth
+      responses:
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessageDto'
+          description: Bad Request
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthDto'
+          description: Health check completed successfully
+        "500":
+          description: Internal Server Error
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessageDto'
+          description: Not Found
+      summary: Health check
+      tags:
+      - Health check
+components:
+  schemas:
+    AttributeCallback:
+      description: Optional definition of callback for getting the content of the
+        Attribute based on the action
+      properties:
+        callbackContext:
+          description: Context part of callback URL
+          type: string
+        callbackMethod:
+          description: HTTP method of the callback
+          type: string
+        mappings:
+          description: Mappings for the callback method
+          items:
+            $ref: '#/components/schemas/AttributeCallbackMapping'
+          type: array
+          uniqueItems: true
+      required:
+      - callbackContext
+      - callbackMethod
+      - mappings
+      type: object
+    AttributeCallbackMapping:
+      description: Mappings for the callback method
+      properties:
+        from:
+          description: Name of the attribute whose value is to be used as value of
+            path variable or request param or body field.It is optional and must be
+            set only if value is not set.
+          type: string
+        attributeType:
+          $ref: '#/components/schemas/AttributeType'
+        attributeContentType:
+          $ref: '#/components/schemas/AttributeContentType'
+        to:
+          description: Name of the path variable or request param or body field which
+            is to be used to assign value of attribute
+          type: string
+        targets:
+          description: Set of targets for propagating value.
+          items:
+            $ref: '#/components/schemas/AttributeValueTarget'
+          type: array
+          uniqueItems: true
+        value:
+          description: Static value to be propagated to targets. It is optional and
+            is set only if the value is known at attribute creation time.
+          type: object
+      required:
+      - targets
+      - to
+      type: object
+    AttributeConstraintType:
+      description: Attribute Constraint Type
+      enum:
+      - regExp
+      - range
+      - dateTime
+      type: string
+    AttributeContentType:
+      description: 'Type of the attribute content. '
+      enum:
+      - string
+      - text
+      - integer
+      - boolean
+      - float
+      - date
+      - time
+      - datetime
+      - secret
+      - file
+      - credential
+      - codeblock
+      - object
+      type: string
+    AttributeType:
+      description: Type of the attribute. It is optional and must be set only if special
+        behaviour is needed.
+      enum:
+      - data
+      - group
+      - info
+      - meta
+      - custom
+      type: string
+    AttributeValueTarget:
+      description: Set of targets for propagating value.
+      enum:
+      - pathVariable
+      - requestParameter
+      - body
+      type: string
+    BaseAttributeConstraint:
+      description: Optional regular expressions and constraints used for validating
+        the Attribute content
+      oneOf:
+      - $ref: '#/components/schemas/RegexpAttributeConstraint'
+      - $ref: '#/components/schemas/RangeAttributeConstraint'
+      - $ref: '#/components/schemas/DateTimeAttributeConstraint'
+      properties:
+        description:
+          description: Description of the constraint
+          type: string
+        errorMessage:
+          description: Error message to be displayed for wrong data
+          type: string
+        type:
+          $ref: '#/components/schemas/AttributeConstraintType'
+        data:
+          description: Attribute Constraint Data
+          type: object
+      required:
+      - data
+      - type
+      type: object
+    BaseAttributeContentDto:
+      description: Base Attribute content definition
+      example:
+        reference: reference
+        data: "{}"
+      oneOf:
+      - $ref: '#/components/schemas/BooleanAttributeContent'
+      - $ref: '#/components/schemas/CodeBlockAttributeContent'
+      - $ref: '#/components/schemas/CredentialAttributeContent'
+      - $ref: '#/components/schemas/DateAttributeContent'
+      - $ref: '#/components/schemas/DateTimeAttributeContent'
+      - $ref: '#/components/schemas/FileAttributeContent'
+      - $ref: '#/components/schemas/FloatAttributeContent'
+      - $ref: '#/components/schemas/IntegerAttributeContent'
+      - $ref: '#/components/schemas/ObjectAttributeContent'
+      - $ref: '#/components/schemas/SecretAttributeContent'
+      - $ref: '#/components/schemas/StringAttributeContent'
+      - $ref: '#/components/schemas/TextAttributeContent'
+      - $ref: '#/components/schemas/TimeAttributeContent'
+      properties:
+        reference:
+          description: Content Reference
+          type: string
+        data:
+          description: Content Data
+          type: object
+      required:
+      - data
+      type: object
+    BooleanAttributeContent:
+      properties:
+        reference:
+          description: Content Reference
+          type: string
+        data:
+          description: Boolean attribute value
+          type: boolean
+      required:
+      - data
+      type: object
+    CodeBlockAttributeContent:
+      properties:
+        reference:
+          description: Content Reference
+          type: string
+        data:
+          $ref: '#/components/schemas/CodeBlockAttributeContentData'
+      required:
+      - data
+      type: object
+    CodeBlockAttributeContentData:
+      description: CodeBlock attribute content data
+      properties:
+        language:
+          $ref: '#/components/schemas/ProgrammingLanguageEnum'
+        code:
+          description: Block of the code in Base64. Formatting of the code is specified
+            by variable language
+          type: string
+      required:
+      - code
+      - language
+      type: object
+    CredentialAttributeContent:
+      properties:
+        reference:
+          description: Content Reference
+          type: string
+        data:
+          $ref: '#/components/schemas/CredentialAttributeContentData'
+      required:
+      - data
+      type: object
+    CredentialAttributeContentData:
+      description: Credential attribute content data
+      properties:
+        uuid:
+          description: Object identifier
+          example: 7b55ge1c-844f-11dc-a8a3-0242ac120002
+          type: string
+        name:
+          description: Object Name
+          example: Name
+          type: string
+        kind:
+          description: Credential Kind
+          example: "SoftKeyStore, Basic, ApiKey, etc"
+          type: string
+        attributes:
+          description: List of Credential Attributes
+          items:
+            $ref: '#/components/schemas/DataAttribute'
+          type: array
+      required:
+      - attributes
+      - kind
+      - name
+      - uuid
+      type: object
+    DataAttribute:
+      description: Data attribute allows to store and transfer dynamic data. Its content
+        can be edited and send in requests to store.
+      properties:
+        uuid:
+          description: UUID of the Attribute for unique identification
+          example: 166b5cf52-63f2-11ec-90d6-0242ac120003
+          type: string
+        name:
+          description: Name of the Attribute that is used for identification
+          example: Attribute
+          type: string
+        description:
+          description: "Optional description of the Attribute, should contain helper\
+            \ text on what is expected"
+          type: string
+        content:
+          description: Content of the Attribute
+          items:
+            $ref: '#/components/schemas/BaseAttributeContentDto'
+          type: array
+        type:
+          $ref: '#/components/schemas/AttributeType'
+        contentType:
+          $ref: '#/components/schemas/AttributeContentType'
+        properties:
+          $ref: '#/components/schemas/DataAttributeProperties'
+        constraints:
+          description: Optional regular expressions and constraints used for validating
+            the Attribute content
+          items:
+            $ref: '#/components/schemas/BaseAttributeConstraint'
+          type: array
+        attributeCallback:
+          $ref: '#/components/schemas/AttributeCallback'
+      required:
+      - contentType
+      - name
+      - properties
+      - type
+      - uuid
+      type: object
+    DataAttributeProperties:
+      description: Properties of the Attributes
+      properties:
+        label:
+          description: Friendly name of the the Attribute
+          example: Attribute Name
+          type: string
+        visible:
+          default: true
+          description: "Boolean determining if the Attribute is visible and can be\
+            \ displayed, otherwise it should be hidden to the user."
+          type: boolean
+        group:
+          description: "Group of the Attribute, used for the logical grouping of the\
+            \ Attribute"
+          example: requiredAttributes
+          type: string
+        required:
+          default: false
+          description: "Boolean determining if the Attribute is required. If true,\
+            \ the Attribute must be provided."
+          type: boolean
+        readOnly:
+          default: false
+          description: "Boolean determining if the Attribute is read only. If true,\
+            \ the Attribute content cannot be changed."
+          type: boolean
+        list:
+          default: false
+          description: Boolean determining if the Attribute contains list of values
+            in the content
+          type: boolean
+        multiSelect:
+          default: false
+          description: Boolean determining if the Attribute can have multiple values
+          type: boolean
+      required:
+      - label
+      - list
+      - multiSelect
+      - readOnly
+      - required
+      - visible
+      type: object
+    DateAttributeContent:
+      properties:
+        reference:
+          description: Content Reference
+          type: string
+        data:
+          description: Date attribute value in format yyyy-MM-dd
+          format: date
+          type: string
+      required:
+      - data
+      type: object
+    DateTimeAttributeConstraint:
+      properties:
+        description:
+          description: Description of the constraint
+          type: string
+        errorMessage:
+          description: Error message to be displayed for wrong data
+          type: string
+        type:
+          $ref: '#/components/schemas/AttributeConstraintType'
+        data:
+          $ref: '#/components/schemas/DateTimeAttributeConstraintData'
+      required:
+      - type
+      type: object
+    DateTimeAttributeConstraintData:
+      description: DateTime Range Attribute Constraint Data
+      properties:
+        from:
+          description: Start of the datetime for validation
+          format: date-time
+          type: string
+        to:
+          description: End of the datetime for validation
+          format: date-time
+          type: string
+      type: object
+    DateTimeAttributeContent:
+      properties:
+        reference:
+          description: Content Reference
+          type: string
+        data:
+          description: DateTime attribute value in format yyyy-MM-ddTHH:mm:ss.SSSXXX
+          format: date-time
+          type: string
+      required:
+      - data
+      type: object
+    FileAttributeContent:
+      properties:
+        reference:
+          description: Content Reference
+          type: string
+        data:
+          $ref: '#/components/schemas/FileAttributeContentData'
+      required:
+      - data
+      type: object
+    FileAttributeContentData:
+      description: File attribute content data
+      properties:
+        content:
+          description: File content
+          type: string
+        fileName:
+          description: Name of the file
+          type: string
+        mimeType:
+          description: Type of the file uploaded
+          type: string
+      required:
+      - content
+      - fileName
+      - mimeType
+      type: object
+    FloatAttributeContent:
+      properties:
+        reference:
+          description: Content Reference
+          type: string
+        data:
+          description: Float attribute value
+          format: float
+          type: number
+      required:
+      - data
+      type: object
+    IntegerAttributeContent:
+      properties:
+        reference:
+          description: Content Reference
+          type: string
+        data:
+          description: Integer attribute value
+          format: int32
+          type: integer
+      required:
+      - data
+      type: object
+    ObjectAttributeContent:
+      properties:
+        reference:
+          description: Content Reference
+          type: string
+        data:
+          description: Object attribute content data
+          type: object
+      required:
+      - data
+      type: object
+    ProgrammingLanguageEnum:
+      description: Definition of programming languages used for code
+      enum:
+      - apacheconf
+      - bash
+      - basic
+      - c
+      - csharp
+      - cpp
+      - css
+      - docker
+      - fsharp
+      - gherkin
+      - git
+      - go
+      - graphql
+      - html
+      - http
+      - ini
+      - java
+      - javascript
+      - json
+      - kotlin
+      - latex
+      - lisp
+      - makefile
+      - markdown
+      - matlab
+      - nginx
+      - objectivec
+      - perl
+      - php
+      - powershell
+      - properties
+      - python
+      - ruby
+      - rust
+      - smalltalk
+      - sql
+      - typescript
+      - vbnet
+      - xquery
+      - xml
+      - yaml
+      example: "JAVA, PHP, C, etc"
+      type: string
+    RangeAttributeConstraint:
+      properties:
+        description:
+          description: Description of the constraint
+          type: string
+        errorMessage:
+          description: Error message to be displayed for wrong data
+          type: string
+        type:
+          $ref: '#/components/schemas/AttributeConstraintType'
+        data:
+          $ref: '#/components/schemas/RangeAttributeConstraintData'
+      required:
+      - type
+      type: object
+    RangeAttributeConstraintData:
+      description: Integer Range Attribute Constraint Data
+      properties:
+        from:
+          description: Start of the range for validation
+          format: int32
+          type: integer
+        to:
+          description: End of the range for validation
+          format: int32
+          type: integer
+      type: object
+    RegexpAttributeConstraint:
+      properties:
+        description:
+          description: Description of the constraint
+          type: string
+        errorMessage:
+          description: Error message to be displayed for wrong data
+          type: string
+        type:
+          $ref: '#/components/schemas/AttributeConstraintType'
+        data:
+          description: Regular Expression Attribute Constraint Data
+          type: string
+      required:
+      - type
+      type: object
+    RequestAttributeDto:
+      description: Request attribute to send attribute content for object
+      example:
+        name: Attribute
+        uuid: 166b5cf52-63f2-11ec-90d6-0242ac120003
+        content:
+        - reference: reference
+          data: "{}"
+        - reference: reference
+          data: "{}"
+      properties:
+        uuid:
+          description: UUID of the Attribute
+          example: 166b5cf52-63f2-11ec-90d6-0242ac120003
+          type: string
+        name:
+          description: Name of the Attribute
+          example: Attribute
+          type: string
+        content:
+          description: Content of the Attribute
+          items:
+            $ref: '#/components/schemas/BaseAttributeContentDto'
+          type: array
+      required:
+      - content
+      - name
+      type: object
+    SecretAttributeContent:
+      properties:
+        reference:
+          description: Content Reference
+          type: string
+        data:
+          $ref: '#/components/schemas/SecretAttributeContentData'
+      required:
+      - data
+      type: object
+    SecretAttributeContentData:
+      description: Secret attribute content data
+      properties:
+        secret:
+          description: Secret attribute data
+          type: string
+        protectionLevel:
+          description: Level of protection of the data
+          type: string
+      type: object
+    StringAttributeContent:
+      properties:
+        reference:
+          description: Content Reference
+          type: string
+        data:
+          description: String attribute value
+          type: string
+      required:
+      - data
+      type: object
+    TextAttributeContent:
+      properties:
+        reference:
+          description: Content Reference
+          type: string
+        data:
+          description: Text attribute value
+          type: string
+      required:
+      - data
+      type: object
+    TimeAttributeContent:
+      properties:
+        reference:
+          description: Content Reference
+          type: string
+        data:
+          description: Time attribute value in format HH:mm:ss
+          type: string
+      required:
+      - data
+      type: object
+    ErrorMessageDto:
+      example:
+        message: Error message
+      properties:
+        message:
+          description: Error message detail
+          example: Error message
+          type: string
+      required:
+      - message
+      type: object
+    DiscoveryRequestDto:
+      example:
+        kind: kind
+        name: name
+        attributes:
+        - name: Attribute
+          uuid: 166b5cf52-63f2-11ec-90d6-0242ac120003
+          content:
+          - reference: reference
+            data: "{}"
+          - reference: reference
+            data: "{}"
+        - name: Attribute
+          uuid: 166b5cf52-63f2-11ec-90d6-0242ac120003
+          content:
+          - reference: reference
+            data: "{}"
+          - reference: reference
+            data: "{}"
+      properties:
+        name:
+          description: Name of the Discovery
+          type: string
+        kind:
+          description: Discovery Kind
+          type: string
+        attributes:
+          description: Discovery Provider Attributes. Mandatory for creating new Discovery
+          items:
+            $ref: '#/components/schemas/RequestAttributeDto'
+          type: array
+      required:
+      - kind
+      - name
+      type: object
+    DiscoveryProviderCertificateDataDto:
+      description: Certificate data
+      example:
+        base64Content: base64Content
+        meta:
+        - name: Attribute
+          description: description
+          type: null
+          uuid: 166b5cf52-63f2-11ec-90d6-0242ac120003
+          contentType: null
+          content:
+          - reference: reference
+            data: "{}"
+          - reference: reference
+            data: "{}"
+          properties:
+            visible: true
+            global: false
+            label: Attribute Name
+            group: requiredAttributes
+        - name: Attribute
+          description: description
+          type: null
+          uuid: 166b5cf52-63f2-11ec-90d6-0242ac120003
+          contentType: null
+          content:
+          - reference: reference
+            data: "{}"
+          - reference: reference
+            data: "{}"
+          properties:
+            visible: true
+            global: false
+            label: Attribute Name
+            group: requiredAttributes
+        uuid: uuid
+      properties:
+        uuid:
+          description: Certificate UUID
+          type: string
+        base64Content:
+          description: Base64 encoded Certificate content
+          type: string
+        meta:
+          description: Metadata for the Certificate
+          items:
+            $ref: '#/components/schemas/MetadataAttribute'
+          type: array
+      required:
+      - base64Content
+      - meta
+      - uuid
+      type: object
+    DiscoveryProviderDto:
+      example:
+        certificateData:
+        - base64Content: base64Content
+          meta:
+          - name: Attribute
+            description: description
+            type: null
+            uuid: 166b5cf52-63f2-11ec-90d6-0242ac120003
+            contentType: null
+            content:
+            - reference: reference
+              data: "{}"
+            - reference: reference
+              data: "{}"
+            properties:
+              visible: true
+              global: false
+              label: Attribute Name
+              group: requiredAttributes
+          - name: Attribute
+            description: description
+            type: null
+            uuid: 166b5cf52-63f2-11ec-90d6-0242ac120003
+            contentType: null
+            content:
+            - reference: reference
+              data: "{}"
+            - reference: reference
+              data: "{}"
+            properties:
+              visible: true
+              global: false
+              label: Attribute Name
+              group: requiredAttributes
+          uuid: uuid
+        - base64Content: base64Content
+          meta:
+          - name: Attribute
+            description: description
+            type: null
+            uuid: 166b5cf52-63f2-11ec-90d6-0242ac120003
+            contentType: null
+            content:
+            - reference: reference
+              data: "{}"
+            - reference: reference
+              data: "{}"
+            properties:
+              visible: true
+              global: false
+              label: Attribute Name
+              group: requiredAttributes
+          - name: Attribute
+            description: description
+            type: null
+            uuid: 166b5cf52-63f2-11ec-90d6-0242ac120003
+            contentType: null
+            content:
+            - reference: reference
+              data: "{}"
+            - reference: reference
+              data: "{}"
+            properties:
+              visible: true
+              global: false
+              label: Attribute Name
+              group: requiredAttributes
+          uuid: uuid
+        meta:
+        - name: Attribute
+          description: description
+          type: null
+          uuid: 166b5cf52-63f2-11ec-90d6-0242ac120003
+          contentType: null
+          content:
+          - reference: reference
+            data: "{}"
+          - reference: reference
+            data: "{}"
+          properties:
+            visible: true
+            global: false
+            label: Attribute Name
+            group: requiredAttributes
+        - name: Attribute
+          description: description
+          type: null
+          uuid: 166b5cf52-63f2-11ec-90d6-0242ac120003
+          contentType: null
+          content:
+          - reference: reference
+            data: "{}"
+          - reference: reference
+            data: "{}"
+          properties:
+            visible: true
+            global: false
+            label: Attribute Name
+            group: requiredAttributes
+        name: Name
+        totalCertificatesDiscovered: 0
+        uuid: 7b55ge1c-844f-11dc-a8a3-0242ac120002
+        status: null
+      properties:
+        uuid:
+          description: Object identifier
+          example: 7b55ge1c-844f-11dc-a8a3-0242ac120002
+          type: string
+        name:
+          description: Object Name
+          example: Name
+          type: string
+        status:
+          $ref: '#/components/schemas/DiscoveryStatus'
+        totalCertificatesDiscovered:
+          default: 0
+          description: Number of Certificates discovered
+          format: int32
+          type: integer
+        certificateData:
+          description: Certificate data
+          items:
+            $ref: '#/components/schemas/DiscoveryProviderCertificateDataDto'
+          type: array
+        meta:
+          description: Certificate Metadata
+          items:
+            $ref: '#/components/schemas/MetadataAttribute'
+          type: array
+      required:
+      - certificateData
+      - meta
+      - name
+      - status
+      - uuid
+      type: object
+    DiscoveryStatus:
+      description: Status of Discovery
+      enum:
+      - inProgress
+      - failed
+      - completed
+      - warning
+      type: string
+    MetadataAttribute:
+      description: Info attribute contains content that is for metadata. Its content
+        can not be edited and is not send in requests to store.
+      example:
+        name: Attribute
+        description: description
+        type: null
+        uuid: 166b5cf52-63f2-11ec-90d6-0242ac120003
+        contentType: null
+        content:
+        - reference: reference
+          data: "{}"
+        - reference: reference
+          data: "{}"
+        properties:
+          visible: true
+          global: false
+          label: Attribute Name
+          group: requiredAttributes
+      properties:
+        uuid:
+          description: UUID of the Attribute for unique identification
+          example: 166b5cf52-63f2-11ec-90d6-0242ac120003
+          type: string
+        name:
+          description: Name of the Attribute that is used for identification
+          example: Attribute
+          type: string
+        description:
+          description: "Optional description of the Attribute, should contain helper\
+            \ text on what is expected"
+          type: string
+        content:
+          description: Content of the Attribute
+          items:
+            $ref: '#/components/schemas/BaseAttributeContentDto'
+          type: array
+        type:
+          $ref: '#/components/schemas/AttributeType'
+        contentType:
+          $ref: '#/components/schemas/AttributeContentType'
+        properties:
+          $ref: '#/components/schemas/MetadataAttributeProperties'
+      required:
+      - content
+      - contentType
+      - name
+      - properties
+      - type
+      - uuid
+      type: object
+    MetadataAttributeProperties:
+      description: Properties of the Attributes
+      example:
+        visible: true
+        global: false
+        label: Attribute Name
+        group: requiredAttributes
+      properties:
+        label:
+          description: Friendly name of the the Attribute
+          example: Attribute Name
+          type: string
+        visible:
+          default: true
+          description: "Boolean determining if the Attribute is visible and can be\
+            \ displayed, otherwise it should be hidden to the user."
+          type: boolean
+        group:
+          description: "Group of the Attribute, used for the logical grouping of the\
+            \ Attribute"
+          example: requiredAttributes
+          type: string
+        global:
+          default: false
+          description: Boolean determining if the Metadata is a global metadata.
+          type: boolean
+      required:
+      - label
+      - visible
+      type: object
+    DiscoveryDataRequestDto:
+      example:
+        pageNumber: 0
+        kind: kind
+        itemsPerPage: 6
+        name: name
+      properties:
+        name:
+          description: Name of the Discovery
+          type: string
+        kind:
+          description: Discovery Kind
+          type: string
+        pageNumber:
+          description: Page number for the retrieved certificates
+          format: int32
+          type: integer
+        itemsPerPage:
+          description: Number of certificates per page
+          format: int32
+          type: integer
+      required:
+      - itemsPerPage
+      - kind
+      - name
+      - pageNumber
+      type: object
+    EndpointDto:
+      description: List of end points related to functional group
+      example:
+        method: POST
+        name: Name
+        context: /v1
+        uuid: 7b55ge1c-844f-11dc-a8a3-0242ac120002
+        required: true
+      properties:
+        uuid:
+          description: Object identifier
+          example: 7b55ge1c-844f-11dc-a8a3-0242ac120002
+          type: string
+        name:
+          description: Object Name
+          example: Name
+          type: string
+        context:
+          description: Context of the Endpoint
+          example: /v1
+          type: string
+        method:
+          description: Method to be used for the Endpoint
+          example: POST
+          type: string
+        required:
+          description: True if the Endpoint is required for implementation
+          example: true
+          type: boolean
+      required:
+      - context
+      - method
+      - name
+      - required
+      - uuid
+      type: object
+    FunctionGroupCode:
+      description: Enumerated code of functional group
+      enum:
+      - credentialProvider
+      - legacyAuthorityProvider
+      - authorityProvider
+      - discoveryProvider
+      - entityProvider
+      - complianceProvider
+      - cryptographyProvider
+      - notificationProvider
+      type: string
+    InfoResponse:
+      example:
+        kinds:
+        - SoftKeyStore
+        - Basic
+        - ApiKey
+        functionGroupCode: null
+        endPoints:
+        - method: POST
+          name: Name
+          context: /v1
+          uuid: 7b55ge1c-844f-11dc-a8a3-0242ac120002
+          required: true
+        - method: POST
+          name: Name
+          context: /v1
+          uuid: 7b55ge1c-844f-11dc-a8a3-0242ac120002
+          required: true
+      properties:
+        functionGroupCode:
+          $ref: '#/components/schemas/FunctionGroupCode'
+        kinds:
+          description: List of supported functional group kinds
+          example:
+          - SoftKeyStore
+          - Basic
+          - ApiKey
+          items:
+            description: List of supported functional group kinds
+            example: "[\"SoftKeyStore\",\"Basic\",\"ApiKey\"]"
+            type: string
+          type: array
+        endPoints:
+          description: List of end points related to functional group
+          items:
+            $ref: '#/components/schemas/EndpointDto'
+          type: array
+      required:
+      - endPoints
+      - functionGroupCode
+      - kinds
+      type: object
+    BaseAttributeDto:
+      description: Base Attribute definition
+      discriminator:
+        mapping:
+          data: '#/components/schemas/DataAttribute'
+          info: '#/components/schemas/InfoAttribute'
+          group: '#/components/schemas/GroupAttribute'
+          meta: '#/components/schemas/MetadataAttribute'
+          custom: '#/components/schemas/CustomAttribute'
+        propertyName: type
+      example:
+        name: Attribute
+        description: description
+        type: null
+        uuid: 166b5cf52-63f2-11ec-90d6-0242ac120003
+        content: "{}"
+      oneOf:
+      - $ref: '#/components/schemas/DataAttribute'
+      - $ref: '#/components/schemas/InfoAttribute'
+      - $ref: '#/components/schemas/GroupAttribute'
+      - $ref: '#/components/schemas/MetadataAttribute'
+      - $ref: '#/components/schemas/CustomAttribute'
+      properties:
+        uuid:
+          description: UUID of the Attribute for unique identification
+          example: 166b5cf52-63f2-11ec-90d6-0242ac120003
+          type: string
+        name:
+          description: Name of the Attribute that is used for identification
+          example: Attribute
+          type: string
+        description:
+          description: "Optional description of the Attribute, should contain helper\
+            \ text on what is expected"
+          type: string
+        type:
+          $ref: '#/components/schemas/AttributeType'
+        content:
+          description: Content of the Attribute
+          type: object
+      required:
+      - name
+      - type
+      - uuid
+      type: object
+    CustomAttribute:
+      description: Custom attribute allows to store and transfer dynamic data. Its
+        content can be edited and send in requests to store.
+      properties:
+        uuid:
+          description: UUID of the Attribute for unique identification
+          example: 166b5cf52-63f2-11ec-90d6-0242ac120003
+          type: string
+        name:
+          description: Name of the Attribute that is used for identification
+          example: Attribute
+          type: string
+        description:
+          description: "Optional description of the Attribute, should contain helper\
+            \ text on what is expected"
+          type: string
+        content:
+          description: Content of the Attribute
+          items:
+            $ref: '#/components/schemas/BaseAttributeContentDto'
+          type: array
+        type:
+          $ref: '#/components/schemas/AttributeType'
+        contentType:
+          $ref: '#/components/schemas/AttributeContentType'
+        properties:
+          $ref: '#/components/schemas/CustomAttributeProperties'
+      required:
+      - contentType
+      - name
+      - properties
+      - type
+      - uuid
+      type: object
+    CustomAttributeProperties:
+      description: Properties of the Attributes
+      properties:
+        label:
+          description: Friendly name of the the Attribute
+          example: Attribute Name
+          type: string
+        visible:
+          default: true
+          description: "Boolean determining if the Attribute is visible and can be\
+            \ displayed, otherwise it should be hidden to the user."
+          type: boolean
+        group:
+          description: "Group of the Attribute, used for the logical grouping of the\
+            \ Attribute"
+          example: requiredAttributes
+          type: string
+        required:
+          default: false
+          description: "Boolean determining if the Attribute is required. If true,\
+            \ the Attribute must be provided."
+          type: boolean
+        readOnly:
+          default: false
+          description: "Boolean determining if the Attribute is read only. If true,\
+            \ the Attribute content cannot be changed."
+          type: boolean
+        list:
+          default: false
+          description: Boolean determining if the Attribute contains list of values
+            in the content
+          type: boolean
+        multiSelect:
+          default: false
+          description: Boolean determining if the Attribute can have multiple values
+          type: boolean
+      required:
+      - label
+      - list
+      - multiSelect
+      - readOnly
+      - required
+      - visible
+      type: object
+    GroupAttribute:
+      description: Group attribute and its content represents dynamic list of additional
+        attributes retrieved by callback. Its content can not be edited and is not
+        send in requests to store.
+      properties:
+        uuid:
+          description: UUID of the Attribute for unique identification
+          example: 166b5cf52-63f2-11ec-90d6-0242ac120003
+          type: string
+        name:
+          description: Name of the Attribute that is used for identification
+          example: Attribute
+          type: string
+        description:
+          description: "Optional description of the Attribute, should contain helper\
+            \ text on what is expected"
+          type: string
+        content:
+          description: List of all different types of attributes
+          items:
+            $ref: '#/components/schemas/BaseAttributeDto'
+          type: array
+        type:
+          $ref: '#/components/schemas/AttributeType'
+        attributeCallback:
+          $ref: '#/components/schemas/AttributeCallback'
+      required:
+      - name
+      - type
+      - uuid
+      type: object
+    InfoAttribute:
+      description: Info attribute contains content that is for information purpose
+        or represents additional information for object (metadata). Its content can
+        not be edited and is not send in requests to store.
+      properties:
+        uuid:
+          description: UUID of the Attribute for unique identification
+          example: 166b5cf52-63f2-11ec-90d6-0242ac120003
+          type: string
+        name:
+          description: Name of the Attribute that is used for identification
+          example: Attribute
+          type: string
+        description:
+          description: "Optional description of the Attribute, should contain helper\
+            \ text on what is expected"
+          type: string
+        content:
+          description: Content of the Attribute
+          items:
+            $ref: '#/components/schemas/BaseAttributeContentDto'
+          type: array
+        type:
+          $ref: '#/components/schemas/AttributeType'
+        contentType:
+          $ref: '#/components/schemas/AttributeContentType'
+        properties:
+          $ref: '#/components/schemas/InfoAttributeProperties'
+      required:
+      - content
+      - contentType
+      - name
+      - properties
+      - type
+      - uuid
+      type: object
+    InfoAttributeProperties:
+      description: Properties of the Attributes
+      properties:
+        label:
+          description: Friendly name of the the Attribute
+          example: Attribute Name
+          type: string
+        visible:
+          default: true
+          description: "Boolean determining if the Attribute is visible and can be\
+            \ displayed, otherwise it should be hidden to the user."
+          type: boolean
+        group:
+          description: "Group of the Attribute, used for the logical grouping of the\
+            \ Attribute"
+          example: requiredAttributes
+          type: string
+      required:
+      - label
+      - visible
+      type: object
+    HealthDto:
+      example:
+        parts:
+          key: null
+        description: description
+        status: null
+      properties:
+        status:
+          $ref: '#/components/schemas/HealthStatus'
+        description:
+          description: Detailed status description
+          type: string
+        parts:
+          additionalProperties:
+            $ref: '#/components/schemas/HealthDto'
+          description: Nested status of services
+          type: object
+      required:
+      - status
+      type: object
+    HealthStatus:
+      description: Current connector operational status
+      enum:
+      - ok
+      - nok
+      - unknown
+      type: string
