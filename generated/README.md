@@ -1,4 +1,4 @@
-# Go API Server for discovery
+# Go API Server for openapi
 
 REST API for implementations of custom Discovery Provider
 
@@ -13,7 +13,7 @@ To see how to make this your own, look here:
 [README](https://openapi-generator.tech)
 
 - API version: 2.11.0
-- Build date: 2024-02-21T11:51:35.573250663+01:00[Europe/Prague]
+- Build date: 2024-02-21T14:22:29.123341897+01:00[Europe/Prague]
 For more information, please visit [https://www.czertainly.com](https://www.czertainly.com)
 
 
@@ -26,10 +26,10 @@ go run main.go
 
 To run the server in a docker container
 ```
-docker build --network=host -t discovery .
+docker build --network=host -t openapi .
 ```
 
 Once image is built use
 ```
-docker run --rm -it discovery
+docker run --rm -it openapi
 ```

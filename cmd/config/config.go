@@ -10,11 +10,13 @@ type Config struct {
 		Port string
 	}
 	Database struct {
+		Name	 string
 		Host     string
 		Port     string
 		Username string
 		Password string
 		Props    string
+		Schema   string
 	}
 }
 
@@ -29,6 +31,8 @@ func Get() Config {
 	config.Database.Username = os.Getenv("DB_USERNAME")
 	config.Database.Password = os.Getenv("DB_PASSWORD")
 	config.Database.Props = os.Getenv("DB_PROPS")
+	config.Database.Name = os.Getenv("DB_DB")
+	config.Database.Schema = os.Getenv("DB_SCHEMA")
 
 	if config.Server.Port == "" {
 		config.Server.Port = "8080"
@@ -40,6 +44,10 @@ func Get() Config {
 
 	if config.Database.Port == "" {
 		config.Database.Port = "5432"
+	}
+
+	if config.Database.Schema == "" {
+		l.Info("DB_SCHEMA is mandatory to set!")
 	}
 
 	if config.Database.Username == "" {

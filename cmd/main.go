@@ -5,6 +5,7 @@ import (
 	"CZERTAINLY-HashiCorp-Vault-Connector/cmd/logger"
 	authority "CZERTAINLY-HashiCorp-Vault-Connector/generated/authority"
 	discovery "CZERTAINLY-HashiCorp-Vault-Connector/generated/discovery"
+	db "CZERTAINLY-HashiCorp-Vault-Connector/internal/db"
 	"go.uber.org/zap"
 	"log"
 	"net/http"
@@ -16,6 +17,9 @@ func main() {
 	l := logger.Get()
 	c := config.Get()
 
+	db.MigrateDB(c)
+	conn, _ := db.ConnectDB(c)
+	db.FindDiscoveryByUUID(conn, "")
 	l.Info("Starting the server version: " + version)
 
 	DiscoveryAPIService := discovery.NewDiscoveryAPIService()
@@ -36,13 +40,11 @@ func main() {
 	ConnectorInfoAPIService := discovery.NewConnectorInfoAPIService()
 	ConnectorInfoAPIController := discovery.NewConnectorInfoAPIController(ConnectorInfoAPIService)
 
-
 	topMux := http.NewServeMux()
 	topMux.Handle("/v1", logMiddleware(discovery.NewRouter(ConnectorInfoAPIController)))
 	topMux.Handle("/v1/", logMiddleware(discovery.NewRouter(ConnectorAttributesAPIController, ConnectorInfoAPIController, HealthCheckAPIController)))
 	topMux.Handle("/v1/authorityProvider/", logMiddleware(authority.NewRouter(AuthorityManagementAPIController, CertificateManagementAPIController)))
 	topMux.Handle("/v1/discoveryProvider/", logMiddleware(discovery.NewRouter(DiscoveryAPIController)))
-
 
 	log.Fatal(http.ListenAndServe(":"+c.Server.Port, topMux))
 
