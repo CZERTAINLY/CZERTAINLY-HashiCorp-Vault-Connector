@@ -11,20 +11,30 @@
 package discovery
 
 import (
+	"CZERTAINLY-HashiCorp-Vault-Connector/internal/db"
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
+
+	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 // DiscoveryAPIService is a service that implements the logic for the DiscoveryAPIServicer
 // This service should implement the business logic for every endpoint for the DiscoveryAPI API.
 // Include any external packages or services that will be required by this service.
 type DiscoveryAPIService struct {
+	repo  *db.DiscoveryRepository
+	log   *zap.Logger
 }
 
 // NewDiscoveryAPIService creates a default api service
-func NewDiscoveryAPIService() DiscoveryAPIServicer {
-	return &DiscoveryAPIService{}
+func NewDiscoveryAPIService(repo *db.DiscoveryRepository, logger *zap.Logger) DiscoveryAPIServicer {
+	return &DiscoveryAPIService{
+		repo: repo,
+		log:  logger,
+	}
 }
 
 // DeleteDiscovery - Delete Discovery
@@ -49,9 +59,9 @@ func (s *DiscoveryAPIService) DeleteDiscovery(ctx context.Context, uuid string) 
 
 // DiscoverCertificate - Initiate certificate Discovery
 func (s *DiscoveryAPIService) DiscoverCertificate(ctx context.Context, discoveryRequestDto DiscoveryRequestDto) (ImplResponse, error) {
-	// TODO - update DiscoverCertificate with the required logic for this service method.
-	// Add api_discovery_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
-
+	id := uuid.New()
+	fmt.Println(id)
+	//s.repo.CreateDiscovery(id.String(), discoveryRequestDto)
 	// TODO: Uncomment the next line to return response Response(422, []string{}) or use other options such as http.Ok ...
 	// return Response(422, []string{}), nil
 

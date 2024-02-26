@@ -11,21 +11,27 @@
 package discovery
 
 import (
+	"CZERTAINLY-HashiCorp-Vault-Connector/internal/utils"
 	"context"
-	"errors"
-	"net/http"
 )
 
 // ConnectorInfoAPIService is a service that implements the logic for the ConnectorInfoAPIServicer
 // This service should implement the business logic for every endpoint for the ConnectorInfoAPI API.
 // Include any external packages or services that will be required by this service.
 type ConnectorInfoAPIService struct {
+    endpoints[] EndpointDto
 }
 
 // NewConnectorInfoAPIService creates a default api service
 func NewConnectorInfoAPIService() ConnectorInfoAPIServicer {
 	return &ConnectorInfoAPIService{}
 }
+
+// SetEndpoints sets the endpoints for the ConnectorInfoAPIService
+func (s *ConnectorInfoAPIService) SetEndpoints(endpoints []EndpointDto) {
+	s.endpoints = endpoints
+}
+
 
 // ListSupportedFunctions - List supported functions of the connector
 func (s *ConnectorInfoAPIService) ListSupportedFunctions(ctx context.Context) (ImplResponse, error) {
@@ -38,11 +44,20 @@ func (s *ConnectorInfoAPIService) ListSupportedFunctions(ctx context.Context) (I
 	// TODO: Uncomment the next line to return response Response(500, {}) or use other options such as http.Ok ...
 	// return Response(500, nil),nil
 
-	// TODO: Uncomment the next line to return response Response(200, []InfoResponse{}) or use other options such as http.Ok ...
-	// return Response(200, []InfoResponse{}), nil
+	infoResponses := []InfoResponse{
+		{
+			FunctionGroupCode: "credentialProvider",
+			Kinds:             []string{"hashicorp"},
+			EndPoints:         s.endpoints,
+		},
+		{
+			// Fill with your data
+		},
+		// Add more InfoResponse instances if needed
+	}
+
+	return Response(200, infoResponses), nil
 
 	// TODO: Uncomment the next line to return response Response(404, ErrorMessageDto{}) or use other options such as http.Ok ...
 	// return Response(404, ErrorMessageDto{}), nil
-
-	return Response(http.StatusNotImplemented, nil), errors.New("ListSupportedFunctions method not implemented")
 }

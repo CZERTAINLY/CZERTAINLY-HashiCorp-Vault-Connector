@@ -1,8 +1,8 @@
 package db
 
 import (
+	"gorm.io/datatypes"
 	"gorm.io/gorm"
-    "gorm.io/datatypes"
 )
 
 type Discovery struct {
@@ -21,21 +21,27 @@ type Certificate struct {
 	Discoveries   []Discovery `gorm:"many2many:discovery_certificates;"`
 }
 
-func CreateDiscoveryAndAssociateCertificates(db *gorm.DB, discovery *Discovery, certificates ...*Certificate) {
-	db.Create(&discovery)
+type DiscoveryRepository struct {
+	db *gorm.DB
+}
+
+func NewDiscoveryRepository(db *gorm.DB) (*DiscoveryRepository, error) {
+	return &DiscoveryRepository{db: db}, nil
+}
+
+
+func (d *DiscoveryRepository) CreateDiscoveryAndAssociateCertificates(discovery *Discovery, certificates ...*Certificate) {
+	d.db.Create(&discovery)
 	for _, certificate := range certificates {
-		db.FirstOrCreate(&certificate, Certificate{SerialNumber: certificate.SerialNumber})
-		db.Model(&discovery).Association("Certificates").Append(&certificate)
+		d.db.FirstOrCreate(&certificate, Certificate{SerialNumber: certificate.SerialNumber})
+		d.db.Model(&discovery).Association("Certificates").Append(&certificate)
 	}
 }
 
-func FindDiscoveryByUUID(db *gorm.DB, uuid string) (*Discovery, error) {
+func (d *DiscoveryRepository) FindDiscoveryByUUID(uuid string) (*Discovery, error) {
 	var discovery Discovery
-	if err := db.Preload("Certificates").First(&discovery, "uuid = ?", uuid).Error; err != nil {
+	if err := d.db.Preload("Certificates").First(&discovery, "uuid = ?", uuid).Error; err != nil {
 		return nil, err
 	}
 	return &discovery, nil
 }
-
-
-

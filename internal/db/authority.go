@@ -1,35 +1,42 @@
 package db
 
 import (
-	"gorm.io/gorm"
 	"gorm.io/datatypes"
+	"gorm.io/gorm"
 )
 
 type AuthorityInstance struct {
-	ID             int64   `db:"id"`
-	UUID           string  `db:"uuid"`
-	Name           *string `db:"name"`
-	URL            *string `db:"url"`
-	CredentialUUID *string `db:"credential_uuid"`
-	CredentialData *string `db:"credential_data"`
+	ID             int64          `db:"id"`
+	UUID           string         `db:"uuid"`
+	Name           *string        `db:"name"`
+	URL            *string        `db:"url"`
+	CredentialUUID *string        `db:"credential_uuid"`
+	CredentialData *string        `db:"credential_data"`
 	Attributes     datatypes.JSON `db:"attributes"`
 }
 
-func CreateAuthorityInstance(db *gorm.DB, authority *AuthorityInstance) error {
-	return db.Create(authority).Error
+type AuthorityRepository struct {
+	db *gorm.DB
+}
+func NewAuthorityRepository(db *gorm.DB) (*AuthorityRepository, error) {
+	return &AuthorityRepository{db: db}, nil
 }
 
-func UpdateAuthorityInstance(db *gorm.DB, authority *AuthorityInstance) error {
-	return db.Save(authority).Error
+func (d *AuthorityRepository) CreateAuthorityInstance(authority *AuthorityInstance) error {
+	return d.db.Create(authority).Error
 }
 
-func DeleteAuthorityInstance(db *gorm.DB, authority *AuthorityInstance) error {
-	return db.Delete(authority).Error
+func (d *AuthorityRepository) UpdateAuthorityInstance(authority *AuthorityInstance) error {
+	return d.db.Save(authority).Error
 }
 
-func FindAuthorityInstanceByName(db *gorm.DB, name string) (*AuthorityInstance, error) {
+func (d *AuthorityRepository) DeleteAuthorityInstance(authority *AuthorityInstance) error {
+	return d.db.Delete(authority).Error
+}
+
+func (d *AuthorityRepository) FindAuthorityInstanceByName(name string) (*AuthorityInstance, error) {
 	var authority AuthorityInstance
-	err := db.Where("name = ?", name).First(&authority).Error
+	err := d.db.Where("name = ?", name).First(&authority).Error
 	if err != nil {
 		return nil, err
 	}

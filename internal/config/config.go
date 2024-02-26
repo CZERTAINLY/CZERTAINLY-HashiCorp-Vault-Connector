@@ -1,7 +1,7 @@
 package config
 
 import (
-	"CZERTAINLY-HashiCorp-Vault-Connector/cmd/logger"
+	"CZERTAINLY-HashiCorp-Vault-Connector/internal/logger"
 	"os"
 )
 
