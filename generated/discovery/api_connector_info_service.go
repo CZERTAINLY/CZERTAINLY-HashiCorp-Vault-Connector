@@ -11,7 +11,6 @@
 package discovery
 
 import (
-	"CZERTAINLY-HashiCorp-Vault-Connector/internal/utils"
 	"context"
 )
 
@@ -27,11 +26,6 @@ func NewConnectorInfoAPIService() ConnectorInfoAPIServicer {
 	return &ConnectorInfoAPIService{}
 }
 
-// SetEndpoints sets the endpoints for the ConnectorInfoAPIService
-func (s *ConnectorInfoAPIService) SetEndpoints(endpoints []EndpointDto) {
-	s.endpoints = endpoints
-}
-
 
 // ListSupportedFunctions - List supported functions of the connector
 func (s *ConnectorInfoAPIService) ListSupportedFunctions(ctx context.Context) (ImplResponse, error) {
@@ -45,15 +39,7 @@ func (s *ConnectorInfoAPIService) ListSupportedFunctions(ctx context.Context) (I
 	// return Response(500, nil),nil
 
 	infoResponses := []InfoResponse{
-		{
-			FunctionGroupCode: "credentialProvider",
-			Kinds:             []string{"hashicorp"},
-			EndPoints:         s.endpoints,
-		},
-		{
-			// Fill with your data
-		},
-		// Add more InfoResponse instances if needed
+		
 	}
 
 	return Response(200, infoResponses), nil

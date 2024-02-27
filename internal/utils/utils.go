@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"CZERTAINLY-HashiCorp-Vault-Connector/generated/discovery"
 	"crypto/md5"
 	"encoding/hex"
 	"log"
@@ -32,17 +31,3 @@ func DeterministicGUID(parts ...string) string {
 	return uuid.String()
 }
 
-func ConvertRoutesToEndpointDto(routes discovery.Routes) []discovery.EndpointDto {
-	endpoints := make([]discovery.EndpointDto, 0, len(routes))
-	for name, route := range routes {
-		endpoint := discovery.EndpointDto{
-			Name:     name,
-			Method:   route.Method,
-			Uuid:     DeterministicGUID(route.Method + route.Pattern),
-			Context:  route.Pattern,
-			Required: true,
-		}
-		endpoints = append(endpoints, endpoint)
-	}
-	return endpoints
-}

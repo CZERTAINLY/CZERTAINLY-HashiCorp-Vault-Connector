@@ -12,10 +12,10 @@ package discovery
 
 import (
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/db"
+	"CZERTAINLY-HashiCorp-Vault-Connector/internal/utils"
+	"CZERTAINLY-HashiCorp-Vault-Connector/internal/vault"
 	"context"
-	"errors"
 	"fmt"
-	"net/http"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -25,8 +25,8 @@ import (
 // This service should implement the business logic for every endpoint for the DiscoveryAPI API.
 // Include any external packages or services that will be required by this service.
 type DiscoveryAPIService struct {
-	repo  *db.DiscoveryRepository
-	log   *zap.Logger
+	repo *db.DiscoveryRepository
+	log  *zap.Logger
 }
 
 // NewDiscoveryAPIService creates a default api service
@@ -39,6 +39,11 @@ func NewDiscoveryAPIService(repo *db.DiscoveryRepository, logger *zap.Logger) Di
 
 // DeleteDiscovery - Delete Discovery
 func (s *DiscoveryAPIService) DeleteDiscovery(ctx context.Context, uuid string) (ImplResponse, error) {
+	discovery, err := s.repo.FindDiscoveryByUUID(uuid)
+	if err != nil {
+		return Response(404, ErrorMessageDto{Message: "Discovery " + uuid + " not found."}), nil
+	}
+	s.repo.DeleteDiscovery(discovery)
 	// TODO - update DeleteDiscovery with the required logic for this service method.
 	// Add api_discovery_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 
@@ -54,13 +59,31 @@ func (s *DiscoveryAPIService) DeleteDiscovery(ctx context.Context, uuid string) 
 	// TODO: Uncomment the next line to return response Response(404, ErrorMessageDto{}) or use other options such as http.Ok ...
 	// return Response(404, ErrorMessageDto{}), nil
 
-	return Response(http.StatusNotImplemented, nil), errors.New("DeleteDiscovery method not implemented")
+	return Response(204, nil), nil
 }
 
 // DiscoverCertificate - Initiate certificate Discovery
 func (s *DiscoveryAPIService) DiscoverCertificate(ctx context.Context, discoveryRequestDto DiscoveryRequestDto) (ImplResponse, error) {
 	id := uuid.New()
 	fmt.Println(id)
+	response := DiscoveryProviderDto{
+		Uuid:                        utils.DeterministicGUID("name"),
+		Name:                        discoveryRequestDto.Name,
+		Status:                      IN_PROGRESS,
+		TotalCertificatesDiscovered: 0,
+		CertificateData:             nil,
+		Meta:                        nil,
+	}
+	discovery := &db.Discovery{
+		UUID:         response.Uuid,
+		Name:         response.Name,
+		Status:       string(response.Status),
+		Meta:         nil,
+		Certificates: nil,
+	}
+	s.repo.CreateDiscovery(discovery)
+	go s.DiscoveryCertificates(&db.AuthorityInstance{}, discovery)
+
 	//s.repo.CreateDiscovery(id.String(), discoveryRequestDto)
 	// TODO: Uncomment the next line to return response Response(422, []string{}) or use other options such as http.Ok ...
 	// return Response(422, []string{}), nil
@@ -77,11 +100,35 @@ func (s *DiscoveryAPIService) DiscoverCertificate(ctx context.Context, discovery
 	// TODO: Uncomment the next line to return response Response(404, ErrorMessageDto{}) or use other options such as http.Ok ...
 	// return Response(404, ErrorMessageDto{}), nil
 
-	return Response(http.StatusNotImplemented, nil), errors.New("DiscoverCertificate method not implemented")
+	return Response(200, response), nil
 }
 
 // GetDiscovery - Get Discovery status and result
 func (s *DiscoveryAPIService) GetDiscovery(ctx context.Context, uuid string, discoveryDataRequestDto DiscoveryDataRequestDto) (ImplResponse, error) {
+	discovery, err := s.repo.FindDiscoveryByUUID(uuid)
+	if err != nil {
+		return Response(404, ErrorMessageDto{Message: "Discovery " + uuid + " not found."}), nil
+	}
+	if discovery.Status == "IN_PROGRESS" {
+		return Response(200, DiscoveryProviderDto{Uuid: discovery.UUID, Name: discovery.Name, Status: IN_PROGRESS, TotalCertificatesDiscovered: 0, CertificateData: nil, Meta: nil}), nil
+	} else {
+		pagination := db.Pagination{
+			Page:  1,
+			Limit: 10,
+		}
+		result, _ := s.repo.List(pagination)
+		certificateDtos := []DiscoveryProviderCertificateDataDto{}
+		rows, _ := result.Rows.([]*db.Certificate) // Convert interface{} to []db.CertificateData
+		for _, certificateData := range rows {
+			discoveryProviderCertificateDataDto := DiscoveryProviderCertificateDataDto{
+				Uuid:          certificateData.UUID,
+				Base64Content: certificateData.Base64Content,
+			}
+			certificateDtos = append(certificateDtos, discoveryProviderCertificateDataDto)
+		}
+
+		return Response(200, DiscoveryProviderDto{Uuid: discovery.UUID, Name: discovery.Name, Status: COMPLETED, TotalCertificatesDiscovered: 0, CertificateData: certificateDtos, Meta: nil}), nil
+	}
 	// TODO - update GetDiscovery with the required logic for this service method.
 	// Add api_discovery_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 
@@ -97,5 +144,38 @@ func (s *DiscoveryAPIService) GetDiscovery(ctx context.Context, uuid string, dis
 	// TODO: Uncomment the next line to return response Response(404, ErrorMessageDto{}) or use other options such as http.Ok ...
 	// return Response(404, ErrorMessageDto{}), nil
 
-	return Response(http.StatusNotImplemented, nil), errors.New("GetDiscovery method not implemented")
+}
+
+func (s *DiscoveryAPIService) DiscoveryCertificates(authority *db.AuthorityInstance, discovery *db.Discovery) {
+	// get the vault client
+	client, err := vault.GetClient(*authority)
+	if err != nil {
+		s.log.Fatal(err.Error())
+	}
+	// get the certificates
+	ctx := context.Background()
+	certificates, err := client.Secrets.PkiListCerts(ctx)
+	if err != nil {
+		s.log.Fatal(err.Error())
+	}
+	var certificateKeys []*db.Certificate
+	for _, certificateKey := range certificates.Data.Keys {
+		certificateData, err := client.Secrets.PkiReadCert(ctx, certificateKey)
+
+		certificate := db.Certificate{
+			SerialNumber:  certificateKey,
+			UUID:          utils.DeterministicGUID(certificateKey),
+			Base64Content: certificateData.Data.Certificate,
+		}
+		certificateKeys = append(certificateKeys, &certificate)
+		if err != nil {
+			s.log.Fatal(err.Error())
+		}
+	}
+	s.repo.AssociateCertificatesToDiscovery(discovery, certificateKeys...)
+
+	// Update discovery status to "COMPLETED"
+	discovery.Status = "COMPLETED"
+	s.repo.UpdateDiscovery(discovery)
+
 }

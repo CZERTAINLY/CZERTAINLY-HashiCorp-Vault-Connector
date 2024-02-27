@@ -1,6 +1,7 @@
 package vault
 
 import (
+	"CZERTAINLY-HashiCorp-Vault-Connector/internal/db"
 	"context"
 	"fmt"
 	"log"
@@ -49,20 +50,22 @@ func (l LoginWithToken) Login(client *vault.Client) (*vault.Client, error) {
 	return nil, nil
 }
 
-type APIClientConfig struct {
-	LoginMethod LoginMethod
-	EndpointURL string
+func getLoginMethod(authority db.AuthorityInstance) LoginMethod {
+	return AppRoleLogin{
+		RoleId:   "60370fcc-1c96-6ca7-ea41-d92736def91a",
+		SecretId: "6a6c7b86-5551-4849-e119-812da8086fcc",
+	}
 }
 
-func GetAPIClient(config APIClientConfig) (*vault.Client, error) {
-	// prepare a client with the given base address
+func GetClient(authority db.AuthorityInstance) (*vault.Client, error) {
 	client, err := vault.New(
-		vault.WithAddress(config.EndpointURL),
+		vault.WithAddress("https://vault.czertainly.online:443"), // prepare a client with the given base address
 		vault.WithRequestTimeout(30*time.Second),
 	)
 	if err != nil {
 		log.Fatal(err)
 	}
-	return config.LoginMethod.Login(client)
-
+	return getLoginMethod(authority).Login(client)
 }
+
+
