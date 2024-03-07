@@ -1,11 +1,12 @@
 package main
 
 import (
-	authority "CZERTAINLY-HashiCorp-Vault-Connector/generated/authority"
-	discovery "CZERTAINLY-HashiCorp-Vault-Connector/generated/discovery"
+	"CZERTAINLY-HashiCorp-Vault-Connector/internal/authority"
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/config"
 	db "CZERTAINLY-HashiCorp-Vault-Connector/internal/db"
+	"CZERTAINLY-HashiCorp-Vault-Connector/internal/discovery"
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/logger"
+	"CZERTAINLY-HashiCorp-Vault-Connector/internal/model"
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/utils"
 	"encoding/json"
 	"net/http"
@@ -75,21 +76,21 @@ func main() {
 	db.MigrateDB(c)
 	conn, _ := db.ConnectDB(c)
 	discoveryRepo, _ := db.NewDiscoveryRepository(conn)
-	//authorityRepo,_ := db.NewAuthorityRepository(conn)
+	authorityRepo, _ := db.NewAuthorityRepository(conn)
 
-	DiscoveryAPIService := discovery.NewDiscoveryAPIService(discoveryRepo, log)
+	DiscoveryAPIService := discovery.NewDiscoveryAPIService(discoveryRepo, authorityRepo, log)
 	DiscoveryAPIController := discovery.NewDiscoveryAPIController(DiscoveryAPIService)
 
-	AuthorityManagementAPIService := authority.NewAuthorityManagementAPIService()
+	AuthorityManagementAPIService := authority.NewAuthorityManagementAPIService(authorityRepo, log)
 	AuthorityManagementAPIController := authority.NewAuthorityManagementAPIController(AuthorityManagementAPIService)
 
 	CertificateManagementAPIService := authority.NewCertificateManagementAPIService()
 	CertificateManagementAPIController := authority.NewCertificateManagementAPIController(CertificateManagementAPIService)
 
-	DiscoveryConnectorAttributesAPIService := discovery.NewConnectorAttributesAPIService()
+	DiscoveryConnectorAttributesAPIService := discovery.NewConnectorAttributesAPIService(authorityRepo, log)
 	DiscoveryConnectorAttributesAPIController := discovery.NewConnectorAttributesAPIController(DiscoveryConnectorAttributesAPIService)
 
-	AuthorityConnectorAttributesAPIService := authority.NewConnectorAttributesAPIService()
+	AuthorityConnectorAttributesAPIService := authority.NewConnectorAttributesAPIService(authorityRepo, log)
 	AuthorityConnectorAttributesAPIController := authority.NewConnectorAttributesAPIController(AuthorityConnectorAttributesAPIService)
 
 	topMux := http.NewServeMux()
@@ -99,17 +100,15 @@ func main() {
 	populateRoutes(infoRouter, "info")
 	topMux.Handle("/v1", logMiddleware(infoRouter))
 
-
 	healthRouter := mux.NewRouter()
 	healthRouter.HandleFunc("/v1/health", healthHandler).Methods("GET")
 	populateRoutes(healthRouter, "health")
 	topMux.Handle("/v1/health", logMiddleware(healthRouter))
 
-
-	authorityRouter := authority.NewRouter(AuthorityConnectorAttributesAPIController, AuthorityManagementAPIController, CertificateManagementAPIController)
+	authorityRouter := model.NewRouter(AuthorityConnectorAttributesAPIController, AuthorityManagementAPIController, CertificateManagementAPIController)
 	populateRoutes(authorityRouter, "authorityProvider")
 
-	discoveryRouter := discovery.NewRouter(DiscoveryConnectorAttributesAPIController, DiscoveryAPIController)
+	discoveryRouter := model.NewRouter(DiscoveryConnectorAttributesAPIController, DiscoveryAPIController)
 	populateRoutes(discoveryRouter, "discoveryProvider")
 
 	topMux.Handle("/v1/authorityProvider/", logMiddleware(authorityRouter))

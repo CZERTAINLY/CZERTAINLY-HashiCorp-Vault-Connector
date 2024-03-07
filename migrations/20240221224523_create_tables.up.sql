@@ -7,9 +7,11 @@ create table hvault.authority_instances
     uuid               varchar(255) not null,
     name               varchar(255),
     url                varchar(255),
-    credential_uuid    varchar(255),
-    credential_data    text,
-    attributes         json,
+    credential_type    varchar(255),
+    role_id    varchar(255),
+    role_secret    varchar(255),
+    jwt    varchar(255),
+    attributes         text,
     primary key (id)
 );
 
@@ -19,7 +21,7 @@ create table hvault.certificates
     serial_number       varchar not null,
     uuid                varchar not null,
     base64_content       varchar null default null,
-    meta                json null default null,
+    meta                text null default null,
     primary key (id)
 );
 
@@ -29,7 +31,7 @@ create table hvault.discoveries
     uuid    varchar not null,
     name    varchar not null,
     status  varchar not null,
-    meta    json null default null,
+    meta    text null default null,
     primary key (id)
 );
 
