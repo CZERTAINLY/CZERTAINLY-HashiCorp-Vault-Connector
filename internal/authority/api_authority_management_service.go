@@ -141,29 +141,17 @@ func (s *AuthorityManagementAPIService) GetCrl(ctx context.Context, uuid string,
 // ListAuthorityInstances - List Authority instances
 func (s *AuthorityManagementAPIService) ListAuthorityInstances(ctx context.Context) (model.ImplResponse, error) {
 	authorities, _ := s.authorityRepo.ListAuthorityInstances()
-	authoritiesDtos := []model.AuthorityProviderInstanceDto{}
+	var authoritiesDto []model.AuthorityProviderInstanceDto
 	for _, authority := range authorities {
-		authoritiesDtos = append(authoritiesDtos, model.AuthorityProviderInstanceDto{
-			Uuid: authority.UUID,
-			Name: authority.Name,
+		attributes := model.UnmarshalAttributes([]byte(authority.Attributes))
+		authoritiesDto = append(authoritiesDto, model.AuthorityProviderInstanceDto{
+			Uuid:       authority.UUID,
+			Name:       authority.Name,
+			Attributes: attributes,
 		})
 	}
 
-	// Add api_authority_management_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
-
-	// TODO: Uncomment the next line to return response model.Response(200, []AuthorityProviderInstanceDto{}) or use other options such as http.Ok ...
-	// return model.Response(200, []AuthorityProviderInstanceDto{}), nil
-
-	// TODO: Uncomment the next line to return response model.Response(400, ErrorMessageDto{}) or use other options such as http.Ok ...
-	// return model.Response(400, ErrorMessageDto{}), nil
-
-	// TODO: Uncomment the next line to return response model.Response(500, {}) or use other options such as http.Ok ...
-	// return model.Response(500, nil),nil
-
-	// TODO: Uncomment the next line to return response model.Response(404, ErrorMessageDto{}) or use other options such as http.Ok ...
-	// return model.Response(404, ErrorMessageDto{}), nil
-
-	return model.Response(200, authoritiesDtos), nil
+	return model.Response(200, authoritiesDto), nil
 }
 
 // ListRAProfileAttributes - List RA Profile Attributes
