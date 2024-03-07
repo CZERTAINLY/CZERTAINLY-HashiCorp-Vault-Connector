@@ -63,25 +63,18 @@ func (s *AuthorityManagementAPIService) CreateAuthorityInstance(ctx context.Cont
 
 // GetAuthorityInstance - Get an Authority instance
 func (s *AuthorityManagementAPIService) GetAuthorityInstance(ctx context.Context, uuid string) (model.ImplResponse, error) {
-	authority, _ := s.authorityRepo.FindAuthorityInstanceByUUID(uuid)
-	authorityDto := model.AuthorityProviderInstanceDto{
-		Uuid: authority.UUID,
-		Name: authority.Name,
+	authority, err := s.authorityRepo.FindAuthorityInstanceByUUID(uuid)
+	if err != nil {
+		return model.Response(404, model.ErrorMessageDto{
+			Message: "Authority not found",
+		}), nil
 	}
-	// Add api_authority_management_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
-
-	// TODO: Uncomment the next line to return response model.Response(400, ErrorMessageDto{}) or use other options such as http.Ok ...
-	// return model.Response(400, ErrorMessageDto{}), nil
-
-	// TODO: Uncomment the next line to return response model.Response(500, {}) or use other options such as http.Ok ...
-	// return model.Response(500, nil),nil
-
-	// TODO: Uncomment the next line to return response model.Response(200, AuthorityProviderInstanceDto{}) or use other options such as http.Ok ...
-	// return model.Response(200, AuthorityProviderInstanceDto{}), nil
-
-	// TODO: Uncomment the next line to return response model.Response(404, ErrorMessageDto{}) or use other options such as http.Ok ...
-	// return model.Response(404, ErrorMessageDto{}), nil
-
+	attributes := model.UnmarshalAttributes([]byte(authority.Attributes))
+	authorityDto := model.AuthorityProviderInstanceDto{
+		Uuid:       authority.UUID,
+		Name:       authority.Name,
+		Attributes: attributes,
+	}
 	return model.Response(200, authorityDto), nil
 }
 
