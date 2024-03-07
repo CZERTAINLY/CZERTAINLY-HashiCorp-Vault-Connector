@@ -206,27 +206,41 @@ func (s *AuthorityManagementAPIService) RemoveAuthorityInstance(ctx context.Cont
 }
 
 // UpdateAuthorityInstance - Update Authority instance
-func (s *AuthorityManagementAPIService) UpdateAuthorityInstance(ctx context.Context, uuid string, request []byte) (model.ImplResponse, error) {
+func (s *AuthorityManagementAPIService) UpdateAuthorityInstance(ctx context.Context, uuid string, request model.AuthorityProviderInstanceRequestDto) (model.ImplResponse, error) {
 	authority, err := s.authorityRepo.FindAuthorityInstanceByUUID(uuid)
 	if err != nil {
-		return model.Response(404, model.ErrorMessageDto{}), nil
+		return model.Response(500, model.ErrorMessageDto{
+			Message: "Failed to marshal attributes",
+		}), err
 	}
+	attributes := request.Attributes
+	URL := model.GetAttributeFromArrayByUUID(model.URL_ATTR, attributes).GetContent()[0].GetData().(string)
+	credentialType := model.GetAttributeFromArrayByUUID(model.CREDENTIAL_TYPE_ATTR, attributes).GetContent()[0].GetData().(string)
+	authorityName := request.Name
 
-	//attributes := gjson.GetBytes(request, "attributes")
-	//URL := model.GetValue(model.URL_ATTR, string(request))
-	//credentialType := model.GetValue(model.CREDENTIAL_TYPE_ATTR, string(request))
-
-	//authority.Name = gjson.GetBytes(request, "name").Str
-	//authority.URL = URL
-	//authority.CredentialType = credentialType
-	//authority.Attributes = attributes.Raw
+	marshaledAttrs, err := json.Marshal(attributes)
+	if err != nil {
+		return model.Response(500, model.ErrorMessageDto{
+			Message: "Failed to marshal attributes",
+		}), err
+	}
+	authority.Name = authorityName
+	authority.URL = URL
+	authority.CredentialType = credentialType
+	authority.Attributes = string(marshaledAttrs)
 
 	err = s.authorityRepo.UpdateAuthorityInstance(authority)
 	if err != nil {
 		// Handle error, failed to delete authority
 		return model.Response(500, model.ErrorMessageDto{}), err
 	}
-	return model.Response(200, model.AuthorityProviderInstanceDto{}), nil
+	attributesEntity := model.UnmarshalAttributes([]byte(authority.Attributes))
+	authorityDto := model.AuthorityProviderInstanceDto{
+		Uuid:       authority.UUID,
+		Name:       authority.Name,
+		Attributes: attributesEntity,
+	}
+	return model.Response(200, authorityDto), nil
 
 }
 

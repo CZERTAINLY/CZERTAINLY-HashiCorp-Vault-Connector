@@ -284,12 +284,15 @@ func (c *AuthorityManagementAPIController) UpdateAuthorityInstance(w http.Respon
 		c.errorHandler(w, r, &model.RequiredError{"uuid"}, nil)
 		return
 	}
+	authorityProviderInstanceRequestDtoParam := &model.AuthorityProviderInstanceRequestDto{}
 	json, err := io.ReadAll(r.Body)
 	if err != nil {
 		c.errorHandler(w, r, &model.ParsingError{Err: err}, nil)
 		return
 	}
-	result, err := c.service.UpdateAuthorityInstance(r.Context(), uuidParam, json)
+
+	authorityProviderInstanceRequestDtoParam.Unmarshal(json)
+	result, err := c.service.UpdateAuthorityInstance(r.Context(), uuidParam, *authorityProviderInstanceRequestDtoParam)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)
