@@ -82,5 +82,6 @@ type CertificateManagementAPIServicer interface {
 // and updated with the logic required for the API.
 type ConnectorAttributesAPIServicer interface {
 	ListAttributeDefinitions(context.Context, string) (model.ImplResponse, error)
+	CredentialAttributesCallbacks(context.Context, string) (model.ImplResponse, error)
 	ValidateAttributes(context.Context, string, []model.Attribute) (model.ImplResponse, error)
 }

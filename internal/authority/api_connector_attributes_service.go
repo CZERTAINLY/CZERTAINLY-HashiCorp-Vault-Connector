@@ -39,6 +39,21 @@ func (s *ConnectorAttributesAPIService) ListAttributeDefinitions(ctx context.Con
 	return model.Response(200, attributes), nil
 }
 
+func (s *ConnectorAttributesAPIService) CredentialAttributesCallbacks(ctx context.Context, credentialType string) (model.ImplResponse, error) {
+	attributes := make([]model.Attribute, 0)
+	switch credentialType {
+	case "kubernetes":
+		break
+	case "role":
+		attributes = append(attributes, model.GetAttributeDefByUUID(model.ROLE_ID_ATTR))
+		attributes = append(attributes, model.GetAttributeDefByUUID(model.ROLE_SECRET_ATTR))
+	case "jwt":
+		attributes = append(attributes, model.GetAttributeDefByUUID(model.JWT_TOKEN_ATTR))
+	}
+
+	return model.Response(200, attributes), nil
+}
+
 // ValidateAttributes - Validate Attributes
 func (s *ConnectorAttributesAPIService) ValidateAttributes(ctx context.Context, kind string, requestAttributeDto []model.Attribute) (model.ImplResponse, error) {
 

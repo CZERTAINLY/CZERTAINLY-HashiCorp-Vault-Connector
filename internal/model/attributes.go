@@ -82,7 +82,7 @@ func GetAttributeList() []Attribute {
 			Description: "Authority definition for discovery",
 			Type:        GROUP,
 			AttributeCallback: AttributeCallback{
-				CallbackContext: "v1/authorityProvider/credentialsType/{credentialsType}",
+				CallbackContext: "v1/authorityProvider/{credentialsType}/callback",
 				CallbackMethod:  "GET",
 				Mappings: []AttributeCallbackMapping{
 					{
@@ -91,7 +91,7 @@ func GetAttributeList() []Attribute {
 						AttributeContentType: STRING,
 						To:                   "credentialsType",
 						Targets: []AttributeValueTarget{
-							REQUEST_PARAMETER,
+							PATH_VARIABLE,
 						},
 					},
 				},
