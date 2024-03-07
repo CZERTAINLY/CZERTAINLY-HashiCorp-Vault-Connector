@@ -1,7 +1,7 @@
 package model
 
 type Attribute interface {
-	GetContent() AttributeContent
+	GetContent() []AttributeContent
 	GetName() string
 	GetUuid() string
 	GetAttributeType() AttributeType
@@ -18,3 +18,7 @@ type AttributeDefinition struct {
 	AttributeType        AttributeType
 	AttributeContentType AttributeContentType
 }
+
+//type Unmarshalable interface {
+//	Unmarshal(json []byte)
+//}

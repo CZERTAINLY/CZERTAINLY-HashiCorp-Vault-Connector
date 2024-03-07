@@ -108,7 +108,7 @@ func (c *AuthorityManagementAPIController) CreateAuthorityInstance(w http.Respon
 
 	authorityProviderInstanceRequestDtoParam.Name = gjson.GetBytes(json, "name").String()
 	authorityProviderInstanceRequestDtoParam.Kind = gjson.GetBytes(json, "kind").String()
-	authorityProviderInstanceRequestDtoParam.Attributes = model.UnmarshalAttributes(json)
+	authorityProviderInstanceRequestDtoParam.Attributes = model.UnmarshalAttributesValues([]byte(gjson.GetBytes(json, "attributes").Raw))
 
 	if err := model.AssertAuthorityProviderInstanceRequestDtoRequired(authorityProviderInstanceRequestDtoParam); err != nil {
 		c.errorHandler(w, r, err, nil)

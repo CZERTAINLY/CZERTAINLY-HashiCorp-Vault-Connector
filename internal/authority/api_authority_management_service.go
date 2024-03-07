@@ -31,8 +31,8 @@ func NewAuthorityManagementAPIService(authorityRepo *db.AuthorityRepository, log
 // CreateAuthorityInstance - Create Authority instance
 func (s *AuthorityManagementAPIService) CreateAuthorityInstance(ctx context.Context, request model.AuthorityProviderInstanceRequestDto) (model.ImplResponse, error) {
 	attributes := request.Attributes
-	URL := model.GetAttributeFromArrayByUUID(model.URL_ATTR, attributes).GetContent().GetData().(string)
-	credentialType := model.GetAttributeFromArrayByUUID(model.CREDENTIAL_TYPE_ATTR, attributes).GetContent().GetData().(string)
+	URL := model.GetAttributeFromArrayByUUID(model.URL_ATTR, attributes).GetContent()[0].GetData().(string)
+	credentialType := model.GetAttributeFromArrayByUUID(model.CREDENTIAL_TYPE_ATTR, attributes).GetContent()[0].GetData().(string)
 	authorityName := request.Name
 	marshaledAttrs, err := json.Marshal(attributes)
 	if err != nil {
@@ -48,7 +48,12 @@ func (s *AuthorityManagementAPIService) CreateAuthorityInstance(ctx context.Cont
 		CredentialType: credentialType,
 	}
 	s.authorityRepo.CreateAuthorityInstance(&authority)
-	return model.Response(200, model.AuthorityProviderInstanceDto{}), nil
+	dto := model.AuthorityProviderInstanceDto{
+		Uuid:       authority.UUID,
+		Name:       authority.Name,
+		Attributes: attributes,
+	}
+	return model.Response(200, dto), nil
 }
 
 // GetAuthorityInstance - Get an Authority instance

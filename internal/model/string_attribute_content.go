@@ -1,12 +1,19 @@
 package model
 
 type StringAttributeContent struct {
-	AttributeContent `json:"-"`
 	// Content Reference
 	Reference string `json:"reference,omitempty"`
 
 	// String attribute value
 	Data string `json:"data"`
+}
+
+func (a StringAttributeContent) GetData() interface{} {
+	return a.Data
+}
+
+func (a StringAttributeContent) GetReference() string {
+	return a.Reference
 }
 
 // AssertStringAttributeContentRequired checks if the required fields are not zero-ed

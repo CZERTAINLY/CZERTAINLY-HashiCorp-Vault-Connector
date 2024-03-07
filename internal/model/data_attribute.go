@@ -2,7 +2,6 @@ package model
 
 // DataAttribute - Data attribute allows to store and transfer dynamic data. Its content can be edited and send in requests to store.
 type DataAttribute struct {
-	Attribute `json:"-"`
 	// UUID of the Attribute for unique identification
 	Uuid string `json:"uuid"`
 
@@ -27,20 +26,23 @@ type DataAttribute struct {
 	AttributeCallback *AttributeCallback `json:"attributeCallback,omitempty"`
 }
 
-func (obj DataAttribute) GetUuid() string {
-	return obj.Uuid
+func (d DataAttribute) GetContent() []AttributeContent {
+	return d.Content
+}
+func (d DataAttribute) GetUuid() string {
+	return d.Uuid
 }
 
-func (obj DataAttribute) GetName() string {
-	return obj.Name
+func (d DataAttribute) GetName() string {
+	return d.Name
 }
 
-func (obj DataAttribute) GetAttributeType() AttributeType {
-	return obj.Type
+func (d DataAttribute) GetAttributeType() AttributeType {
+	return d.Type
 }
 
-func (obj DataAttribute) GetAttributeContentType() AttributeContentType {
-	return obj.ContentType
+func (d DataAttribute) GetAttributeContentType() AttributeContentType {
+	return d.ContentType
 }
 
 // AssertDataAttributeRequired checks if the required fields are not zero-ed

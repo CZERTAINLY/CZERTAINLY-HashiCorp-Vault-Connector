@@ -5,12 +5,12 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-const (
-	URL_ATTR             = "URL_ATR_UUID"
-	CREDENTIAL_TYPE_ATTR = "CREDENTIAL_TYPE_ATR_UUID"
-	JWT_TOKEN_ATTR       = "JWT_TOKEN_ATR_UUID"
-	ROLE_ID_ATTR         = "ROLE_ID_ATR_UUID"
-	ROLE_SECRET_ATTR     = "ROLE_SECRET_ATR_UUID"
+var (
+	URL_ATTR             string = "URL_ATR_UUID"
+	CREDENTIAL_TYPE_ATTR string = "CREDENTIAL_TYPE_ATR_UUID"
+	JWT_TOKEN_ATTR       string = "JWT_TOKEN_ATR_UUID"
+	ROLE_ID_ATTR         string = "ROLE_ID_ATR_UUID"
+	ROLE_SECRET_ATTR     string = "ROLE_SECRET_ATR_UUID"
 )
 
 var credentialTypes = []AttributeContent{

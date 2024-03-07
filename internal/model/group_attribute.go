@@ -2,7 +2,6 @@ package model
 
 // GroupAttribute - Group attribute and its content represents dynamic list of additional attributes retrieved by callback. Its content can not be edited and is not send in requests to store.
 type GroupAttribute struct {
-	Attribute `json:"-"`
 	// UUID of the Attribute for unique identification
 	Uuid string `json:"uuid"`
 
@@ -33,6 +32,10 @@ func (obj GroupAttribute) GetAttributeType() AttributeType {
 
 func (obj GroupAttribute) GetAttributeContentType() AttributeContentType {
 	return ""
+}
+
+func (obj GroupAttribute) GetContent() []AttributeContent {
+	return []AttributeContent{}
 }
 
 // AssertGroupAttributeRequired checks if the required fields are not zero-ed

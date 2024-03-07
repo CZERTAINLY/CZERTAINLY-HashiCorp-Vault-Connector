@@ -9,7 +9,7 @@ type AuthorityProviderInstanceDto struct {
 	Name string `json:"name"`
 
 	// List of Authority instance Attributes
-	Attributes []BaseAttributeDto `json:"attributes"`
+	Attributes []Attribute `json:"attributes"`
 }
 
 // AssertAuthorityProviderInstanceDtoRequired checks if the required fields are not zero-ed

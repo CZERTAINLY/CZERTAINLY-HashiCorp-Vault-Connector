@@ -2,15 +2,26 @@ package model
 
 // RequestAttributeDto - Request attribute to send attribute content for object
 type RequestAttributeDto struct {
-	Attribute
-	// // UUID of the Attribute
-	// Uuid string `json:"uuid,omitempty"`
+	// UUID of the Attribute
+	Uuid string `json:"uuid,omitempty"`
 
-	// // Name of the Attribute
-	// Name string `json:"name"`
+	// Name of the Attribute
+	Name string `json:"name"`
 
-	// // Content of the Attribute
-	// Content []BaseAttributeContentDto `json:"content"`
+	// Content of the Attribute
+	Content []AttributeContent `json:"content"`
+}
+
+func (d RequestAttributeDto) GetUuid() string {
+	return d.Uuid
+}
+
+func (d RequestAttributeDto) GetName() string {
+	return d.Name
+}
+
+func (d RequestAttributeDto) GetContent() []AttributeContent {
+	return d.Content
 }
 
 // AssertRequestAttributeDtoRequired checks if the required fields are not zero-ed
