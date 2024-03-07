@@ -37,20 +37,6 @@ func (s *DiscoveryAPIService) DeleteDiscovery(ctx context.Context, uuid string) 
 		return model.Response(404, model.ErrorMessageDto{Message: "Discovery " + uuid + " not found."}), nil
 	}
 	s.discoveryRepo.DeleteDiscovery(discovery)
-	// TODO - update DeleteDiscovery with the required logic for this service method.
-	// Add api_discovery_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
-
-	// TODO: Uncomment the next line to return response model.Response(400, ErrorMessageDto{}) or use other options such as http.Ok ...
-	// return model.Response(400, ErrorMessageDto{}), nil
-
-	// TODO: Uncomment the next line to return response model.Response(500, {}) or use other options such as http.Ok ...
-	// return model.Response(500, nil),nil
-
-	// TODO: Uncomment the next line to return response model.Response(204, {}) or use other options such as http.Ok ...
-	// return model.Response(204, nil),nil
-
-	// TODO: Uncomment the next line to return response model.Response(404, ErrorMessageDto{}) or use other options such as http.Ok ...
-	// return model.Response(404, ErrorMessageDto{}), nil
 
 	return model.Response(204, nil), nil
 }
@@ -76,22 +62,6 @@ func (s *DiscoveryAPIService) DiscoverCertificate(ctx context.Context, discovery
 	}
 	s.discoveryRepo.CreateDiscovery(discovery)
 	go s.DiscoveryCertificates(&db.AuthorityInstance{}, discovery)
-
-	//s.repo.CreateDiscovery(id.String(), discoveryRequestDto)
-	// TODO: Uncomment the next line to return response model.Response(422, []string{}) or use other options such as http.Ok ...
-	// return model.Response(422, []string{}), nil
-
-	// TODO: Uncomment the next line to return response model.Response(400, ErrorMessageDto{}) or use other options such as http.Ok ...
-	// return model.Response(400, ErrorMessageDto{}), nil
-
-	// TODO: Uncomment the next line to return response model.Response(500, {}) or use other options such as http.Ok ...
-	// return model.Response(500, nil),nil
-
-	// TODO: Uncomment the next line to return response model.Response(200, DiscoveryProviderDto{}) or use other options such as http.Ok ...
-	// return model.Response(200, DiscoveryProviderDto{}), nil
-
-	// TODO: Uncomment the next line to return response model.Response(404, ErrorMessageDto{}) or use other options such as http.Ok ...
-	// return model.Response(404, ErrorMessageDto{}), nil
 
 	return model.Response(200, response), nil
 }
@@ -122,20 +92,6 @@ func (s *DiscoveryAPIService) GetDiscovery(ctx context.Context, uuid string, dis
 
 		return model.Response(200, model.DiscoveryProviderDto{Uuid: discovery.UUID, Name: discovery.Name, Status: model.COMPLETED, TotalCertificatesDiscovered: 0, CertificateData: certificateDtos, Meta: nil}), nil
 	}
-	// TODO - update GetDiscovery with the required logic for this service method.
-	// Add api_discovery_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
-
-	// TODO: Uncomment the next line to return response model.Response(400, ErrorMessageDto{}) or use other options such as http.Ok ...
-	// return model.Response(400, ErrorMessageDto{}), nil
-
-	// TODO: Uncomment the next line to return response model.Response(500, {}) or use other options such as http.Ok ...
-	// return model.Response(500, nil),nil
-
-	// TODO: Uncomment the next line to return response model.Response(200, DiscoveryProviderDto{}) or use other options such as http.Ok ...
-	// return model.Response(200, DiscoveryProviderDto{}), nil
-
-	// TODO: Uncomment the next line to return response model.Response(404, ErrorMessageDto{}) or use other options such as http.Ok ...
-	// return model.Response(404, ErrorMessageDto{}), nil
 
 }
 
