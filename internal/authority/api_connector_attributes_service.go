@@ -29,24 +29,14 @@ func NewConnectorAttributesAPIService(authorityRepo *db.AuthorityRepository, log
 
 // ListAttributeDefinitions - List available Attributes
 func (s *ConnectorAttributesAPIService) ListAttributeDefinitions(ctx context.Context, kind string) (model.ImplResponse, error) {
+	attributes := make([]model.Attribute, 0)
+	attributes = append(attributes, model.GetAttributeDefByUUID(model.URL_ATTR))
+	attributes = append(attributes, model.GetAttributeDefByUUID(model.GROUP_CREDENTIAL_TYPE_ATTR))
+	credentialTypeAttribute := model.GetAttributeDefByUUID(model.CREDENTIAL_TYPE_ATTR).(model.DataAttribute)
+	credentialTypeAttribute.Content = model.GetCredentialTypes()
+	attributes = append(attributes, credentialTypeAttribute)
 
-	// TODO - update ListAttributeDefinitions with the required logic for this service method.
-	// Add api_connector_attributes_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
-
-	// TODO: Uncomment the next line to return response model.Response(400, ErrorMessageDto{}) or use other options such as http.Ok ...
-	// return model.Response(400, ErrorMessageDto{}), nil
-
-	// TODO: Uncomment the next line to return response model.Response(500, {}) or use other options such as http.Ok ...
-	// return model.Response(500, nil),nil
-
-	// TODO: Uncomment the next line to return response model.Response(404, ErrorMessageDto{}) or use other options such as http.Ok ...
-	// return model.Response(404, ErrorMessageDto{}), nil
-
-	// TODO: Uncomment the next line to return response model.Response(200, []BaseAttributeDto{}) or use other options such as http.Ok ...
-	// return model.Response(200, []BaseAttributeDto{}), nil
-
-	//return model.Response(200, model.GetAttributeList()), nil
-	return model.Response(200, nil), nil
+	return model.Response(200, attributes), nil
 }
 
 // ValidateAttributes - Validate Attributes

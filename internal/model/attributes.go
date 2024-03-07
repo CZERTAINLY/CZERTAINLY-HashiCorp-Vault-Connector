@@ -6,26 +6,29 @@ import (
 )
 
 var (
-	URL_ATTR             string = "URL_ATR_UUID"
-	CREDENTIAL_TYPE_ATTR string = "CREDENTIAL_TYPE_ATR_UUID"
-	JWT_TOKEN_ATTR       string = "JWT_TOKEN_ATR_UUID"
-	ROLE_ID_ATTR         string = "ROLE_ID_ATR_UUID"
-	ROLE_SECRET_ATTR     string = "ROLE_SECRET_ATR_UUID"
-	AUTHORITY_ATTR       string = "AUTHORITY_ATTR_UUID"
+	URL_ATTR                   string = "URL_ATR_UUID"
+	CREDENTIAL_TYPE_ATTR       string = "CREDENTIAL_TYPE_ATR_UUID"
+	GROUP_CREDENTIAL_TYPE_ATTR string = "GROUP_CREDENTIAL_TYPE_ATR_UUID"
+	JWT_TOKEN_ATTR             string = "JWT_TOKEN_ATR_UUID"
+	ROLE_ID_ATTR               string = "ROLE_ID_ATR_UUID"
+	ROLE_SECRET_ATTR           string = "ROLE_SECRET_ATR_UUID"
+	AUTHORITY_ATTR             string = "AUTHORITY_ATTR_UUID"
 )
 
-var credentialTypes = []AttributeContent{
+func GetCredentialTypes() []AttributeContent {
+	return []AttributeContent{
 
-	StringAttributeContent{
-		Reference: "Kubernetes token",
-		Data:      "kubernetes",
-	}, StringAttributeContent{
-		Reference: "Role ID",
-		Data:      "role",
-	}, StringAttributeContent{
-		Reference: "JWT",
-		Data:      "jwt",
-	},
+		StringAttributeContent{
+			Reference: "Kubernetes token",
+			Data:      "kubernetes",
+		}, StringAttributeContent{
+			Reference: "Role ID",
+			Data:      "role",
+		}, StringAttributeContent{
+			Reference: "JWT",
+			Data:      "jwt",
+		},
+	}
 }
 
 func GetAttributeDefByUUID(uuid string) Attribute {
@@ -61,7 +64,7 @@ func GetAttributeList() []Attribute {
 			Name:        "CredentialsType",
 			Description: "Authority definition for discovery",
 			Type:        DATA,
-			Content:     credentialTypes,
+			Content:     nil,
 			ContentType: STRING,
 			Properties: &DataAttributeProperties{
 				Label:       "Authority to discover",
@@ -74,7 +77,7 @@ func GetAttributeList() []Attribute {
 			},
 		},
 		GroupAttribute{
-			Uuid:        CREDENTIAL_TYPE_ATTR,
+			Uuid:        GROUP_CREDENTIAL_TYPE_ATTR,
 			Name:        "CredentialsGroup",
 			Description: "Authority definition for discovery",
 			Type:        GROUP,
@@ -116,7 +119,7 @@ func GetAttributeList() []Attribute {
 			Name:        "Role Secret",
 			Description: "RoleSecret for connection to vault",
 			Type:        DATA,
-			Content:     credentialTypes,
+			Content:     nil,
 			ContentType: SECRET,
 			Properties: &DataAttributeProperties{
 				Label:       "Role Secret",
@@ -133,7 +136,7 @@ func GetAttributeList() []Attribute {
 			Name:        "JWT Token",
 			Description: "JWT Token for connection to vault",
 			Type:        DATA,
-			Content:     credentialTypes,
+			Content:     nil,
 			ContentType: SECRET,
 			Properties: &DataAttributeProperties{
 				Label:       "JWT Token",
