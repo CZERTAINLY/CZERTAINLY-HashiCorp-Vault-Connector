@@ -50,24 +50,7 @@ func (s *ConnectorAttributesAPIService) ListAttributeDefinitions(ctx context.Con
 }
 
 // ValidateAttributes - Validate Attributes
-func (s *ConnectorAttributesAPIService) ValidateAttributes(ctx context.Context, kind string, requestAttributeDto []model.RequestAttributeDto) (model.ImplResponse, error) {
-	// TODO - update ValidateAttributes with the required logic for this service method.
-	// Add api_connector_attributes_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
-
-	// TODO: Uncomment the next line to return response model.Response(200, {}) or use other options such as http.Ok ...
-	// return model.Response(200, nil),nil
-
-	// TODO: Uncomment the next line to return response model.Response(422, []string{}) or use other options such as http.Ok ...
-	// return model.Response(422, []string{}), nil
-
-	// TODO: Uncomment the next line to return response model.Response(400, ErrorMessageDto{}) or use other options such as http.Ok ...
-	// return model.Response(400, ErrorMessageDto{}), nil
-
-	// TODO: Uncomment the next line to return response model.Response(500, {}) or use other options such as http.Ok ...
-	// return model.Response(500, nil),nil
-
-	// TODO: Uncomment the next line to return response model.Response(404, ErrorMessageDto{}) or use other options such as http.Ok ...
-	// return model.Response(404, ErrorMessageDto{}), nil
+func (s *ConnectorAttributesAPIService) ValidateAttributes(ctx context.Context, kind string, requestAttributeDto []model.Attribute) (model.ImplResponse, error) {
 
 	return model.Response(http.StatusNotImplemented, nil), errors.New("ValidateAttributes method not implemented")
 }

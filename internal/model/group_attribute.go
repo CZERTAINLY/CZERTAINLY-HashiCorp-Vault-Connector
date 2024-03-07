@@ -12,7 +12,7 @@ type GroupAttribute struct {
 	Description string `json:"description,omitempty"`
 
 	// List of all different types of attributes
-	Content []BaseAttributeDto `json:"content,omitempty"`
+	Content []AttributeContent `json:"content,omitempty"`
 
 	Type              AttributeType     `json:"type"`
 	AttributeCallback AttributeCallback `json:"attributeCallback,omitempty"`
@@ -51,11 +51,11 @@ func AssertGroupAttributeRequired(obj GroupAttribute) error {
 		}
 	}
 
-	for _, el := range obj.Content {
-		if err := AssertBaseAttributeDtoRequired(el); err != nil {
-			return err
-		}
-	}
+	//for _, el := range obj.Content {
+	//	if err := AssertBaseAttributeDtoRequired(el); err != nil {
+	//		return err
+	//	}
+	//}
 	if err := AssertAttributeCallbackRequired(obj.AttributeCallback); err != nil {
 		return err
 	}

@@ -19,6 +19,6 @@ type AttributeDefinition struct {
 	AttributeContentType AttributeContentType
 }
 
-//type Unmarshalable interface {
-//	Unmarshal(json []byte)
-//}
+type Unmarshalable interface {
+	Unmarshal(json []byte)
+}

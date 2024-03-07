@@ -2,7 +2,7 @@ package authority
 
 import (
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/model"
-	"encoding/json"
+	"io"
 	"net/http"
 	"strings"
 
@@ -81,20 +81,13 @@ func (c *ConnectorAttributesAPIController) ValidateAttributes(w http.ResponseWri
 		c.errorHandler(w, r, &model.RequiredError{"kind"}, nil)
 		return
 	}
-	requestAttributeDtoParam := []model.RequestAttributeDto{}
-	d := json.NewDecoder(r.Body)
-	d.DisallowUnknownFields()
-	if err := d.Decode(&requestAttributeDtoParam); err != nil {
+	json, err := io.ReadAll(r.Body)
+	if err != nil {
 		c.errorHandler(w, r, &model.ParsingError{Err: err}, nil)
 		return
 	}
-	for _, el := range requestAttributeDtoParam {
-		if err := model.AssertRequestAttributeDtoRequired(el); err != nil {
-			c.errorHandler(w, r, err, nil)
-			return
-		}
-	}
-	result, err := c.service.ValidateAttributes(r.Context(), kindParam, requestAttributeDtoParam)
+	attributes := model.UnmarshalAttributesValues(json)
+	result, err := c.service.ValidateAttributes(r.Context(), kindParam, attributes)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)

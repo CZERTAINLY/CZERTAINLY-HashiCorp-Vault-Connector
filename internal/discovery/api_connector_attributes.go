@@ -3,6 +3,8 @@ package discovery
 import (
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/model"
 	"github.com/gorilla/mux"
+	"io"
+
 	// "io"
 	"net/http"
 	"strings"
@@ -80,9 +82,14 @@ func (c *ConnectorAttributesAPIController) ValidateAttributes(w http.ResponseWri
 		c.errorHandler(w, r, &model.RequiredError{"kind"}, nil)
 		return
 	}
-	//json, _ := io.ReadAll(r.Body)
-	requestAttributeDtoParam := make([]model.RequestAttributeDto, 0)
-	result, err := c.service.ValidateAttributes(r.Context(), kindParam, requestAttributeDtoParam)
+	json, err := io.ReadAll(r.Body)
+	if err != nil {
+		c.errorHandler(w, r, &model.ParsingError{Err: err}, nil)
+		return
+	}
+
+	attributes := model.UnmarshalAttributesValues(json)
+	result, err := c.service.ValidateAttributes(r.Context(), kindParam, attributes)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)

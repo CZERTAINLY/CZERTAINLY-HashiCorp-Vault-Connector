@@ -24,6 +24,13 @@ func (d RequestAttributeDto) GetContent() []AttributeContent {
 	return d.Content
 }
 
+func (d RequestAttributeDto) GetAttributeType() AttributeType {
+	return ""
+}
+func (d RequestAttributeDto) GetAttributeContentType() AttributeContentType {
+	return ""
+}
+
 // AssertRequestAttributeDtoRequired checks if the required fields are not zero-ed
 func AssertRequestAttributeDtoRequired(obj RequestAttributeDto) error {
 	elements := map[string]interface{}{

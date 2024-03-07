@@ -1,12 +1,19 @@
 package model
 
 type ObjectAttributeContent struct {
-	AttributeContent
 	// Content Reference
 	Reference string `json:"reference,omitempty"`
 
 	// Object attribute content data
 	Data map[string]interface{} `json:"data"`
+}
+
+func (o ObjectAttributeContent) GetData() interface{} {
+	return o.Data
+}
+
+func (o ObjectAttributeContent) GetReference() string {
+	return o.Reference
 }
 
 // AssertObjectAttributeContentRequired checks if the required fields are not zero-ed

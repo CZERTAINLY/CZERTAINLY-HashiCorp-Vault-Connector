@@ -3,11 +3,7 @@ package discovery
 import (
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/db"
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/model"
-	"CZERTAINLY-HashiCorp-Vault-Connector/internal/utils"
 	"context"
-
-	"errors"
-	"net/http"
 
 	"go.uber.org/zap"
 )
@@ -36,69 +32,32 @@ func (s *ConnectorAttributesAPIService) ListAttributeDefinitions(ctx context.Con
 	objectContents := make([]model.AttributeContent, 0)
 
 	for _, authority := range authorities {
+		authorityData := map[string]interface{}{
+			"uuid": authority.UUID,
+		}
 		m := make(map[string]interface{})
 		m["uuid"] = authority.UUID
 		objectContents = append(objectContents,
 			model.ObjectAttributeContent{
 				Reference: authority.Name,
-				Data:      nil,
+				Data:      authorityData,
 			})
 	}
-	attributeList := []model.Attribute{model.DataAttribute{
-		Uuid:        utils.DeterministicGUID("AuthorityAttributeIdentifier"),
-		Name:        "AuthorityAttributeIdentifier",
-		Description: "Authority definition for discovery",
-		Type:        "data",
-		Content:     objectContents,
-		ContentType: "object",
-		Properties: &model.DataAttributeProperties{
-			Label:       "Authority to discover",
-			Visible:     true,
-			Group:       "",
-			Required:    true,
-			ReadOnly:    false,
-			List:        false,
-			MultiSelect: false,
-		},
-	}}
+	attribute := model.GetAttributeDefByUUID(model.AUTHORITY_ATTR).(model.DataAttribute)
+	attribute.Content = objectContents
+	return model.Response(200, []model.Attribute{attribute}), nil
 
-	// TODO - update ListAttributeDefinitions with the required logic for this service method.
-	// Add api_connector_attributes_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
-
-	// TODO: Uncomment the next line to return response model.Response(400, ErrorMessageDto{}) or use other options such as http.Ok ...
-	// return model.Response(400, ErrorMessageDto{}), nil
-
-	// TODO: Uncomment the next line to return response model.Response(500, {}) or use other options such as http.Ok ...
-	// return model.Response(500, nil),nil
-
-	// TODO: Uncomment the next line to return response model.Response(200, []BaseAttributeDto{}) or use other options such as http.Ok ...
-	return model.Response(200, attributeList), nil
-
-	// TODO: Uncomment the next line to return response model.Response(404, ErrorMessageDto{}) or use other options such as http.Ok ...
-	// return model.Response(404, ErrorMessageDto{}), nil
-
-	// return model.Response(http.StatusNotImplemented, nil), errors.New("ListAttributeDefinitions method not implemented")
 }
 
 // ValidateAttributes - Validate Attributes
-func (s *ConnectorAttributesAPIService) ValidateAttributes(ctx context.Context, kind string, requestAttributeDto []model.RequestAttributeDto) (model.ImplResponse, error) {
-	// TODO - update ValidateAttributes with the required logic for this service method.
-	// Add api_connector_attributes_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
+func (s *ConnectorAttributesAPIService) ValidateAttributes(ctx context.Context, kind string, requestAttributeDto []model.Attribute) (model.ImplResponse, error) {
+	authorityAttribute := model.GetAttributeFromArrayByUUID(model.AUTHORITY_ATTR, requestAttributeDto).(model.DataAttribute)
+	content := authorityAttribute.GetContent()[0]
+	authUuid := content.(model.ObjectAttributeContent).GetData().(map[string]any)["uuid"].(string)
+	auth, _ := s.authorityRepo.FindAuthorityInstanceByUUID(authUuid)
+	if auth == nil {
+		return model.Response(422, []string{"Authority not found"}), nil
+	}
+	return model.Response(200, nil), nil
 
-	// TODO: Uncomment the next line to return response model.Response(200, {}) or use other options such as http.Ok ...
-	// return model.Response(200, nil),nil
-
-	// TODO: Uncomment the next line to return response model.Response(400, ErrorMessageDto{}) or use other options such as http.Ok ...
-	// return model.Response(400, ErrorMessageDto{}), nil
-
-	// TODO: Uncomment the next line to return response model.Response(422, []string{}) or use other options such as http.Ok ...
-	// return model.Response(422, []string{}), nil
-
-	// TODO: Uncomment the next line to return response model.Response(500, {}) or use other options such as http.Ok ...
-	// return model.Response(500, nil),nil
-
-	// TODO: Uncomment the next line to return response model.Response(404, ErrorMessageDto{}) or use other options such as http.Ok ...
-	// return model.Response(404, ErrorMessageDto{}), nil
-
-	return model.Response(http.StatusNotImplemented, nil), errors.New("ValidateAttributes method not implemented")
 }

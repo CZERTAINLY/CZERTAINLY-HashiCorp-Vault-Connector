@@ -11,6 +11,7 @@ var (
 	JWT_TOKEN_ATTR       string = "JWT_TOKEN_ATR_UUID"
 	ROLE_ID_ATTR         string = "ROLE_ID_ATR_UUID"
 	ROLE_SECRET_ATTR     string = "ROLE_SECRET_ATR_UUID"
+	AUTHORITY_ATTR       string = "AUTHORITY_ATTR_UUID"
 )
 
 var credentialTypes = []AttributeContent{
@@ -90,7 +91,78 @@ func GetAttributeList() []Attribute {
 							REQUEST_PARAMETER,
 						},
 					},
-				}}}}
+				},
+			},
+		},
+		DataAttribute{
+			Uuid:        ROLE_ID_ATTR,
+			Name:        "RoleIdType",
+			Description: "RoleId for connection to vault",
+			Type:        DATA,
+			Content:     nil,
+			ContentType: SECRET,
+			Properties: &DataAttributeProperties{
+				Label:       "Role ID",
+				Visible:     true,
+				Group:       "",
+				Required:    true,
+				ReadOnly:    false,
+				List:        true,
+				MultiSelect: false,
+			},
+		},
+		DataAttribute{
+			Uuid:        ROLE_SECRET_ATTR,
+			Name:        "Role Secret",
+			Description: "RoleSecret for connection to vault",
+			Type:        DATA,
+			Content:     credentialTypes,
+			ContentType: SECRET,
+			Properties: &DataAttributeProperties{
+				Label:       "Role Secret",
+				Visible:     true,
+				Group:       "",
+				Required:    true,
+				ReadOnly:    false,
+				List:        true,
+				MultiSelect: false,
+			},
+		},
+		DataAttribute{
+			Uuid:        JWT_TOKEN_ATTR,
+			Name:        "JWT Token",
+			Description: "JWT Token for connection to vault",
+			Type:        DATA,
+			Content:     credentialTypes,
+			ContentType: SECRET,
+			Properties: &DataAttributeProperties{
+				Label:       "JWT Token",
+				Visible:     true,
+				Group:       "",
+				Required:    true,
+				ReadOnly:    false,
+				List:        true,
+				MultiSelect: false,
+			},
+		},
+		DataAttribute{
+			Uuid:        AUTHORITY_ATTR,
+			Name:        "AuthorityAttributeIdentifier",
+			Description: "Authority definition for discovery",
+			Type:        DATA,
+			Content:     nil,
+			ContentType: OBJECT,
+			Properties: &DataAttributeProperties{
+				Label:       "Authority to discover",
+				Visible:     true,
+				Group:       "",
+				Required:    true,
+				ReadOnly:    false,
+				List:        false,
+				MultiSelect: false,
+			},
+		},
+	}
 	return attributeList
 }
 
