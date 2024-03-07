@@ -1,4 +1,4 @@
-package authority
+package health
 
 import (
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/model"

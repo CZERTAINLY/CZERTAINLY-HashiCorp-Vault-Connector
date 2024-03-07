@@ -3,12 +3,13 @@ package main
 import (
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/authority"
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/config"
+	"CZERTAINLY-HashiCorp-Vault-Connector/internal/connectorInfo"
 	db "CZERTAINLY-HashiCorp-Vault-Connector/internal/db"
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/discovery"
+	"CZERTAINLY-HashiCorp-Vault-Connector/internal/health"
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/logger"
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/model"
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/utils"
-	"encoding/json"
 	"net/http"
 	"strings"
 
@@ -18,58 +19,10 @@ import (
 
 var version = "0.0.1"
 
-type InfoResponse struct {
-	FunctionGroupCode string `json:"functionGroupCode"`
-
-	// List of supported functional group kinds
-	Kinds []string `json:"kinds"`
-
-	// List of end points related to functional group
-	EndPoints []EndpointDto `json:"endPoints"`
-}
-
-type EndpointDto struct {
-
-	// Object identifier
-	Uuid string `json:"uuid"`
-
-	// Object Name
-	Name string `json:"name"`
-
-	// Context of the Endpoint
-	Context string `json:"context"`
-
-	// Method to be used for the Endpoint
-	Method string `json:"method"`
-
-	// True if the Endpoint is required for implementation
-	Required bool `json:"required"`
-}
-
-// HealthStatus : Current connector operational status
-type HealthStatus string
-
-// List of HealthStatus
-const (
-	OK      HealthStatus = "ok"
-	NOK     HealthStatus = "nok"
-	UNKNOWN HealthStatus = "unknown"
-)
-
-type HealthDto struct {
-	Status HealthStatus `json:"status"`
-
-	// Detailed status description
-	Description string `json:"description,omitempty"`
-
-	// Nested status of services
-	Parts map[string]HealthDto `json:"parts,omitempty"`
-}
-
-var routes map[string][]EndpointDto
+var routes map[string][]model.EndpointDto
 
 func main() {
-	routes = make(map[string][]EndpointDto)
+	routes = make(map[string][]model.EndpointDto)
 	log := logger.Get()
 	c := config.Get()
 
@@ -93,17 +46,12 @@ func main() {
 	AuthorityConnectorAttributesAPIService := authority.NewConnectorAttributesAPIService(authorityRepo, log)
 	AuthorityConnectorAttributesAPIController := authority.NewConnectorAttributesAPIController(AuthorityConnectorAttributesAPIService)
 
+	HealthAPIService := health.NewHealthCheckAPIService()
+	HealthAPIController := health.NewHealthCheckAPIController(HealthAPIService)
+
 	topMux := http.NewServeMux()
 
-	infoRouter := mux.NewRouter()
-	infoRouter.HandleFunc("/v1", infoHandler).Methods("GET")
-	populateRoutes(infoRouter, "info")
-	topMux.Handle("/v1", logMiddleware(infoRouter))
-
-	healthRouter := mux.NewRouter()
-	healthRouter.HandleFunc("/v1/health", healthHandler).Methods("GET")
-	populateRoutes(healthRouter, "health")
-	topMux.Handle("/v1/health", logMiddleware(healthRouter))
+	healthRouter := model.NewRouter(HealthAPIController)
 
 	authorityRouter := model.NewRouter(AuthorityConnectorAttributesAPIController, AuthorityManagementAPIController, CertificateManagementAPIController)
 	populateRoutes(authorityRouter, "authorityProvider")
@@ -111,6 +59,25 @@ func main() {
 	discoveryRouter := model.NewRouter(DiscoveryConnectorAttributesAPIController, DiscoveryAPIController)
 	populateRoutes(discoveryRouter, "discoveryProvider")
 
+	info := []model.InfoResponse{
+		{
+			FunctionGroupCode: "discoveryProvider",
+			Kinds:             []string{"Vault"},
+			EndPoints:         routes["discoveryProvider"],
+		},
+		{
+			FunctionGroupCode: "authorityProvider",
+			Kinds:             []string{"Vault"},
+			EndPoints:         routes["authorityProvider"],
+		},
+	}
+
+	ConnectorInfoAPIService := connectorInfo.NewConnectorInfoAPIService(info)
+	ConnectorInfoAPIController := connectorInfo.NewConnectorInfoAPIController(ConnectorInfoAPIService)
+	connectorInfoRouter := model.NewRouter(ConnectorInfoAPIController)
+
+	topMux.Handle("/v1", logMiddleware(connectorInfoRouter))
+	topMux.Handle("/v1/", logMiddleware(healthRouter))
 	topMux.Handle("/v1/authorityProvider/", logMiddleware(authorityRouter))
 	topMux.Handle("/v1/discoveryProvider/", logMiddleware(discoveryRouter))
 
@@ -129,42 +96,13 @@ func logMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func healthHandler(w http.ResponseWriter, r *http.Request) {
-	health := HealthDto{
-		Status:      OK,
-		Description: "Service is running properly",
-		Parts:       nil,
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(health)
-}
-
-func infoHandler(w http.ResponseWriter, r *http.Request) {
-	info := []InfoResponse{
-		{
-			FunctionGroupCode: "authorityProvider",
-			Kinds:             []string{"Vault"},
-			EndPoints:         routes["discoveryProvider"],
-		},
-		{
-			FunctionGroupCode: "authorityProvider",
-			Kinds:             []string{"Vault"},
-			EndPoints:         routes["authorityProvider"],
-		},
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(info)
-}
-
 func populateRoutes(router *mux.Router, routeKey string) {
 	log := logger.Get()
-	routes[routeKey] = make([]EndpointDto, 0)
+	routes[routeKey] = make([]model.EndpointDto, 0)
 	router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
 		tpl, _ := route.GetPathTemplate()
 		met, _ := route.GetMethods()
-		endpoint := EndpointDto{
+		endpoint := model.EndpointDto{
 			Method:   met[0],
 			Uuid:     utils.DeterministicGUID(met[0] + tpl),
 			Context:  tpl,

@@ -1,4 +1,4 @@
-package authority
+package connectorInfo
 
 import (
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/model"
