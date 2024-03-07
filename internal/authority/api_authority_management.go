@@ -3,7 +3,6 @@ package authority
 import (
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/model"
 	"encoding/json"
-	"github.com/tidwall/gjson"
 	"io"
 	"net/http"
 	"strings"
@@ -99,27 +98,25 @@ func (c *AuthorityManagementAPIController) Routes() model.Routes {
 
 // CreateAuthorityInstance - Create Authority instance
 func (c *AuthorityManagementAPIController) CreateAuthorityInstance(w http.ResponseWriter, r *http.Request) {
-	authorityProviderInstanceRequestDtoParam := model.AuthorityProviderInstanceRequestDto{}
+	authorityProviderInstanceRequestDtoParam := &model.AuthorityProviderInstanceRequestDto{}
 	json, err := io.ReadAll(r.Body)
 	if err != nil {
 		c.errorHandler(w, r, &model.ParsingError{Err: err}, nil)
 		return
 	}
 
-	authorityProviderInstanceRequestDtoParam.Name = gjson.GetBytes(json, "name").String()
-	authorityProviderInstanceRequestDtoParam.Kind = gjson.GetBytes(json, "kind").String()
-	authorityProviderInstanceRequestDtoParam.Attributes = model.UnmarshalAttributesValues([]byte(gjson.GetBytes(json, "attributes").Raw))
+	authorityProviderInstanceRequestDtoParam.Unmarshal(json)
 
-	if err := model.AssertAuthorityProviderInstanceRequestDtoRequired(authorityProviderInstanceRequestDtoParam); err != nil {
+	if err := model.AssertAuthorityProviderInstanceRequestDtoRequired(*authorityProviderInstanceRequestDtoParam); err != nil {
 		c.errorHandler(w, r, err, nil)
 		return
 	}
-	if err := model.AssertAuthorityProviderInstanceRequestDtoConstraints(authorityProviderInstanceRequestDtoParam); err != nil {
+	if err := model.AssertAuthorityProviderInstanceRequestDtoConstraints(*authorityProviderInstanceRequestDtoParam); err != nil {
 		c.errorHandler(w, r, err, nil)
 		return
 	}
 
-	result, err := c.service.CreateAuthorityInstance(r.Context(), authorityProviderInstanceRequestDtoParam)
+	result, err := c.service.CreateAuthorityInstance(r.Context(), *authorityProviderInstanceRequestDtoParam)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)

@@ -47,7 +47,12 @@ func (s *AuthorityManagementAPIService) CreateAuthorityInstance(ctx context.Cont
 		Attributes:     string(marshaledAttrs),
 		CredentialType: credentialType,
 	}
-	s.authorityRepo.CreateAuthorityInstance(&authority)
+	err = s.authorityRepo.CreateAuthorityInstance(&authority)
+	if err != nil {
+		return model.Response(500, model.ErrorMessageDto{
+			Message: "Failed to create authority",
+		}), err
+	}
 	dto := model.AuthorityProviderInstanceDto{
 		Uuid:       authority.UUID,
 		Name:       authority.Name,
