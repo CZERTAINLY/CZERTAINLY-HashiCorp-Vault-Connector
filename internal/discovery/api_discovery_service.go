@@ -80,7 +80,7 @@ func (s *DiscoveryAPIService) GetDiscovery(ctx context.Context, uuid string, dis
 			Limit: 10,
 		}
 		result, _ := s.discoveryRepo.List(pagination)
-		certificateDtos := []model.DiscoveryProviderCertificateDataDto{}
+		var certificateDtos []model.DiscoveryProviderCertificateDataDto
 		rows, _ := result.Rows.([]*db.Certificate) // Convert interface{} to []db.CertificateData
 		for _, certificateData := range rows {
 			discoveryProviderCertificateDataDto := model.DiscoveryProviderCertificateDataDto{

@@ -5,7 +5,7 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-var (
+const (
 	URL_ATTR                   string = "URL_ATR_UUID"
 	CREDENTIAL_TYPE_ATTR       string = "CREDENTIAL_TYPE_ATR_UUID"
 	GROUP_CREDENTIAL_TYPE_ATTR string = "GROUP_CREDENTIAL_TYPE_ATR_UUID"
@@ -15,18 +15,32 @@ var (
 	AUTHORITY_ATTR             string = "AUTHORITY_ATTR_UUID"
 )
 
+const (
+	KUBERNETES_CRED string = "kubernetes"
+	ROLE_CRED       string = "role"
+	TOKEN_CRED      string = "jwt"
+)
+
+func GetCredentialTypeByName(credentialType string) AttributeContent {
+	for _, attribute := range GetCredentialTypes() {
+		if attribute.GetData() == credentialType {
+			return attribute
+		}
+	}
+	return nil
+}
 func GetCredentialTypes() []AttributeContent {
 	return []AttributeContent{
 
 		StringAttributeContent{
 			Reference: "Kubernetes token",
-			Data:      "kubernetes",
+			Data:      KUBERNETES_CRED,
 		}, StringAttributeContent{
 			Reference: "Role ID",
-			Data:      "role",
+			Data:      ROLE_CRED,
 		}, StringAttributeContent{
 			Reference: "JWT",
-			Data:      "jwt",
+			Data:      TOKEN_CRED,
 		},
 	}
 }

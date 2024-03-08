@@ -3,7 +3,10 @@ package authority
 import (
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/db"
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/model"
+	"CZERTAINLY-HashiCorp-Vault-Connector/internal/vault"
 	"context"
+	"os"
+
 	// "encoding/json"
 	"errors"
 	"net/http"
@@ -33,7 +36,16 @@ func (s *ConnectorAttributesAPIService) ListAttributeDefinitions(ctx context.Con
 	attributes = append(attributes, model.GetAttributeDefByUUID(model.URL_ATTR))
 	attributes = append(attributes, model.GetAttributeDefByUUID(model.GROUP_CREDENTIAL_TYPE_ATTR))
 	credentialTypeAttribute := model.GetAttributeDefByUUID(model.CREDENTIAL_TYPE_ATTR).(model.DataAttribute)
-	credentialTypeAttribute.Content = model.GetCredentialTypes()
+	credentialTypes := []model.AttributeContent{
+		model.GetCredentialTypeByName(model.ROLE_CRED),
+		model.GetCredentialTypeByName(model.TOKEN_CRED),
+	}
+	_, err := os.OpenFile(vault.DEFAULT_K8S_TOKEN_PATH, os.O_RDONLY, 0644)
+	if !os.IsNotExist(err) {
+		credentialTypes = append(credentialTypes, model.GetCredentialTypeByName(model.KUBERNETES_CRED))
+	}
+
+	credentialTypeAttribute.Content = credentialTypes
 	attributes = append(attributes, credentialTypeAttribute)
 
 	return model.Response(200, attributes), nil

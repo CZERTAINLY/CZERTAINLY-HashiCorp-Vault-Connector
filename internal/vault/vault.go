@@ -2,6 +2,7 @@ package vault
 
 import (
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/db"
+	"CZERTAINLY-HashiCorp-Vault-Connector/internal/model"
 	"context"
 	"fmt"
 	"log"
@@ -10,6 +11,8 @@ import (
 	"github.com/hashicorp/vault-client-go"
 	"github.com/hashicorp/vault-client-go/schema"
 )
+
+const DEFAULT_K8S_TOKEN_PATH = "/var/run/secrets/kubernetes.io/serviceaccount/token"
 
 type LoginMethod interface {
 	Login(client *vault.Client) (*vault.Client, error)
@@ -34,7 +37,7 @@ func (l AppRoleLogin) Login(client *vault.Client) (*vault.Client, error) {
 		log.Fatal(err)
 		return nil, err
 	}
-	fmt.Println(resp.Auth.ClientToken)
+	//fmt.Println(resp.Auth.ClientToken)
 	if err := client.SetToken(resp.Auth.ClientToken); err != nil {
 		log.Fatal(err)
 		return nil, err
@@ -47,19 +50,64 @@ type LoginWithToken struct {
 }
 
 func (l LoginWithToken) Login(client *vault.Client) (*vault.Client, error) {
-	return nil, nil
+	ctx := context.Background()
+
+	authInfo, err := client.Auth.JwtLogin(ctx, schema.JwtLoginRequest{
+		Jwt:  l.Token,
+		Role: "dev-role-k8s",
+	})
+	if err != nil {
+		return nil, fmt.Errorf("unable to log in with Kubernetes auth: %w", err)
+	}
+	if authInfo == nil {
+		return nil, fmt.Errorf("no auth info was returned after login")
+	}
+
+	client.SetToken(authInfo.Auth.ClientToken)
+	return client, nil
 }
 
-func getLoginMethod(authority db.AuthorityInstance) LoginMethod {
-	return AppRoleLogin{
-		RoleId:   "60370fcc-1c96-6ca7-ea41-d92736def91a",
-		SecretId: "6a6c7b86-5551-4849-e119-812da8086fcc",
+type LoginWithK8sToken struct {
+}
+
+func (l LoginWithK8sToken) Login(client *vault.Client) (*vault.Client, error) {
+	ctx := context.Background()
+
+	authInfo, err := client.Auth.KubernetesLogin(ctx, schema.KubernetesLoginRequest{
+		Jwt:  DEFAULT_K8S_TOKEN_PATH,
+		Role: "dev-role-k8s",
+	})
+	if err != nil {
+		return nil, fmt.Errorf("unable to log in with Kubernetes auth: %w", err)
 	}
+	if authInfo == nil {
+		return nil, fmt.Errorf("no auth info was returned after login")
+	}
+
+	client.SetToken(authInfo.Auth.ClientToken)
+	return client, nil
+}
+func getLoginMethod(authority db.AuthorityInstance) LoginMethod {
+	switch authority.CredentialType {
+	case model.TOKEN_CRED:
+		return LoginWithToken{
+			Token: authority.Jwt,
+		}
+	case model.KUBERNETES_CRED:
+		return LoginWithK8sToken{}
+	case model.ROLE_CRED:
+		return AppRoleLogin{
+			RoleId:   authority.RoleId,
+			SecretId: authority.RoleSecret,
+		}
+
+	}
+	return nil
 }
 
 func GetClient(authority db.AuthorityInstance) (*vault.Client, error) {
 	client, err := vault.New(
-		vault.WithAddress("https://vault.czertainly.online:443"), // prepare a client with the given base address
+		vault.WithAddress(authority.URL),
 		vault.WithRequestTimeout(30*time.Second),
 	)
 	if err != nil {
@@ -67,5 +115,3 @@ func GetClient(authority db.AuthorityInstance) (*vault.Client, error) {
 	}
 	return getLoginMethod(authority).Login(client)
 }
-
-

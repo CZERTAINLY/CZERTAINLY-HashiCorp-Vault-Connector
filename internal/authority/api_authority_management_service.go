@@ -156,22 +156,7 @@ func (s *AuthorityManagementAPIService) ListAuthorityInstances(ctx context.Conte
 
 // ListRAProfileAttributes - List RA Profile Attributes
 func (s *AuthorityManagementAPIService) ListRAProfileAttributes(ctx context.Context, uuid string) (model.ImplResponse, error) {
-	// TODO - update ListRAProfileAttributes with the required logic for this service method.
-	// Add api_authority_management_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
-
-	// TODO: Uncomment the next line to return response model.Response(200, []BaseAttributeDto{}) or use other options such as http.Ok ...
-	// return model.Response(200, []BaseAttributeDto{}), nil
-
-	// TODO: Uncomment the next line to return response model.Response(400, ErrorMessageDto{}) or use other options such as http.Ok ...
-	// return model.Response(400, ErrorMessageDto{}), nil
-
-	// TODO: Uncomment the next line to return response model.Response(500, {}) or use other options such as http.Ok ...
-	// return model.Response(500, nil),nil
-
-	// TODO: Uncomment the next line to return response model.Response(404, ErrorMessageDto{}) or use other options such as http.Ok ...
-	// return model.Response(404, ErrorMessageDto{}), nil
-
-	return model.Response(http.StatusNotImplemented, nil), errors.New("ListRAProfileAttributes method not implemented")
+	return model.Response(200, []model.BaseAttributeDto{}), nil
 }
 
 // RemoveAuthorityInstance - Remove Authority instance
@@ -234,20 +219,5 @@ func (s *AuthorityManagementAPIService) UpdateAuthorityInstance(ctx context.Cont
 
 // ValidateRAProfileAttributes - Validate RA Profile attributes
 func (s *AuthorityManagementAPIService) ValidateRAProfileAttributes(ctx context.Context, uuid string, requestAttributeDto []model.RequestAttributeDto) (model.ImplResponse, error) {
-	// TODO - update ValidateRAProfileAttributes with the required logic for this service method.
-	// Add api_authority_management_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
-
-	// TODO: Uncomment the next line to return response model.Response(200, {}) or use other options such as http.Ok ...
-	// return model.Response(200, nil),nil
-
-	// TODO: Uncomment the next line to return response model.Response(400, ErrorMessageDto{}) or use other options such as http.Ok ...
-	// return model.Response(400, ErrorMessageDto{}), nil
-
-	// TODO: Uncomment the next line to return response model.Response(500, {}) or use other options such as http.Ok ...
-	// return model.Response(500, nil),nil
-
-	// TODO: Uncomment the next line to return response model.Response(404, ErrorMessageDto{}) or use other options such as http.Ok ...
-	// return model.Response(404, ErrorMessageDto{}), nil
-
-	return model.Response(http.StatusNotImplemented, nil), errors.New("ValidateRAProfileAttributes method not implemented")
+	return model.Response(200, nil), nil
 }
