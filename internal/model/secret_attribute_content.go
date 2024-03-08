@@ -8,6 +8,14 @@ type SecretAttributeContent struct {
 	Data SecretAttributeContentData `json:"data"`
 }
 
+func (a SecretAttributeContent) GetData() interface{} {
+	return a.Data
+}
+
+func (a SecretAttributeContent) GetReference() string {
+	return a.Reference
+}
+
 // AssertSecretAttributeContentRequired checks if the required fields are not zero-ed
 func AssertSecretAttributeContentRequired(obj SecretAttributeContent) error {
 	elements := map[string]interface{}{

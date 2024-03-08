@@ -4,9 +4,11 @@ import (
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/db"
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/model"
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/utils"
+	"CZERTAINLY-HashiCorp-Vault-Connector/internal/vault"
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 
 	"go.uber.org/zap"
@@ -33,6 +35,17 @@ func (s *AuthorityManagementAPIService) CreateAuthorityInstance(ctx context.Cont
 	attributes := request.Attributes
 	URL := model.GetAttributeFromArrayByUUID(model.URL_ATTR, attributes).GetContent()[0].GetData().(string)
 	credentialType := model.GetAttributeFromArrayByUUID(model.CREDENTIAL_TYPE_ATTR, attributes).GetContent()[0].GetData().(string)
+	var roleId, secretId, token string
+	switch credentialType {
+	case "role":
+		roleId = model.GetAttributeFromArrayByUUID(model.ROLE_ID_ATTR, attributes).GetContent()[0].(model.SecretAttributeContent).GetData().(model.SecretAttributeContentData).Secret
+		secretId = model.GetAttributeFromArrayByUUID(model.ROLE_SECRET_ATTR, attributes).GetContent()[0].(model.SecretAttributeContent).GetData().(model.SecretAttributeContentData).Secret
+		token = ""
+	case "token":
+		roleId = ""
+		secretId = ""
+		token = model.GetAttributeFromArrayByUUID(model.JWT_TOKEN_ATTR, attributes).GetContent()[0].(model.SecretAttributeContent).GetData().(model.SecretAttributeContentData).Secret
+	}
 	authorityName := request.Name
 	marshaledAttrs, err := json.Marshal(attributes)
 	if err != nil {
@@ -44,6 +57,9 @@ func (s *AuthorityManagementAPIService) CreateAuthorityInstance(ctx context.Cont
 		UUID:           utils.DeterministicGUID(authorityName),
 		Name:           authorityName,
 		URL:            URL,
+		RoleId:         roleId,
+		RoleSecret:     secretId,
+		Jwt:            token,
 		Attributes:     string(marshaledAttrs),
 		CredentialType: credentialType,
 	}
@@ -156,6 +172,20 @@ func (s *AuthorityManagementAPIService) ListAuthorityInstances(ctx context.Conte
 
 // ListRAProfileAttributes - List RA Profile Attributes
 func (s *AuthorityManagementAPIService) ListRAProfileAttributes(ctx context.Context, uuid string) (model.ImplResponse, error) {
+	authority, err := s.authorityRepo.FindAuthorityInstanceByUUID(uuid)
+	if err != nil {
+		return model.Response(404, model.ErrorMessageDto{
+			Message: "Authority not found",
+		}), nil
+	}
+	client, _ := vault.GetClient(*authority)
+	if err != nil {
+		return model.Response(500, model.ErrorMessageDto{
+			Message: "Failed to create vault client",
+		}), err
+	}
+	mounts, _ := client.System.MountsListSecretsEngines(ctx)
+	fmt.Print(mounts)
 	return model.Response(200, []model.BaseAttributeDto{}), nil
 }
 
@@ -190,7 +220,17 @@ func (s *AuthorityManagementAPIService) UpdateAuthorityInstance(ctx context.Cont
 	URL := model.GetAttributeFromArrayByUUID(model.URL_ATTR, attributes).GetContent()[0].GetData().(string)
 	credentialType := model.GetAttributeFromArrayByUUID(model.CREDENTIAL_TYPE_ATTR, attributes).GetContent()[0].GetData().(string)
 	authorityName := request.Name
-
+	var roleId, secretId, token string
+	switch credentialType {
+	case "role":
+		roleId = model.GetAttributeFromArrayByUUID(model.ROLE_ID_ATTR, attributes).GetContent()[0].(model.SecretAttributeContent).GetData().(model.SecretAttributeContentData).Secret
+		secretId = model.GetAttributeFromArrayByUUID(model.ROLE_SECRET_ATTR, attributes).GetContent()[0].(model.SecretAttributeContent).GetData().(model.SecretAttributeContentData).Secret
+		token = ""
+	case "token":
+		roleId = ""
+		secretId = ""
+		token = model.GetAttributeFromArrayByUUID(model.JWT_TOKEN_ATTR, attributes).GetContent()[0].(model.SecretAttributeContent).GetData().(model.SecretAttributeContentData).Secret
+	}
 	marshaledAttrs, err := json.Marshal(attributes)
 	if err != nil {
 		return model.Response(500, model.ErrorMessageDto{
@@ -200,6 +240,9 @@ func (s *AuthorityManagementAPIService) UpdateAuthorityInstance(ctx context.Cont
 	authority.Name = authorityName
 	authority.URL = URL
 	authority.CredentialType = credentialType
+	authority.RoleId = roleId
+	authority.RoleSecret = secretId
+	authority.Jwt = token
 	authority.Attributes = string(marshaledAttrs)
 
 	err = s.authorityRepo.UpdateAuthorityInstance(authority)

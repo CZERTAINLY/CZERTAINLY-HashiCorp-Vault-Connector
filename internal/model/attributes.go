@@ -220,6 +220,14 @@ func unmarshalAttributeContent(content []byte, contentType AttributeContentType)
 		if err != nil {
 			panic(err)
 		}
+
+	case SECRET:
+		secretAttributeContent := SecretAttributeContent{}
+		err := json.Unmarshal(content, &secretAttributeContent)
+		result = secretAttributeContent
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	return result
