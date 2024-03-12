@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	vault2 "github.com/hashicorp/vault-client-go"
 	"net/http"
 
 	"go.uber.org/zap"
@@ -186,7 +187,29 @@ func (s *AuthorityManagementAPIService) ListRAProfileAttributes(ctx context.Cont
 	}
 	mounts, _ := client.System.MountsListSecretsEngines(ctx)
 	fmt.Print(mounts)
-	return model.Response(200, []model.BaseAttributeDto{}), nil
+	var engineList []model.AttributeContent
+	for engineName, engineData := range mounts.Data {
+		if engineData.(map[string]any)["type"] == "pki" {
+
+			engineDataObject := make(map[string]interface{})
+			engineDataObject["engineName"] = engineName
+			engineDataObject["engineAccesor"] = engineData.(map[string]any)["accessor"]
+			engineDataObject["runningPluginVersion"] = engineData.(map[string]any)["running_plugin_version"]
+
+			engineList = append(engineList, model.ObjectAttributeContent{
+				Reference: engineName,
+				Data:      engineDataObject,
+			})
+		}
+	}
+	attribute := model.GetAttributeDefByUUID(model.RA_PROFILE_ENGINE_ATTR).(model.DataAttribute)
+	attribute.Content = engineList
+	resultAttributes := []model.Attribute{
+		attribute,
+		model.GetAttributeDefByUUID(model.RA_PROFILE_ROLE_ATTR),
+	}
+
+	return model.Response(200, resultAttributes), nil
 }
 
 // RemoveAuthorityInstance - Remove Authority instance
@@ -263,4 +286,36 @@ func (s *AuthorityManagementAPIService) UpdateAuthorityInstance(ctx context.Cont
 // ValidateRAProfileAttributes - Validate RA Profile attributes
 func (s *AuthorityManagementAPIService) ValidateRAProfileAttributes(ctx context.Context, uuid string, requestAttributeDto []model.RequestAttributeDto) (model.ImplResponse, error) {
 	return model.Response(200, nil), nil
+}
+
+func (s *AuthorityManagementAPIService) RAProfileCallback(ctx context.Context, uuid string, engineName string) (model.ImplResponse, error) {
+	authority, err := s.authorityRepo.FindAuthorityInstanceByUUID(uuid)
+	if err != nil {
+		return model.Response(404, model.ErrorMessageDto{
+			Message: "Authority not found",
+		}), nil
+	}
+	client, _ := vault.GetClient(*authority)
+	if err != nil {
+		return model.Response(500, model.ErrorMessageDto{
+			Message: "Failed to create vault client",
+		}), err
+	}
+	roles, _ := client.Secrets.PkiListRoles(ctx, vault2.WithMountPath(engineName))
+	var roleList []model.AttributeContent
+	for _, roleName := range roles.Data.Keys {
+
+		roleList = append(roleList, model.StringAttributeContent{
+			Reference: roleName,
+			Data:      roleName,
+		})
+
+	}
+	attribute := model.GetAttributeDefByUUID(model.RA_PROFILE_ROLE_ATTR).(model.DataAttribute)
+	attribute.Content = roleList
+	resultAttributes := []model.Attribute{
+		attribute,
+	}
+
+	return model.Response(200, resultAttributes), nil
 }

@@ -93,6 +93,11 @@ func (c *AuthorityManagementAPIController) Routes() model.Routes {
 			"/v1/authorityProvider/authorities/{uuid}/raProfile/attributes/validate",
 			c.ValidateRAProfileAttributes,
 		},
+		"RAProfileCallback": model.Route{
+			strings.ToUpper("Get"),
+			"/v1/authorityProvider/authorities/{uuid}/raProfileRole/{engineName}/callback",
+			c.RAProfileCallback,
+		},
 	}
 }
 
@@ -324,6 +329,30 @@ func (c *AuthorityManagementAPIController) ValidateRAProfileAttributes(w http.Re
 		}
 	}
 	result, err := c.service.ValidateRAProfileAttributes(r.Context(), uuidParam, requestAttributeDtoParam)
+	// If an error occurred, encode the error with the status code
+	if err != nil {
+		c.errorHandler(w, r, err, &result)
+		return
+	}
+	// If no error, encode the body and the result code
+	model.EncodeJSONResponse(result.Body, &result.Code, w)
+}
+
+// RAProfileCallback - Validate RA Profile attributes
+func (c *AuthorityManagementAPIController) RAProfileCallback(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	uuidParam := params["uuid"]
+	if uuidParam == "" {
+		c.errorHandler(w, r, &model.RequiredError{"uuid"}, nil)
+		return
+	}
+	engineName := params["engineName"]
+	if engineName == "" {
+		c.errorHandler(w, r, &model.RequiredError{"engineName"}, nil)
+		return
+	}
+
+	result, err := c.service.RAProfileCallback(r.Context(), uuidParam, engineName)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)

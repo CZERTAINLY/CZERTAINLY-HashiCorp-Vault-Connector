@@ -51,7 +51,7 @@ func (s *ConnectorAttributesAPIService) ListAttributeDefinitions(ctx context.Con
 	return model.Response(200, attributes), nil
 }
 
-func (s *ConnectorAttributesAPIService) CredentialAttributesCallbacks(ctx context.Context, credentialType string) (model.ImplResponse, error) {
+func (s *ConnectorAttributesAPIService) CredentialAttributesCallback(ctx context.Context, credentialType string) (model.ImplResponse, error) {
 	attributes := make([]model.Attribute, 0)
 	switch credentialType {
 	case "kubernetes":

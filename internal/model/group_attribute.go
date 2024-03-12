@@ -14,8 +14,8 @@ type GroupAttribute struct {
 	// List of all different types of attributes
 	Content []AttributeContent `json:"content,omitempty"`
 
-	Type              AttributeType     `json:"type"`
-	AttributeCallback AttributeCallback `json:"attributeCallback,omitempty"`
+	Type              AttributeType      `json:"type"`
+	AttributeCallback *AttributeCallback `json:"attributeCallback,omitempty"`
 }
 
 func (obj GroupAttribute) GetUuid() string {
@@ -56,7 +56,7 @@ func AssertGroupAttributeRequired(obj GroupAttribute) error {
 	//		return err
 	//	}
 	//}
-	if err := AssertAttributeCallbackRequired(obj.AttributeCallback); err != nil {
+	if err := AssertAttributeCallbackRequired(*obj.AttributeCallback); err != nil {
 		return err
 	}
 	return nil

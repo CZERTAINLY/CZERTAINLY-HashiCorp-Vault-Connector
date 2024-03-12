@@ -49,8 +49,8 @@ func (c *ConnectorAttributesAPIController) Routes() model.Routes {
 		},
 		"Callback": model.Route{
 			strings.ToUpper("Get"),
-			"/v1/authorityProvider/{credentialType}/callback",
-			c.CredentialAttributesCallbacks,
+			"/v1/authorityProvider/credentialType/{credentialType}/callback",
+			c.CredentialAttributesCallback,
 		},
 		"ValidateAttributes": model.Route{
 			strings.ToUpper("Post"),
@@ -78,14 +78,14 @@ func (c *ConnectorAttributesAPIController) ListAttributeDefinitions(w http.Respo
 	model.EncodeJSONResponse(result.Body, &result.Code, w)
 }
 
-func (c *ConnectorAttributesAPIController) CredentialAttributesCallbacks(w http.ResponseWriter, r *http.Request) {
+func (c *ConnectorAttributesAPIController) CredentialAttributesCallback(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	credentialType := params["credentialType"]
 	if credentialType == "" {
 		c.errorHandler(w, r, &model.RequiredError{"credentialType"}, nil)
 		return
 	}
-	result, err := c.service.CredentialAttributesCallbacks(r.Context(), credentialType)
+	result, err := c.service.CredentialAttributesCallback(r.Context(), credentialType)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)

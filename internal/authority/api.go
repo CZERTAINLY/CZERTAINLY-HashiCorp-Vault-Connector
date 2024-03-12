@@ -20,6 +20,7 @@ type AuthorityManagementAPIRouter interface {
 	RemoveAuthorityInstance(http.ResponseWriter, *http.Request)
 	UpdateAuthorityInstance(http.ResponseWriter, *http.Request)
 	ValidateRAProfileAttributes(http.ResponseWriter, *http.Request)
+	RAProfileCallback(http.ResponseWriter, *http.Request)
 }
 
 // CertificateManagementAPIRouter defines the required methods for binding the api requests to a responses for the CertificateManagementAPI
@@ -41,6 +42,7 @@ type CertificateManagementAPIRouter interface {
 // pass the data to a ConnectorAttributesAPIServicer to perform the required actions, then write the service results to the http response.
 type ConnectorAttributesAPIRouter interface {
 	ListAttributeDefinitions(http.ResponseWriter, *http.Request)
+	CredentialAttributesCallback(http.ResponseWriter, *http.Request)
 	ValidateAttributes(http.ResponseWriter, *http.Request)
 }
 
@@ -59,6 +61,7 @@ type AuthorityManagementAPIServicer interface {
 	RemoveAuthorityInstance(context.Context, string) (model.ImplResponse, error)
 	UpdateAuthorityInstance(context.Context, string, model.AuthorityProviderInstanceRequestDto) (model.ImplResponse, error)
 	ValidateRAProfileAttributes(context.Context, string, []model.RequestAttributeDto) (model.ImplResponse, error)
+	RAProfileCallback(context.Context, string, string) (model.ImplResponse, error)
 }
 
 // CertificateManagementAPIServicer defines the api actions for the CertificateManagementAPI service
@@ -82,6 +85,6 @@ type CertificateManagementAPIServicer interface {
 // and updated with the logic required for the API.
 type ConnectorAttributesAPIServicer interface {
 	ListAttributeDefinitions(context.Context, string) (model.ImplResponse, error)
-	CredentialAttributesCallbacks(context.Context, string) (model.ImplResponse, error)
+	CredentialAttributesCallback(context.Context, string) (model.ImplResponse, error)
 	ValidateAttributes(context.Context, string, []model.Attribute) (model.ImplResponse, error)
 }
