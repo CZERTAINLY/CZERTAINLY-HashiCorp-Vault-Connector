@@ -3,6 +3,7 @@ package connectorInfo
 import (
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/model"
 	"context"
+	"net/http"
 )
 
 // ConnectorInfoAPIService is a service that implements the logic for the ConnectorInfoAPIServicer
@@ -21,5 +22,5 @@ func NewConnectorInfoAPIService(routes []model.InfoResponse) ConnectorInfoAPISer
 
 // ListSupportedFunctions - List supported functions of the connector
 func (s *ConnectorInfoAPIService) ListSupportedFunctions(ctx context.Context) (model.ImplResponse, error) {
-	return model.Response(200, s.routes), nil
+	return model.Response(http.StatusOK, s.routes), nil
 }

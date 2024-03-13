@@ -4,6 +4,7 @@ import (
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/db"
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/model"
 	"context"
+	"net/http"
 
 	"go.uber.org/zap"
 )
@@ -45,7 +46,7 @@ func (s *ConnectorAttributesAPIService) ListAttributeDefinitions(ctx context.Con
 	}
 	attribute := model.GetAttributeDefByUUID(model.AUTHORITY_ATTR).(model.DataAttribute)
 	attribute.Content = objectContents
-	return model.Response(200, []model.Attribute{attribute}), nil
+	return model.Response(http.StatusOK, []model.Attribute{attribute}), nil
 
 }
 
@@ -58,6 +59,6 @@ func (s *ConnectorAttributesAPIService) ValidateAttributes(ctx context.Context, 
 	if auth == nil {
 		return model.Response(422, []string{"Authority not found"}), nil
 	}
-	return model.Response(200, nil), nil
+	return model.Response(http.StatusOK, nil), nil
 
 }

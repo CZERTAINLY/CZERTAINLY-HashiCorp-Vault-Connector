@@ -48,7 +48,7 @@ func (s *ConnectorAttributesAPIService) ListAttributeDefinitions(ctx context.Con
 	credentialTypeAttribute.Content = credentialTypes
 	attributes = append(attributes, credentialTypeAttribute)
 
-	return model.Response(200, attributes), nil
+	return model.Response(http.StatusOK, attributes), nil
 }
 
 func (s *ConnectorAttributesAPIService) CredentialAttributesCallback(ctx context.Context, credentialType string) (model.ImplResponse, error) {
@@ -63,7 +63,7 @@ func (s *ConnectorAttributesAPIService) CredentialAttributesCallback(ctx context
 		attributes = append(attributes, model.GetAttributeDefByUUID(model.JWT_TOKEN_ATTR))
 	}
 
-	return model.Response(200, attributes), nil
+	return model.Response(http.StatusOK, attributes), nil
 }
 
 // ValidateAttributes - Validate Attributes

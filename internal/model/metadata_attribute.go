@@ -13,7 +13,7 @@ type MetadataAttribute struct {
 	Description string `json:"description,omitempty"`
 
 	// Content of the Attribute
-	Content []BaseAttributeContentDto `json:"content"`
+	Content []AttributeContent `json:"content"`
 
 	Type AttributeType `json:"type"`
 
@@ -22,15 +22,35 @@ type MetadataAttribute struct {
 	Properties MetadataAttributeProperties `json:"properties"`
 }
 
+func (d MetadataAttribute) GetContent() []AttributeContent {
+	return d.Content
+}
+func (d MetadataAttribute) GetUuid() string {
+	return d.Uuid
+}
+
+func (d MetadataAttribute) GetName() string {
+	return d.Name
+}
+
+func (d MetadataAttribute) GetAttributeType() AttributeType {
+	return d.Type
+}
+
+func (d MetadataAttribute) GetAttributeContentType() AttributeContentType {
+	return d.ContentType
+}
+
 // AssertMetadataAttributeRequired checks if the required fields are not zero-ed
-func AssertMetadataAttributeRequired(obj MetadataAttribute) error {
+func AssertMetadataAttributeRequired(obj Attribute) error {
+	objType := obj.(MetadataAttribute)
 	elements := map[string]interface{}{
-		"uuid":        obj.Uuid,
-		"name":        obj.Name,
-		"content":     obj.Content,
-		"type":        obj.Type,
-		"contentType": obj.ContentType,
-		"properties":  obj.Properties,
+		"uuid":        objType.Uuid,
+		"name":        objType.Name,
+		"content":     objType.Content,
+		"type":        objType.Type,
+		"contentType": objType.ContentType,
+		"properties":  objType.Properties,
 	}
 	for name, el := range elements {
 		if isZero := IsZeroValue(el); isZero {
@@ -38,12 +58,12 @@ func AssertMetadataAttributeRequired(obj MetadataAttribute) error {
 		}
 	}
 
-	for _, el := range obj.Content {
+	for _, el := range objType.Content {
 		if err := AssertBaseAttributeContentDtoRequired(el); err != nil {
 			return err
 		}
 	}
-	if err := AssertMetadataAttributePropertiesRequired(obj.Properties); err != nil {
+	if err := AssertMetadataAttributePropertiesRequired(objType.Properties); err != nil {
 		return err
 	}
 	return nil

@@ -12,6 +12,7 @@ import (
 	vault2 "github.com/hashicorp/vault-client-go"
 	"github.com/hashicorp/vault-client-go/schema"
 	"go.uber.org/zap"
+	"net/http"
 )
 
 // CertificateManagementAPIService is a service that implements the logic for the CertificateManagementAPIServicer
@@ -37,7 +38,7 @@ func (s *CertificateManagementAPIService) IdentifyCertificate(ctx context.Contex
 	engineName := engineData["engineName"].(string)
 	authority, err := s.authorityRepo.FindAuthorityInstanceByUUID(uuid)
 	if err != nil {
-		return model.Response(404, model.ErrorMessageDto{
+		return model.Response(http.StatusNotFound, model.ErrorMessageDto{
 			Message: "Authority not found",
 		}), nil
 	}
@@ -47,7 +48,7 @@ func (s *CertificateManagementAPIService) IdentifyCertificate(ctx context.Contex
 	_, err = client.Secrets.PkiReadCert(ctx, serialNumber.Text(10), vault2.WithMountPath(engineName))
 	if err != nil {
 		s.log.Error(err.Error())
-		return model.Response(400, model.ErrorMessageDto{
+		return model.Response(http.StatusBadRequest, model.ErrorMessageDto{
 			Message: err.Error(),
 		}), nil
 
@@ -56,7 +57,7 @@ func (s *CertificateManagementAPIService) IdentifyCertificate(ctx context.Contex
 		Meta: nil,
 	}
 
-	return model.Response(200, response), errors.New("IdentifyCertificate method not implemented")
+	return model.Response(http.StatusOK, response), errors.New("IdentifyCertificate method not implemented")
 }
 
 // IssueCertificate - Issue Certificate
@@ -67,7 +68,7 @@ func (s *CertificateManagementAPIService) IssueCertificate(ctx context.Context, 
 	role := model.GetAttributeFromArrayByUUID(model.RA_PROFILE_ROLE_ATTR, raAttributes).GetContent()[0].GetData().(string)
 	authority, err := s.authorityRepo.FindAuthorityInstanceByUUID(uuid)
 	if err != nil {
-		return model.Response(404, model.ErrorMessageDto{
+		return model.Response(http.StatusNotFound, model.ErrorMessageDto{
 			Message: "Authority not found",
 		}), nil
 	}
@@ -85,7 +86,7 @@ func (s *CertificateManagementAPIService) IssueCertificate(ctx context.Context, 
 	certificateSignResponse, err := client.Secrets.PkiIssuerSignWithRole(ctx, "default", role, signRequest, vault2.WithMountPath(engineName))
 	if err != nil {
 		s.log.Error(err.Error())
-		return model.Response(400, model.ErrorMessageDto{
+		return model.Response(http.StatusBadRequest, model.ErrorMessageDto{
 			Message: err.Error(),
 		}), nil
 
@@ -100,17 +101,17 @@ func (s *CertificateManagementAPIService) IssueCertificate(ctx context.Context, 
 		CertificateType: "X.509",
 	}
 
-	return model.Response(200, CertificateDataResponseDto), nil
+	return model.Response(http.StatusOK, CertificateDataResponseDto), nil
 }
 
 // ListIssueCertificateAttributes - List of Attributes to issue Certificate
 func (s *CertificateManagementAPIService) ListIssueCertificateAttributes(ctx context.Context, uuid string) (model.ImplResponse, error) {
-	return model.Response(200, nil), nil
+	return model.Response(http.StatusOK, nil), nil
 }
 
 // ListRevokeCertificateAttributes - List of Attributes to revoke Certificate
 func (s *CertificateManagementAPIService) ListRevokeCertificateAttributes(ctx context.Context, uuid string) (model.ImplResponse, error) {
-	return model.Response(200, nil), nil
+	return model.Response(http.StatusOK, nil), nil
 }
 
 // RenewCertificate - Renew Certificate
@@ -121,7 +122,7 @@ func (s *CertificateManagementAPIService) RenewCertificate(ctx context.Context, 
 	role := model.GetAttributeFromArrayByUUID(model.RA_PROFILE_ROLE_ATTR, raAttributes).GetContent()[0].GetData().(string)
 	authority, err := s.authorityRepo.FindAuthorityInstanceByUUID(uuid)
 	if err != nil {
-		return model.Response(404, model.ErrorMessageDto{
+		return model.Response(http.StatusNotFound, model.ErrorMessageDto{
 			Message: "Authority not found",
 		}), nil
 	}
@@ -141,7 +142,7 @@ func (s *CertificateManagementAPIService) RenewCertificate(ctx context.Context, 
 	certificateSignResponse, err := client.Secrets.PkiIssuerSignWithRole(ctx, "default", role, signRequest, vault2.WithMountPath(engineName))
 	if err != nil {
 		s.log.Error(err.Error())
-		return model.Response(400, model.ErrorMessageDto{
+		return model.Response(http.StatusBadRequest, model.ErrorMessageDto{
 			Message: err.Error(),
 		}), nil
 
@@ -156,14 +157,14 @@ func (s *CertificateManagementAPIService) RenewCertificate(ctx context.Context, 
 		CertificateType: "X.509",
 	}
 
-	return model.Response(200, CertificateDataResponseDto), nil
+	return model.Response(http.StatusOK, CertificateDataResponseDto), nil
 }
 
 // RevokeCertificate - Revoke Certificate
 func (s *CertificateManagementAPIService) RevokeCertificate(ctx context.Context, uuid string, certRevocationDto model.CertRevocationDto) (model.ImplResponse, error) {
 	authority, err := s.authorityRepo.FindAuthorityInstanceByUUID(uuid)
 	if err != nil {
-		return model.Response(404, model.ErrorMessageDto{
+		return model.Response(http.StatusNotFound, model.ErrorMessageDto{
 			Message: "Authority not found",
 		}), nil
 	}
@@ -176,21 +177,21 @@ func (s *CertificateManagementAPIService) RevokeCertificate(ctx context.Context,
 	_, err = client.Secrets.PkiRevoke(ctx, revokeRequest)
 	if err != nil {
 		s.log.Error(err.Error())
-		return model.Response(400, model.ErrorMessageDto{
+		return model.Response(http.StatusBadRequest, model.ErrorMessageDto{
 			Message: err.Error(),
 		}), nil
 
 	}
-	return model.Response(200, nil), nil
+	return model.Response(http.StatusOK, nil), nil
 
 }
 
 // ValidateIssueCertificateAttributes - Validate list of Attributes to issue Certificate
 func (s *CertificateManagementAPIService) ValidateIssueCertificateAttributes(ctx context.Context, uuid string, requestAttributeDto []model.RequestAttributeDto) (model.ImplResponse, error) {
-	return model.Response(200, nil), nil
+	return model.Response(http.StatusOK, nil), nil
 }
 
 // ValidateRevokeCertificateAttributes - Validate list of Attributes to revoke certificate
 func (s *CertificateManagementAPIService) ValidateRevokeCertificateAttributes(ctx context.Context, uuid string, requestAttributeDto []model.RequestAttributeDto) (model.ImplResponse, error) {
-	return model.Response(200, nil), nil
+	return model.Response(http.StatusOK, nil), nil
 }

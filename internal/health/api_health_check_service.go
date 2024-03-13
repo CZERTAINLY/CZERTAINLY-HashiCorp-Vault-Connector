@@ -3,6 +3,7 @@ package health
 import (
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/model"
 	"context"
+	"net/http"
 )
 
 // HealthCheckAPIService is a service that implements the logic for the HealthCheckAPIServicer
@@ -18,7 +19,7 @@ func NewHealthCheckAPIService() HealthCheckAPIServicer {
 
 // CheckHealth - Health check
 func (s *HealthCheckAPIService) CheckHealth(ctx context.Context) (model.ImplResponse, error) {
-	return model.Response(200, model.HealthDto{
+	return model.Response(http.StatusOK, model.HealthDto{
 		Status: model.OK,
 	}), nil
 }

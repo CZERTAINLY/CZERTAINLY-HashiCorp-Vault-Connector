@@ -19,6 +19,7 @@ type CertificateRenewRequestDto struct {
 
 func (a *CertificateRenewRequestDto) Unmarshal(json []byte) {
 	a.Pkcs10 = gjson.GetBytes(json, "pkcs10").String()
+	a.Certificate = gjson.GetBytes(json, "certificate").String()
 	a.RaProfileAttributes = UnmarshalAttributesValues([]byte(gjson.GetBytes(json, "raProfileAttributes").Raw))
 }
 

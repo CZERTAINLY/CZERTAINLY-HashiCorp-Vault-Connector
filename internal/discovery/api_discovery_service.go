@@ -7,6 +7,7 @@ import (
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/vault"
 	"context"
 	"fmt"
+	"net/http"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -34,7 +35,7 @@ func NewDiscoveryAPIService(discoveryRepo *db.DiscoveryRepository, authorityRepo
 func (s *DiscoveryAPIService) DeleteDiscovery(ctx context.Context, uuid string) (model.ImplResponse, error) {
 	discovery, err := s.discoveryRepo.FindDiscoveryByUUID(uuid)
 	if err != nil {
-		return model.Response(404, model.ErrorMessageDto{Message: "Discovery " + uuid + " not found."}), nil
+		return model.Response(http.StatusNotFound, model.ErrorMessageDto{Message: "Discovery " + uuid + " not found."}), nil
 	}
 	s.discoveryRepo.DeleteDiscovery(discovery)
 
@@ -63,17 +64,17 @@ func (s *DiscoveryAPIService) DiscoverCertificate(ctx context.Context, discovery
 	s.discoveryRepo.CreateDiscovery(discovery)
 	go s.DiscoveryCertificates(&db.AuthorityInstance{}, discovery)
 
-	return model.Response(200, response), nil
+	return model.Response(http.StatusOK, response), nil
 }
 
 // GetDiscovery - Get Discovery status and result
 func (s *DiscoveryAPIService) GetDiscovery(ctx context.Context, uuid string, discoveryDataRequestDto model.DiscoveryDataRequestDto) (model.ImplResponse, error) {
 	discovery, err := s.discoveryRepo.FindDiscoveryByUUID(uuid)
 	if err != nil {
-		return model.Response(404, model.ErrorMessageDto{Message: "Discovery " + uuid + " not found."}), nil
+		return model.Response(http.StatusNotFound, model.ErrorMessageDto{Message: "Discovery " + uuid + " not found."}), nil
 	}
 	if discovery.Status == "IN_PROGRESS" {
-		return model.Response(200, model.DiscoveryProviderDto{Uuid: discovery.UUID, Name: discovery.Name, Status: model.IN_PROGRESS, TotalCertificatesDiscovered: 0, CertificateData: nil, Meta: nil}), nil
+		return model.Response(http.StatusOK, model.DiscoveryProviderDto{Uuid: discovery.UUID, Name: discovery.Name, Status: model.IN_PROGRESS, TotalCertificatesDiscovered: 0, CertificateData: nil, Meta: nil}), nil
 	} else {
 		pagination := db.Pagination{
 			Page:  1,
@@ -90,7 +91,7 @@ func (s *DiscoveryAPIService) GetDiscovery(ctx context.Context, uuid string, dis
 			certificateDtos = append(certificateDtos, discoveryProviderCertificateDataDto)
 		}
 
-		return model.Response(200, model.DiscoveryProviderDto{Uuid: discovery.UUID, Name: discovery.Name, Status: model.COMPLETED, TotalCertificatesDiscovered: 0, CertificateData: certificateDtos, Meta: nil}), nil
+		return model.Response(http.StatusOK, model.DiscoveryProviderDto{Uuid: discovery.UUID, Name: discovery.Name, Status: model.COMPLETED, TotalCertificatesDiscovered: 0, CertificateData: certificateDtos, Meta: nil}), nil
 	}
 
 }

@@ -50,7 +50,7 @@ func (s *AuthorityManagementAPIService) CreateAuthorityInstance(ctx context.Cont
 	authorityName := request.Name
 	marshaledAttrs, err := json.Marshal(attributes)
 	if err != nil {
-		return model.Response(500, model.ErrorMessageDto{
+		return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{
 			Message: "Failed to marshal attributes",
 		}), err
 	}
@@ -66,7 +66,7 @@ func (s *AuthorityManagementAPIService) CreateAuthorityInstance(ctx context.Cont
 	}
 	err = s.authorityRepo.CreateAuthorityInstance(&authority)
 	if err != nil {
-		return model.Response(500, model.ErrorMessageDto{
+		return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{
 			Message: "Failed to create authority",
 		}), err
 	}
@@ -75,14 +75,14 @@ func (s *AuthorityManagementAPIService) CreateAuthorityInstance(ctx context.Cont
 		Name:       authority.Name,
 		Attributes: attributes,
 	}
-	return model.Response(200, dto), nil
+	return model.Response(http.StatusOK, dto), nil
 }
 
 // GetAuthorityInstance - Get an Authority instance
 func (s *AuthorityManagementAPIService) GetAuthorityInstance(ctx context.Context, uuid string) (model.ImplResponse, error) {
 	authority, err := s.authorityRepo.FindAuthorityInstanceByUUID(uuid)
 	if err != nil {
-		return model.Response(404, model.ErrorMessageDto{
+		return model.Response(http.StatusNotFound, model.ErrorMessageDto{
 			Message: "Authority not found",
 		}), nil
 	}
@@ -92,7 +92,7 @@ func (s *AuthorityManagementAPIService) GetAuthorityInstance(ctx context.Context
 		Name:       authority.Name,
 		Attributes: attributes,
 	}
-	return model.Response(200, authorityDto), nil
+	return model.Response(http.StatusOK, authorityDto), nil
 }
 
 // GetCaCertificates - Get the Authority Instance&#39;s certificate chain
@@ -100,39 +100,38 @@ func (s *AuthorityManagementAPIService) GetCaCertificates(ctx context.Context, u
 	// TODO - update GetCaCertificates with the required logic for this service method.
 	// Add api_authority_management_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 
-	// TODO: Uncomment the next line to return response model.Response(200, CaCertificatesResponseDto{}) or use other options such as http.Ok ...
-	// return model.Response(200, CaCertificatesResponseDto{}), nil
+	// TODO: Uncomment the next line to return response model.Response(http.StatusOK, CaCertificatesResponseDto{}) or use other options such as http.Ok ...
+	// return model.Response(http.StatusOK, CaCertificatesResponseDto{}), nil
 
-	// TODO: Uncomment the next line to return response model.Response(400, ErrorMessageDto{}) or use other options such as http.Ok ...
-	// return model.Response(400, ErrorMessageDto{}), nil
+	// TODO: Uncomment the next line to return response model.Response(http.StatusBadRequest, ErrorMessageDto{}) or use other options such as http.Ok ...
+	// return model.Response(http.StatusBadRequest, ErrorMessageDto{}), nil
 
-	// TODO: Uncomment the next line to return response model.Response(500, {}) or use other options such as http.Ok ...
-	// return model.Response(500, nil),nil
+	// TODO: Uncomment the next line to return response model.Response(http.StatusInternalServerError, {}) or use other options such as http.Ok ...
+	// return model.Response(http.StatusInternalServerError, nil),nil
 
-	// TODO: Uncomment the next line to return response model.Response(404, ErrorMessageDto{}) or use other options such as http.Ok ...
-	// return model.Response(404, ErrorMessageDto{}), nil
+	// TODO: Uncomment the next line to return response model.Response(http.StatusNotFound, ErrorMessageDto{}) or use other options such as http.Ok ...
+	// return model.Response(http.StatusNotFound, ErrorMessageDto{}), nil
 
 	return model.Response(http.StatusNotImplemented, nil), errors.New("GetCaCertificates method not implemented")
 }
 
 // GetConnection - Connect to Authority
 func (s *AuthorityManagementAPIService) GetConnection(ctx context.Context, uuid string) (model.ImplResponse, error) {
-	// TODO - update GetConnection with the required logic for this service method.
-	// Add api_authority_management_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
+	authority, err := s.authorityRepo.FindAuthorityInstanceByUUID(uuid)
+	if err != nil {
+		return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{
+			Message: "Failed to marshal attributes",
+		}), err
+	}
 
-	// TODO: Uncomment the next line to return response model.Response(204, {}) or use other options such as http.Ok ...
-	// return model.Response(204, nil),nil
+	_, err = vault.GetClient(*authority)
+	if err != nil {
+		return model.Response(http.StatusBadRequest, model.ErrorMessageDto{
+			Message: "Failed to connect to vault",
+		}), nil
+	}
 
-	// TODO: Uncomment the next line to return response model.Response(400, ErrorMessageDto{}) or use other options such as http.Ok ...
-	// return model.Response(400, ErrorMessageDto{}), nil
-
-	// TODO: Uncomment the next line to return response model.Response(500, {}) or use other options such as http.Ok ...
-	// return model.Response(500, nil),nil
-
-	// TODO: Uncomment the next line to return response model.Response(404, ErrorMessageDto{}) or use other options such as http.Ok ...
-	// return model.Response(404, ErrorMessageDto{}), nil
-
-	return model.Response(http.StatusNotImplemented, nil), errors.New("GetConnection method not implemented")
+	return model.Response(http.StatusOK, nil), nil
 }
 
 // GetCrl - Get the latest CRL for the Authority Instance
@@ -140,17 +139,17 @@ func (s *AuthorityManagementAPIService) GetCrl(ctx context.Context, uuid string,
 	// TODO - update GetCrl with the required logic for this service method.
 	// Add api_authority_management_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 
-	// TODO: Uncomment the next line to return response model.Response(400, ErrorMessageDto{}) or use other options such as http.Ok ...
-	// return model.Response(400, ErrorMessageDto{}), nil
+	// TODO: Uncomment the next line to return response model.Response(http.StatusBadRequest, ErrorMessageDto{}) or use other options such as http.Ok ...
+	// return model.Response(http.StatusBadRequest, ErrorMessageDto{}), nil
 
-	// TODO: Uncomment the next line to return response model.Response(500, {}) or use other options such as http.Ok ...
-	// return model.Response(500, nil),nil
+	// TODO: Uncomment the next line to return response model.Response(http.StatusInternalServerError, {}) or use other options such as http.Ok ...
+	// return model.Response(http.StatusInternalServerError, nil),nil
 
-	// TODO: Uncomment the next line to return response model.Response(404, ErrorMessageDto{}) or use other options such as http.Ok ...
-	// return model.Response(404, ErrorMessageDto{}), nil
+	// TODO: Uncomment the next line to return response model.Response(http.StatusNotFound, ErrorMessageDto{}) or use other options such as http.Ok ...
+	// return model.Response(http.StatusNotFound, ErrorMessageDto{}), nil
 
-	// TODO: Uncomment the next line to return response model.Response(200, CertificateRevocationListResponseDto{}) or use other options such as http.Ok ...
-	// return model.Response(200, CertificateRevocationListResponseDto{}), nil
+	// TODO: Uncomment the next line to return response model.Response(http.StatusOK, CertificateRevocationListResponseDto{}) or use other options such as http.Ok ...
+	// return model.Response(http.StatusOK, CertificateRevocationListResponseDto{}), nil
 
 	return model.Response(http.StatusNotImplemented, nil), errors.New("GetCrl method not implemented")
 }
@@ -168,20 +167,20 @@ func (s *AuthorityManagementAPIService) ListAuthorityInstances(ctx context.Conte
 		})
 	}
 
-	return model.Response(200, authoritiesDto), nil
+	return model.Response(http.StatusOK, authoritiesDto), nil
 }
 
 // ListRAProfileAttributes - List RA Profile Attributes
 func (s *AuthorityManagementAPIService) ListRAProfileAttributes(ctx context.Context, uuid string) (model.ImplResponse, error) {
 	authority, err := s.authorityRepo.FindAuthorityInstanceByUUID(uuid)
 	if err != nil {
-		return model.Response(404, model.ErrorMessageDto{
+		return model.Response(http.StatusNotFound, model.ErrorMessageDto{
 			Message: "Authority not found",
 		}), nil
 	}
 	client, _ := vault.GetClient(*authority)
 	if err != nil {
-		return model.Response(500, model.ErrorMessageDto{
+		return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{
 			Message: "Failed to create vault client",
 		}), err
 	}
@@ -209,7 +208,7 @@ func (s *AuthorityManagementAPIService) ListRAProfileAttributes(ctx context.Cont
 		model.GetAttributeDefByUUID(model.RA_PROFILE_ROLE_ATTR),
 	}
 
-	return model.Response(200, resultAttributes), nil
+	return model.Response(http.StatusOK, resultAttributes), nil
 }
 
 // RemoveAuthorityInstance - Remove Authority instance
@@ -223,11 +222,11 @@ func (s *AuthorityManagementAPIService) RemoveAuthorityInstance(ctx context.Cont
 	err = s.authorityRepo.DeleteAuthorityInstance(authority)
 	if err != nil {
 		// Handle error, failed to delete authority
-		return model.Response(500, model.ErrorMessageDto{}), err
+		return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{}), err
 	}
 
 	// Return success response
-	return model.Response(200, nil), nil
+	return model.Response(http.StatusOK, nil), nil
 
 }
 
@@ -235,7 +234,7 @@ func (s *AuthorityManagementAPIService) RemoveAuthorityInstance(ctx context.Cont
 func (s *AuthorityManagementAPIService) UpdateAuthorityInstance(ctx context.Context, uuid string, request model.AuthorityProviderInstanceRequestDto) (model.ImplResponse, error) {
 	authority, err := s.authorityRepo.FindAuthorityInstanceByUUID(uuid)
 	if err != nil {
-		return model.Response(500, model.ErrorMessageDto{
+		return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{
 			Message: "Failed to marshal attributes",
 		}), err
 	}
@@ -256,7 +255,7 @@ func (s *AuthorityManagementAPIService) UpdateAuthorityInstance(ctx context.Cont
 	}
 	marshaledAttrs, err := json.Marshal(attributes)
 	if err != nil {
-		return model.Response(500, model.ErrorMessageDto{
+		return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{
 			Message: "Failed to marshal attributes",
 		}), err
 	}
@@ -271,7 +270,7 @@ func (s *AuthorityManagementAPIService) UpdateAuthorityInstance(ctx context.Cont
 	err = s.authorityRepo.UpdateAuthorityInstance(authority)
 	if err != nil {
 		// Handle error, failed to delete authority
-		return model.Response(500, model.ErrorMessageDto{}), err
+		return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{}), err
 	}
 	attributesEntity := model.UnmarshalAttributes([]byte(authority.Attributes))
 	authorityDto := model.AuthorityProviderInstanceDto{
@@ -279,25 +278,25 @@ func (s *AuthorityManagementAPIService) UpdateAuthorityInstance(ctx context.Cont
 		Name:       authority.Name,
 		Attributes: attributesEntity,
 	}
-	return model.Response(200, authorityDto), nil
+	return model.Response(http.StatusOK, authorityDto), nil
 
 }
 
 // ValidateRAProfileAttributes - Validate RA Profile attributes
 func (s *AuthorityManagementAPIService) ValidateRAProfileAttributes(ctx context.Context, uuid string, requestAttributeDto []model.RequestAttributeDto) (model.ImplResponse, error) {
-	return model.Response(200, nil), nil
+	return model.Response(http.StatusOK, nil), nil
 }
 
 func (s *AuthorityManagementAPIService) RAProfileCallback(ctx context.Context, uuid string, engineName string) (model.ImplResponse, error) {
 	authority, err := s.authorityRepo.FindAuthorityInstanceByUUID(uuid)
 	if err != nil {
-		return model.Response(404, model.ErrorMessageDto{
+		return model.Response(http.StatusNotFound, model.ErrorMessageDto{
 			Message: "Authority not found",
 		}), nil
 	}
 	client, _ := vault.GetClient(*authority)
 	if err != nil {
-		return model.Response(500, model.ErrorMessageDto{
+		return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{
 			Message: "Failed to create vault client",
 		}), err
 	}
@@ -317,5 +316,5 @@ func (s *AuthorityManagementAPIService) RAProfileCallback(ctx context.Context, u
 		attribute,
 	}
 
-	return model.Response(200, resultAttributes), nil
+	return model.Response(http.StatusOK, resultAttributes), nil
 }
