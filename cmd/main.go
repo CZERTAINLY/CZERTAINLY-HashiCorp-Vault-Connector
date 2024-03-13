@@ -56,6 +56,10 @@ func main() {
 	authorityRouter := model.NewRouter(AuthorityConnectorAttributesAPIController, AuthorityManagementAPIController, CertificateManagementAPIController)
 	populateRoutes(authorityRouter, "authorityProvider")
 
+	// needs to be separate as it uses v2 prefix!
+	certificateRouter := model.NewRouter(CertificateManagementAPIController)
+	populateRoutes(authorityRouter, "authorityProvider")
+
 	discoveryRouter := model.NewRouter(DiscoveryConnectorAttributesAPIController, DiscoveryAPIController)
 	populateRoutes(discoveryRouter, "discoveryProvider")
 
@@ -79,6 +83,7 @@ func main() {
 	topMux.Handle("/v1", logMiddleware(connectorInfoRouter))
 	topMux.Handle("/v1/", logMiddleware(healthRouter))
 	topMux.Handle("/v1/authorityProvider/", logMiddleware(authorityRouter))
+	topMux.Handle("/v2/authorityProvider/", logMiddleware(certificateRouter))
 	topMux.Handle("/v1/discoveryProvider/", logMiddleware(discoveryRouter))
 
 	err := http.ListenAndServe(":"+c.Server.Port, topMux)
