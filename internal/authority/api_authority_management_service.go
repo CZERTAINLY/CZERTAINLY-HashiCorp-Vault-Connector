@@ -97,22 +97,47 @@ func (s *AuthorityManagementAPIService) GetAuthorityInstance(ctx context.Context
 
 // GetCaCertificates - Get the Authority Instance&#39;s certificate chain
 func (s *AuthorityManagementAPIService) GetCaCertificates(ctx context.Context, uuid string, caCertificatesRequestDto model.CaCertificatesRequestDto) (model.ImplResponse, error) {
-	// TODO - update GetCaCertificates with the required logic for this service method.
-	// Add api_authority_management_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
+	authority, err := s.authorityRepo.FindAuthorityInstanceByUUID(uuid)
+	if err != nil {
+		return model.Response(http.StatusNotFound, model.ErrorMessageDto{
+			Message: "Authority not found",
+		}), nil
+	}
 
-	// TODO: Uncomment the next line to return response model.Response(http.StatusOK, CaCertificatesResponseDto{}) or use other options such as http.Ok ...
-	// return model.Response(http.StatusOK, CaCertificatesResponseDto{}), nil
+	client, err := vault.GetClient(*authority)
+	engineData := model.GetAttributeFromArrayByUUID(model.RA_PROFILE_ENGINE_ATTR, caCertificatesRequestDto.RaProfileAttributes).GetContent()[0].GetData().(map[string]interface{})
+	engineName := engineData["engineName"].(string)
+	//https://github.com/hashicorp/vault/issues/919 do not use PkiReadCaChainPem
+	certificateCaResponse, err := client.Secrets.PkiReadCertCaChain(ctx, vault2.WithMountPath(engineName))
 
-	// TODO: Uncomment the next line to return response model.Response(http.StatusBadRequest, ErrorMessageDto{}) or use other options such as http.Ok ...
-	// return model.Response(http.StatusBadRequest, ErrorMessageDto{}), nil
+	if err != nil {
+		s.log.Error(err.Error())
+		return model.Response(http.StatusBadRequest, model.ErrorMessageDto{
+			Message: err.Error(),
+		}), nil
 
-	// TODO: Uncomment the next line to return response model.Response(http.StatusInternalServerError, {}) or use other options such as http.Ok ...
-	// return model.Response(http.StatusInternalServerError, nil),nil
+	}
+	var caChainCertificates []model.CertificateDataResponseDto
+	chain, err := utils.GetCertificatesFromChain([]byte(certificateCaResponse.Data.CaChain))
+	if err != nil {
+		return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{
+			Message: "Failed to parse certificate chain",
+		}), err
 
-	// TODO: Uncomment the next line to return response model.Response(http.StatusNotFound, ErrorMessageDto{}) or use other options such as http.Ok ...
-	// return model.Response(http.StatusNotFound, ErrorMessageDto{}), nil
+	}
+	for _, cert := range chain {
+		caChainCertificates = append(caChainCertificates, model.CertificateDataResponseDto{
+			CertificateData: cert,
+			Uuid:            utils.DeterministicGUID(),
+			Meta:            nil,
+			CertificateType: "X.509",
+		})
+	}
+	caCertificatesResponseDto := model.CaCertificatesResponseDto{
+		Certificates: caChainCertificates,
+	}
 
-	return model.Response(http.StatusNotImplemented, nil), errors.New("GetCaCertificates method not implemented")
+	return model.Response(http.StatusOK, caCertificatesResponseDto), nil
 }
 
 // GetConnection - Connect to Authority

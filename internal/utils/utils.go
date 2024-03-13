@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/pem"
+	"fmt"
 	"log"
 	"math/big"
 
@@ -64,4 +65,33 @@ func ExtractSerialNumber(certificate string) *big.Int {
 	}
 	serialNumber := certificateParsed.SerialNumber
 	return serialNumber
+}
+
+func GetCertificatesFromChain(pemData []byte) ([]string, error) {
+
+	var certs []string
+	for {
+		block, rest := pem.Decode(pemData)
+		if block == nil {
+			break
+		}
+
+		if block.Type != "CERTIFICATE" {
+			return nil, fmt.Errorf("failed to decode PEM block containing certificate")
+		}
+
+		cert, err := x509.ParseCertificate(block.Bytes)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse certificate: %v", err)
+		}
+		certBlock := pem.EncodeToMemory(&pem.Block{
+			Type:  "CERTIFICATE",
+			Bytes: cert.Raw,
+		})
+
+		certs = append(certs, string(certBlock))
+		pemData = rest
+	}
+
+	return certs, nil
 }

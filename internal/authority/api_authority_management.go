@@ -158,12 +158,13 @@ func (c *AuthorityManagementAPIController) GetCaCertificates(w http.ResponseWrit
 		return
 	}
 	caCertificatesRequestDtoParam := model.CaCertificatesRequestDto{}
-	d := json.NewDecoder(r.Body)
-	d.DisallowUnknownFields()
-	if err := d.Decode(&caCertificatesRequestDtoParam); err != nil {
+	json, err := io.ReadAll(r.Body)
+	if err != nil {
 		c.errorHandler(w, r, &model.ParsingError{Err: err}, nil)
 		return
 	}
+
+	caCertificatesRequestDtoParam.Unmarshal(json)
 	if err := model.AssertCaCertificatesRequestDtoRequired(caCertificatesRequestDtoParam); err != nil {
 		c.errorHandler(w, r, err, nil)
 		return
@@ -209,12 +210,13 @@ func (c *AuthorityManagementAPIController) GetCrl(w http.ResponseWriter, r *http
 		return
 	}
 	certificateRevocationListRequestDtoParam := model.CertificateRevocationListRequestDto{}
-	d := json.NewDecoder(r.Body)
-	d.DisallowUnknownFields()
-	if err := d.Decode(&certificateRevocationListRequestDtoParam); err != nil {
+	json, err := io.ReadAll(r.Body)
+	if err != nil {
 		c.errorHandler(w, r, &model.ParsingError{Err: err}, nil)
 		return
 	}
+
+	certificateRevocationListRequestDtoParam.Unmarshal(json)
 	if err := model.AssertCertificateRevocationListRequestDtoRequired(certificateRevocationListRequestDtoParam); err != nil {
 		c.errorHandler(w, r, err, nil)
 		return
