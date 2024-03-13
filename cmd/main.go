@@ -4,7 +4,7 @@ import (
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/authority"
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/config"
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/connectorInfo"
-	db "CZERTAINLY-HashiCorp-Vault-Connector/internal/db"
+	"CZERTAINLY-HashiCorp-Vault-Connector/internal/db"
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/discovery"
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/health"
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/logger"

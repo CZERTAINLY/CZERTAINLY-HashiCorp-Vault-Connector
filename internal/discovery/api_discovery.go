@@ -39,23 +39,23 @@ func NewDiscoveryAPIController(s DiscoveryAPIServicer, opts ...DiscoveryAPIOptio
 	return controller
 }
 
-// model.Routes returns all the api routes for the DiscoveryAPIController
+// Routes returns all the api routes for the DiscoveryAPIController
 func (c *DiscoveryAPIController) Routes() model.Routes {
 	return model.Routes{
 		"DeleteDiscovery": model.Route{
-			strings.ToUpper("Delete"),
-			"/v1/discoveryProvider/discover/{uuid}",
-			c.DeleteDiscovery,
+			Method:      strings.ToUpper("Delete"),
+			Pattern:     "/v1/discoveryProvider/discover/{uuid}",
+			HandlerFunc: c.DeleteDiscovery,
 		},
 		"DiscoverCertificate": model.Route{
-			strings.ToUpper("Post"),
-			"/v1/discoveryProvider/discover",
-			c.DiscoverCertificate,
+			Method:      strings.ToUpper("Post"),
+			Pattern:     "/v1/discoveryProvider/discover",
+			HandlerFunc: c.DiscoverCertificate,
 		},
 		"GetDiscovery": model.Route{
-			strings.ToUpper("Post"),
-			"/v1/discoveryProvider/discover/{uuid}",
-			c.GetDiscovery,
+			Method:      strings.ToUpper("Post"),
+			Pattern:     "/v1/discoveryProvider/discover/{uuid}",
+			HandlerFunc: c.GetDiscovery,
 		},
 	}
 }
@@ -65,7 +65,7 @@ func (c *DiscoveryAPIController) DeleteDiscovery(w http.ResponseWriter, r *http.
 	params := mux.Vars(r)
 	uuidParam := params["uuid"]
 	if uuidParam == "" {
-		c.errorHandler(w, r, &model.RequiredError{"uuid"}, nil)
+		c.errorHandler(w, r, &model.RequiredError{Field: "uuid"}, nil)
 		return
 	}
 	result, err := c.service.DeleteDiscovery(r.Context(), uuidParam)
@@ -110,7 +110,7 @@ func (c *DiscoveryAPIController) GetDiscovery(w http.ResponseWriter, r *http.Req
 	params := mux.Vars(r)
 	uuidParam := params["uuid"]
 	if uuidParam == "" {
-		c.errorHandler(w, r, &model.RequiredError{"uuid"}, nil)
+		c.errorHandler(w, r, &model.RequiredError{Field: "uuid"}, nil)
 		return
 	}
 	discoveryDataRequestDtoParam := model.DiscoveryDataRequestDto{}

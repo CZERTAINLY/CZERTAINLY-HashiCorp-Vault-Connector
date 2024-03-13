@@ -43,19 +43,19 @@ func NewConnectorAttributesAPIController(s ConnectorAttributesAPIServicer, opts 
 func (c *ConnectorAttributesAPIController) Routes() model.Routes {
 	return model.Routes{
 		"ListAttributeDefinitions": model.Route{
-			strings.ToUpper("Get"),
-			"/v1/authorityProvider/{kind}/attributes",
-			c.ListAttributeDefinitions,
+			Method:      strings.ToUpper("Get"),
+			Pattern:     "/v1/authorityProvider/{kind}/attributes",
+			HandlerFunc: c.ListAttributeDefinitions,
 		},
 		"Callback": model.Route{
-			strings.ToUpper("Get"),
-			"/v1/authorityProvider/credentialType/{credentialType}/callback",
-			c.CredentialAttributesCallback,
+			Method:      strings.ToUpper("Get"),
+			Pattern:     "/v1/authorityProvider/credentialType/{credentialType}/callback",
+			HandlerFunc: c.CredentialAttributesCallback,
 		},
 		"ValidateAttributes": model.Route{
-			strings.ToUpper("Post"),
-			"/v1/authorityProvider/{kind}/attributes/validate",
-			c.ValidateAttributes,
+			Method:      strings.ToUpper("Post"),
+			Pattern:     "/v1/authorityProvider/{kind}/attributes/validate",
+			HandlerFunc: c.ValidateAttributes,
 		},
 	}
 }
@@ -65,7 +65,7 @@ func (c *ConnectorAttributesAPIController) ListAttributeDefinitions(w http.Respo
 	params := mux.Vars(r)
 	kindParam := params["kind"]
 	if kindParam == "" {
-		c.errorHandler(w, r, &model.RequiredError{"kind"}, nil)
+		c.errorHandler(w, r, &model.RequiredError{Field: "kind"}, nil)
 		return
 	}
 	result, err := c.service.ListAttributeDefinitions(r.Context(), kindParam)
@@ -82,7 +82,7 @@ func (c *ConnectorAttributesAPIController) CredentialAttributesCallback(w http.R
 	params := mux.Vars(r)
 	credentialType := params["credentialType"]
 	if credentialType == "" {
-		c.errorHandler(w, r, &model.RequiredError{"credentialType"}, nil)
+		c.errorHandler(w, r, &model.RequiredError{Field: "credentialType"}, nil)
 		return
 	}
 	result, err := c.service.CredentialAttributesCallback(r.Context(), credentialType)
@@ -100,7 +100,7 @@ func (c *ConnectorAttributesAPIController) ValidateAttributes(w http.ResponseWri
 	params := mux.Vars(r)
 	kindParam := params["kind"]
 	if kindParam == "" {
-		c.errorHandler(w, r, &model.RequiredError{"kind"}, nil)
+		c.errorHandler(w, r, &model.RequiredError{Field: "kind"}, nil)
 		return
 	}
 	json, err := io.ReadAll(r.Body)

@@ -28,18 +28,18 @@ func DeterministicGUID(parts ...string) string {
 
 	// generate the UUID from the
 	// first 16 bytes of the MD5 hash
-	uuid, err := uuid.FromBytes([]byte(md5string[0:16]))
+	uuidByte, err := uuid.FromBytes([]byte(md5string[0:16]))
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	return uuid.String()
+	return uuidByte.String()
 }
 
 func ExtractCommonName(csr string) string {
 	decodedCsr, _ := base64.StdEncoding.DecodeString(csr)
 
-	block, _ := pem.Decode([]byte(decodedCsr))
+	block, _ := pem.Decode(decodedCsr)
 	if block == nil {
 		log.Fatalf("Failed to parse PEM block containing the CSR")
 	}

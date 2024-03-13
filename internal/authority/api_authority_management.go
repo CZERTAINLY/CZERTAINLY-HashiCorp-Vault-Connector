@@ -44,59 +44,59 @@ func NewAuthorityManagementAPIController(s AuthorityManagementAPIServicer, opts 
 func (c *AuthorityManagementAPIController) Routes() model.Routes {
 	return model.Routes{
 		"CreateAuthorityInstance": model.Route{
-			strings.ToUpper("Post"),
-			"/v1/authorityProvider/authorities",
-			c.CreateAuthorityInstance,
+			Method:      strings.ToUpper("Post"),
+			Pattern:     "/v1/authorityProvider/authorities",
+			HandlerFunc: c.CreateAuthorityInstance,
 		},
 		"GetAuthorityInstance": model.Route{
-			strings.ToUpper("Get"),
-			"/v1/authorityProvider/authorities/{uuid}",
-			c.GetAuthorityInstance,
+			Method:      strings.ToUpper("Get"),
+			Pattern:     "/v1/authorityProvider/authorities/{uuid}",
+			HandlerFunc: c.GetAuthorityInstance,
 		},
 		"GetCaCertificates": model.Route{
-			strings.ToUpper("Post"),
-			"/v1/authorityProvider/authorities/{uuid}/caCertificates",
-			c.GetCaCertificates,
+			Method:      strings.ToUpper("Post"),
+			Pattern:     "/v1/authorityProvider/authorities/{uuid}/caCertificates",
+			HandlerFunc: c.GetCaCertificates,
 		},
 		"GetConnection": model.Route{
-			strings.ToUpper("Get"),
-			"/v1/authorityProvider/authorities/{uuid}/connect",
-			c.GetConnection,
+			Method:      strings.ToUpper("Get"),
+			Pattern:     "/v1/authorityProvider/authorities/{uuid}/connect",
+			HandlerFunc: c.GetConnection,
 		},
 		"GetCrl": model.Route{
-			strings.ToUpper("Post"),
-			"/v1/authorityProvider/authorities/{uuid}/crl",
-			c.GetCrl,
+			Method:      strings.ToUpper("Post"),
+			Pattern:     "/v1/authorityProvider/authorities/{uuid}/crl",
+			HandlerFunc: c.GetCrl,
 		},
 		"ListAuthorityInstances": model.Route{
-			strings.ToUpper("Get"),
-			"/v1/authorityProvider/authorities",
-			c.ListAuthorityInstances,
+			Method:      strings.ToUpper("Get"),
+			Pattern:     "/v1/authorityProvider/authorities",
+			HandlerFunc: c.ListAuthorityInstances,
 		},
 		"ListRAProfileAttributes": model.Route{
-			strings.ToUpper("Get"),
-			"/v1/authorityProvider/authorities/{uuid}/raProfile/attributes",
-			c.ListRAProfileAttributes,
+			Method:      strings.ToUpper("Get"),
+			Pattern:     "/v1/authorityProvider/authorities/{uuid}/raProfile/attributes",
+			HandlerFunc: c.ListRAProfileAttributes,
 		},
 		"RemoveAuthorityInstance": model.Route{
-			strings.ToUpper("Delete"),
-			"/v1/authorityProvider/authorities/{uuid}",
-			c.RemoveAuthorityInstance,
+			Method:      strings.ToUpper("Delete"),
+			Pattern:     "/v1/authorityProvider/authorities/{uuid}",
+			HandlerFunc: c.RemoveAuthorityInstance,
 		},
 		"UpdateAuthorityInstance": model.Route{
-			strings.ToUpper("Post"),
-			"/v1/authorityProvider/authorities/{uuid}",
-			c.UpdateAuthorityInstance,
+			Method:      strings.ToUpper("Post"),
+			Pattern:     "/v1/authorityProvider/authorities/{uuid}",
+			HandlerFunc: c.UpdateAuthorityInstance,
 		},
 		"ValidateRAProfileAttributes": model.Route{
-			strings.ToUpper("Post"),
-			"/v1/authorityProvider/authorities/{uuid}/raProfile/attributes/validate",
-			c.ValidateRAProfileAttributes,
+			Method:      strings.ToUpper("Post"),
+			Pattern:     "/v1/authorityProvider/authorities/{uuid}/raProfile/attributes/validate",
+			HandlerFunc: c.ValidateRAProfileAttributes,
 		},
 		"RAProfileCallback": model.Route{
-			strings.ToUpper("Get"),
-			"/v1/authorityProvider/authorities/{uuid}/raProfileRole/{engineName}/callback",
-			c.RAProfileCallback,
+			Method:      strings.ToUpper("Get"),
+			Pattern:     "/v1/authorityProvider/authorities/{uuid}/raProfileRole/{engineName}/callback",
+			HandlerFunc: c.RAProfileCallback,
 		},
 	}
 }
@@ -104,13 +104,13 @@ func (c *AuthorityManagementAPIController) Routes() model.Routes {
 // CreateAuthorityInstance - Create Authority instance
 func (c *AuthorityManagementAPIController) CreateAuthorityInstance(w http.ResponseWriter, r *http.Request) {
 	authorityProviderInstanceRequestDtoParam := &model.AuthorityProviderInstanceRequestDto{}
-	json, err := io.ReadAll(r.Body)
+	jsonContent, err := io.ReadAll(r.Body)
 	if err != nil {
 		c.errorHandler(w, r, &model.ParsingError{Err: err}, nil)
 		return
 	}
 
-	authorityProviderInstanceRequestDtoParam.Unmarshal(json)
+	authorityProviderInstanceRequestDtoParam.Unmarshal(jsonContent)
 
 	if err := model.AssertAuthorityProviderInstanceRequestDtoRequired(*authorityProviderInstanceRequestDtoParam); err != nil {
 		c.errorHandler(w, r, err, nil)
@@ -136,7 +136,7 @@ func (c *AuthorityManagementAPIController) GetAuthorityInstance(w http.ResponseW
 	params := mux.Vars(r)
 	uuidParam := params["uuid"]
 	if uuidParam == "" {
-		c.errorHandler(w, r, &model.RequiredError{"uuid"}, nil)
+		c.errorHandler(w, r, &model.RequiredError{Field: "uuid"}, nil)
 		return
 	}
 	result, err := c.service.GetAuthorityInstance(r.Context(), uuidParam)
@@ -154,17 +154,17 @@ func (c *AuthorityManagementAPIController) GetCaCertificates(w http.ResponseWrit
 	params := mux.Vars(r)
 	uuidParam := params["uuid"]
 	if uuidParam == "" {
-		c.errorHandler(w, r, &model.RequiredError{"uuid"}, nil)
+		c.errorHandler(w, r, &model.RequiredError{Field: "uuid"}, nil)
 		return
 	}
 	caCertificatesRequestDtoParam := model.CaCertificatesRequestDto{}
-	json, err := io.ReadAll(r.Body)
+	jsonContent, err := io.ReadAll(r.Body)
 	if err != nil {
 		c.errorHandler(w, r, &model.ParsingError{Err: err}, nil)
 		return
 	}
 
-	caCertificatesRequestDtoParam.Unmarshal(json)
+	caCertificatesRequestDtoParam.Unmarshal(jsonContent)
 	if err := model.AssertCaCertificatesRequestDtoRequired(caCertificatesRequestDtoParam); err != nil {
 		c.errorHandler(w, r, err, nil)
 		return
@@ -188,7 +188,7 @@ func (c *AuthorityManagementAPIController) GetConnection(w http.ResponseWriter, 
 	params := mux.Vars(r)
 	uuidParam := params["uuid"]
 	if uuidParam == "" {
-		c.errorHandler(w, r, &model.RequiredError{"uuid"}, nil)
+		c.errorHandler(w, r, &model.RequiredError{Field: "uuid"}, nil)
 		return
 	}
 	result, err := c.service.GetConnection(r.Context(), uuidParam)
@@ -206,17 +206,17 @@ func (c *AuthorityManagementAPIController) GetCrl(w http.ResponseWriter, r *http
 	params := mux.Vars(r)
 	uuidParam := params["uuid"]
 	if uuidParam == "" {
-		c.errorHandler(w, r, &model.RequiredError{"uuid"}, nil)
+		c.errorHandler(w, r, &model.RequiredError{Field: "uuid"}, nil)
 		return
 	}
 	certificateRevocationListRequestDtoParam := model.CertificateRevocationListRequestDto{}
-	json, err := io.ReadAll(r.Body)
+	jsonContent, err := io.ReadAll(r.Body)
 	if err != nil {
 		c.errorHandler(w, r, &model.ParsingError{Err: err}, nil)
 		return
 	}
 
-	certificateRevocationListRequestDtoParam.Unmarshal(json)
+	certificateRevocationListRequestDtoParam.Unmarshal(jsonContent)
 	if err := model.AssertCertificateRevocationListRequestDtoRequired(certificateRevocationListRequestDtoParam); err != nil {
 		c.errorHandler(w, r, err, nil)
 		return
@@ -252,7 +252,7 @@ func (c *AuthorityManagementAPIController) ListRAProfileAttributes(w http.Respon
 	params := mux.Vars(r)
 	uuidParam := params["uuid"]
 	if uuidParam == "" {
-		c.errorHandler(w, r, &model.RequiredError{"uuid"}, nil)
+		c.errorHandler(w, r, &model.RequiredError{Field: "uuid"}, nil)
 		return
 	}
 	result, err := c.service.ListRAProfileAttributes(r.Context(), uuidParam)
@@ -270,7 +270,7 @@ func (c *AuthorityManagementAPIController) RemoveAuthorityInstance(w http.Respon
 	params := mux.Vars(r)
 	uuidParam := params["uuid"]
 	if uuidParam == "" {
-		c.errorHandler(w, r, &model.RequiredError{"uuid"}, nil)
+		c.errorHandler(w, r, &model.RequiredError{Field: "uuid"}, nil)
 		return
 	}
 	result, err := c.service.RemoveAuthorityInstance(r.Context(), uuidParam)
@@ -288,17 +288,17 @@ func (c *AuthorityManagementAPIController) UpdateAuthorityInstance(w http.Respon
 	params := mux.Vars(r)
 	uuidParam := params["uuid"]
 	if uuidParam == "" {
-		c.errorHandler(w, r, &model.RequiredError{"uuid"}, nil)
+		c.errorHandler(w, r, &model.RequiredError{Field: "uuid"}, nil)
 		return
 	}
 	authorityProviderInstanceRequestDtoParam := &model.AuthorityProviderInstanceRequestDto{}
-	json, err := io.ReadAll(r.Body)
+	jsonContent, err := io.ReadAll(r.Body)
 	if err != nil {
 		c.errorHandler(w, r, &model.ParsingError{Err: err}, nil)
 		return
 	}
 
-	authorityProviderInstanceRequestDtoParam.Unmarshal(json)
+	authorityProviderInstanceRequestDtoParam.Unmarshal(jsonContent)
 	result, err := c.service.UpdateAuthorityInstance(r.Context(), uuidParam, *authorityProviderInstanceRequestDtoParam)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
@@ -314,10 +314,10 @@ func (c *AuthorityManagementAPIController) ValidateRAProfileAttributes(w http.Re
 	params := mux.Vars(r)
 	uuidParam := params["uuid"]
 	if uuidParam == "" {
-		c.errorHandler(w, r, &model.RequiredError{"uuid"}, nil)
+		c.errorHandler(w, r, &model.RequiredError{Field: "uuid"}, nil)
 		return
 	}
-	requestAttributeDtoParam := []model.RequestAttributeDto{}
+	var requestAttributeDtoParam []model.RequestAttributeDto
 	d := json.NewDecoder(r.Body)
 	d.DisallowUnknownFields()
 	if err := d.Decode(&requestAttributeDtoParam); err != nil {
@@ -345,12 +345,12 @@ func (c *AuthorityManagementAPIController) RAProfileCallback(w http.ResponseWrit
 	params := mux.Vars(r)
 	uuidParam := params["uuid"]
 	if uuidParam == "" {
-		c.errorHandler(w, r, &model.RequiredError{"uuid"}, nil)
+		c.errorHandler(w, r, &model.RequiredError{Field: "uuid"}, nil)
 		return
 	}
 	engineName := params["engineName"]
 	if engineName == "" {
-		c.errorHandler(w, r, &model.RequiredError{"engineName"}, nil)
+		c.errorHandler(w, r, &model.RequiredError{Field: "engineName"}, nil)
 		return
 	}
 

@@ -2,6 +2,7 @@ package db
 
 import (
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/config"
+	"errors"
 	"fmt"
 
 	"log"
@@ -14,8 +15,6 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
-
-
 
 func ConnectDB(config config.Config) (db *gorm.DB, err error) {
 	dsn := fmt.Sprintf("user=%s password=%s host=%s port=%s dbname=%s %s", config.Database.Username, config.Database.Password, config.Database.Host, config.Database.Port, config.Database.Name, config.Database.Props)
@@ -42,7 +41,7 @@ func MigrateDB(config config.Config) {
 		log.Fatal(err)
 	}
 	if err := m.Up(); err != nil {
-		if err != migrate.ErrNoChange {
+		if !errors.Is(err, migrate.ErrNoChange) {
 			log.Fatal(err)
 		}
 	}

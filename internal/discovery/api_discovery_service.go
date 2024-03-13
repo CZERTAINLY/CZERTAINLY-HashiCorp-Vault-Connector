@@ -100,27 +100,35 @@ func (s *DiscoveryAPIService) DiscoveryCertificates(authority *db.AuthorityInsta
 	// get the vault client
 	client, err := vault.GetClient(*authority)
 	if err != nil {
+		discovery.Status = "FAILED"
+		s.discoveryRepo.UpdateDiscovery(discovery)
 		s.log.Fatal(err.Error())
+		return
 	}
 	// get the certificates
 	ctx := context.Background()
 	certificates, err := client.Secrets.PkiListCerts(ctx)
 	if err != nil {
+		discovery.Status = "FAILED"
+		s.discoveryRepo.UpdateDiscovery(discovery)
 		s.log.Fatal(err.Error())
+		return
 	}
 	var certificateKeys []*db.Certificate
 	for _, certificateKey := range certificates.Data.Keys {
 		certificateData, err := client.Secrets.PkiReadCert(ctx, certificateKey)
-
+		if err != nil {
+			discovery.Status = "FAILED"
+			s.discoveryRepo.UpdateDiscovery(discovery)
+			s.log.Fatal(err.Error())
+			return
+		}
 		certificate := db.Certificate{
 			SerialNumber:  certificateKey,
 			UUID:          utils.DeterministicGUID(certificateKey),
 			Base64Content: certificateData.Data.Certificate,
 		}
 		certificateKeys = append(certificateKeys, &certificate)
-		if err != nil {
-			s.log.Fatal(err.Error())
-		}
 	}
 	s.discoveryRepo.AssociateCertificatesToDiscovery(discovery, certificateKeys...)
 

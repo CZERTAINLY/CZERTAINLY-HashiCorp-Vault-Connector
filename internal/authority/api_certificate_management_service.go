@@ -43,6 +43,11 @@ func (s *CertificateManagementAPIService) IdentifyCertificate(ctx context.Contex
 		}), nil
 	}
 	client, err := vault.GetClient(*authority)
+	if err != nil {
+		return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{
+			Message: err.Error(),
+		}), nil
+	}
 	serialNumber := utils.ExtractSerialNumber(certificateIdentificationRequestDto.Certificate)
 
 	_, err = client.Secrets.PkiReadCert(ctx, serialNumber.Text(10), vault2.WithMountPath(engineName))
@@ -74,7 +79,9 @@ func (s *CertificateManagementAPIService) IssueCertificate(ctx context.Context, 
 	}
 	client, err := vault.GetClient(*authority)
 	if err != nil {
-		s.log.Fatal(err.Error())
+		return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{
+			Message: err.Error(),
+		}), nil
 	}
 	commonName := utils.ExtractCommonName(certificateSignRequestDto.Pkcs10)
 	fmt.Println("Common Name:", commonName)
@@ -129,7 +136,9 @@ func (s *CertificateManagementAPIService) RenewCertificate(ctx context.Context, 
 
 	client, err := vault.GetClient(*authority)
 	if err != nil {
-		s.log.Fatal(err.Error())
+		return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{
+			Message: err.Error(),
+		}), nil
 	}
 
 	commonName := utils.ExtractCommonName(certificateRenewRequestDto.Pkcs10)
@@ -169,6 +178,11 @@ func (s *CertificateManagementAPIService) RevokeCertificate(ctx context.Context,
 		}), nil
 	}
 	client, err := vault.GetClient(*authority)
+	if err != nil {
+		return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{
+			Message: err.Error(),
+		}), nil
+	}
 	serialNumber := utils.ExtractSerialNumber(certRevocationDto.Certificate)
 
 	revokeRequest := schema.PkiRevokeRequest{

@@ -36,13 +36,13 @@ func NewConnectorInfoAPIController(s ConnectorInfoAPIServicer, opts ...Connector
 	return controller
 }
 
-// model.Routes returns all the api routes for the ConnectorInfoAPIController
+// Routes returns all the api routes for the ConnectorInfoAPIController
 func (c *ConnectorInfoAPIController) Routes() model.Routes {
 	return model.Routes{
 		"ListSupportedFunctions": model.Route{
-			strings.ToUpper("Get"),
-			"/v1",
-			c.ListSupportedFunctions,
+			Method:      strings.ToUpper("Get"),
+			Pattern:     "/v1",
+			HandlerFunc: c.ListSupportedFunctions,
 		},
 	}
 }

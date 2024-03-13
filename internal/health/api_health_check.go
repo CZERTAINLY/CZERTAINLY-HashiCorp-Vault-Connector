@@ -36,13 +36,13 @@ func NewHealthCheckAPIController(s HealthCheckAPIServicer, opts ...HealthCheckAP
 	return controller
 }
 
-// model.Routes returns all the api routes for the HealthCheckAPIController
+// Routes returns all the api routes for the HealthCheckAPIController
 func (c *HealthCheckAPIController) Routes() model.Routes {
 	return model.Routes{
 		"CheckHealth": model.Route{
-			strings.ToUpper("Get"),
-			"/v1/health",
-			c.CheckHealth,
+			Method:      strings.ToUpper("Get"),
+			Pattern:     "/v1/health",
+			HandlerFunc: c.CheckHealth,
 		},
 	}
 }

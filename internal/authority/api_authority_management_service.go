@@ -104,6 +104,11 @@ func (s *AuthorityManagementAPIService) GetCaCertificates(ctx context.Context, u
 	}
 
 	client, err := vault.GetClient(*authority)
+	if err != nil {
+		return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{
+			Message: err.Error(),
+		}), nil
+	}
 	engineData := model.GetAttributeFromArrayByUUID(model.RA_PROFILE_ENGINE_ATTR, caCertificatesRequestDto.RaProfileAttributes).GetContent()[0].GetData().(map[string]interface{})
 	engineName := engineData["engineName"].(string)
 	//https://github.com/hashicorp/vault/issues/919 do not use PkiReadCaChainPem
@@ -168,6 +173,11 @@ func (s *AuthorityManagementAPIService) GetCrl(ctx context.Context, uuid string,
 	}
 
 	client, err := vault.GetClient(*authority)
+	if err != nil {
+		return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{
+			Message: err.Error(),
+		}), nil
+	}
 	engineData := model.GetAttributeFromArrayByUUID(model.RA_PROFILE_ENGINE_ATTR, certificateRevocationListRequestDto.RaProfileAttributes).GetContent()[0].GetData().(map[string]interface{})
 	engineName := engineData["engineName"].(string)
 	var chain []string
@@ -202,13 +212,6 @@ func (s *AuthorityManagementAPIService) GetCrl(ctx context.Context, uuid string,
 		}
 	}
 
-	if err != nil {
-		s.log.Error(err.Error())
-		return model.Response(http.StatusBadRequest, model.ErrorMessageDto{
-			Message: err.Error(),
-		}), nil
-
-	}
 	var caChainCertificates []model.CertificateDataResponseDto
 
 	for _, cert := range chain {
@@ -250,7 +253,7 @@ func (s *AuthorityManagementAPIService) ListRAProfileAttributes(ctx context.Cont
 			Message: "Authority not found",
 		}), nil
 	}
-	client, _ := vault.GetClient(*authority)
+	client, err := vault.GetClient(*authority)
 	if err != nil {
 		return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{
 			Message: "Failed to create vault client",
@@ -366,7 +369,7 @@ func (s *AuthorityManagementAPIService) RAProfileCallback(ctx context.Context, u
 			Message: "Authority not found",
 		}), nil
 	}
-	client, _ := vault.GetClient(*authority)
+	client, err := vault.GetClient(*authority)
 	if err != nil {
 		return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{
 			Message: "Failed to create vault client",

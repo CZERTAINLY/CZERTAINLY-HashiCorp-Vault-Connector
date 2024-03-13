@@ -48,50 +48,7 @@ func compareJSON(s1, s2 string) (bool, error) {
 	return reflect.DeepEqual(o1, o2), nil
 }
 
-//var attributeList1 = []DataAttribute{{
-//	Uuid:        "sfgsdf",
-//	Name:        "AuthorityAttributeIdentifier",
-//	Description: "Authority definition for discovery",
-//	Type:        "data",
-//	Content:     []AttributeContent{StringAttributeContent{Reference: "string", Data: "s"}},
-//	ContentType: "object",
-//	Properties: DataAttributeProperties{
-//		Label:       "Authority to discover",
-//		Visible:     true,
-//		Group:       "",
-//		Required:    true,
-//		ReadOnly:    false,
-//		List:        false,
-//		MultiSelect: false,
-//	},
-//},
-//}
-
 const (
-	JSON_STRING = `
-	{
-    "uuid": "166b5cf52-63f2-11ec-90d6-0242ac120003",
-    "name": "Attribute",
-    "description": "string",
-    "type": "data",
-    "content": [
-      {
-        "reference": "string",
-        "data": "bla"
-      }
-    ],
-    "contentType": "string",
-    "properties": {
-      "label": "Attribute Name",
-      "visible": true,
-      "group": "requiredAttributes",
-      "required": false,
-      "readOnly": false,
-      "list": false,
-      "multiSelect": false
-    }
-}`
-
 	JSON_STRING_ARR = `
 [
 {

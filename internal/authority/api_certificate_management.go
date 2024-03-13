@@ -40,48 +40,48 @@ func NewCertificateManagementAPIController(s CertificateManagementAPIServicer, o
 	return controller
 }
 
-// model.Routes returns all the api routes for the CertificateManagementAPIController
+// Routes returns all the api routes for the CertificateManagementAPIController
 func (c *CertificateManagementAPIController) Routes() model.Routes {
 	return model.Routes{
 		"IdentifyCertificate": model.Route{
-			strings.ToUpper("Post"),
-			"/v2/authorityProvider/authorities/{uuid}/certificates/identify",
-			c.IdentifyCertificate,
+			Method:      strings.ToUpper("Post"),
+			Pattern:     "/v2/authorityProvider/authorities/{uuid}/certificates/identify",
+			HandlerFunc: c.IdentifyCertificate,
 		},
 		"IssueCertificate": model.Route{
-			strings.ToUpper("Post"),
-			"/v2/authorityProvider/authorities/{uuid}/certificates/issue",
-			c.IssueCertificate,
+			Method:      strings.ToUpper("Post"),
+			Pattern:     "/v2/authorityProvider/authorities/{uuid}/certificates/issue",
+			HandlerFunc: c.IssueCertificate,
 		},
 		"ListIssueCertificateAttributes": model.Route{
-			strings.ToUpper("Get"),
-			"/v2/authorityProvider/authorities/{uuid}/certificates/issue/attributes",
-			c.ListIssueCertificateAttributes,
+			Method:      strings.ToUpper("Get"),
+			Pattern:     "/v2/authorityProvider/authorities/{uuid}/certificates/issue/attributes",
+			HandlerFunc: c.ListIssueCertificateAttributes,
 		},
 		"ListRevokeCertificateAttributes": model.Route{
-			strings.ToUpper("Get"),
-			"/v2/authorityProvider/authorities/{uuid}/certificates/revoke/attributes",
-			c.ListRevokeCertificateAttributes,
+			Method:      strings.ToUpper("Get"),
+			Pattern:     "/v2/authorityProvider/authorities/{uuid}/certificates/revoke/attributes",
+			HandlerFunc: c.ListRevokeCertificateAttributes,
 		},
 		"RenewCertificate": model.Route{
-			strings.ToUpper("Post"),
-			"/v2/authorityProvider/authorities/{uuid}/certificates/renew",
-			c.RenewCertificate,
+			Method:      strings.ToUpper("Post"),
+			Pattern:     "/v2/authorityProvider/authorities/{uuid}/certificates/renew",
+			HandlerFunc: c.RenewCertificate,
 		},
 		"RevokeCertificate": model.Route{
-			strings.ToUpper("Post"),
-			"/v2/authorityProvider/authorities/{uuid}/certificates/revoke",
-			c.RevokeCertificate,
+			Method:      strings.ToUpper("Post"),
+			Pattern:     "/v2/authorityProvider/authorities/{uuid}/certificates/revoke",
+			HandlerFunc: c.RevokeCertificate,
 		},
 		"ValidateIssueCertificateAttributes": model.Route{
-			strings.ToUpper("Post"),
-			"/v2/authorityProvider/authorities/{uuid}/certificates/issue/attributes/validate",
-			c.ValidateIssueCertificateAttributes,
+			Method:      strings.ToUpper("Post"),
+			Pattern:     "/v2/authorityProvider/authorities/{uuid}/certificates/issue/attributes/validate",
+			HandlerFunc: c.ValidateIssueCertificateAttributes,
 		},
 		"ValidateRevokeCertificateAttributes": model.Route{
-			strings.ToUpper("Post"),
-			"/v2/authorityProvider/authorities/{uuid}/certificates/revoke/attributes/validate",
-			c.ValidateRevokeCertificateAttributes,
+			Method:      strings.ToUpper("Post"),
+			Pattern:     "/v2/authorityProvider/authorities/{uuid}/certificates/revoke/attributes/validate",
+			HandlerFunc: c.ValidateRevokeCertificateAttributes,
 		},
 	}
 }
@@ -91,17 +91,17 @@ func (c *CertificateManagementAPIController) IdentifyCertificate(w http.Response
 	params := mux.Vars(r)
 	uuidParam := params["uuid"]
 	if uuidParam == "" {
-		c.errorHandler(w, r, &model.RequiredError{"uuid"}, nil)
+		c.errorHandler(w, r, &model.RequiredError{Field: "uuid"}, nil)
 		return
 	}
 	certificateIdentificationRequestDtoParam := model.CertificateIdentificationRequestDto{}
-	json, err := io.ReadAll(r.Body)
+	jsonContent, err := io.ReadAll(r.Body)
 	if err != nil {
 		c.errorHandler(w, r, &model.ParsingError{Err: err}, nil)
 		return
 	}
 
-	certificateIdentificationRequestDtoParam.Unmarshal(json)
+	certificateIdentificationRequestDtoParam.Unmarshal(jsonContent)
 	if err := model.AssertCertificateIdentificationRequestDtoRequired(certificateIdentificationRequestDtoParam); err != nil {
 		c.errorHandler(w, r, err, nil)
 		return
@@ -125,17 +125,17 @@ func (c *CertificateManagementAPIController) IssueCertificate(w http.ResponseWri
 	params := mux.Vars(r)
 	uuidParam := params["uuid"]
 	if uuidParam == "" {
-		c.errorHandler(w, r, &model.RequiredError{"uuid"}, nil)
+		c.errorHandler(w, r, &model.RequiredError{Field: "uuid"}, nil)
 		return
 	}
 	certificateSignRequestDtoParam := model.CertificateSignRequestDto{}
-	json, err := io.ReadAll(r.Body)
+	jsonContent, err := io.ReadAll(r.Body)
 	if err != nil {
 		c.errorHandler(w, r, &model.ParsingError{Err: err}, nil)
 		return
 	}
 
-	certificateSignRequestDtoParam.Unmarshal(json)
+	certificateSignRequestDtoParam.Unmarshal(jsonContent)
 	if err := model.AssertCertificateSignRequestDtoRequired(certificateSignRequestDtoParam); err != nil {
 		c.errorHandler(w, r, err, nil)
 		return
@@ -159,7 +159,7 @@ func (c *CertificateManagementAPIController) ListIssueCertificateAttributes(w ht
 	params := mux.Vars(r)
 	uuidParam := params["uuid"]
 	if uuidParam == "" {
-		c.errorHandler(w, r, &model.RequiredError{"uuid"}, nil)
+		c.errorHandler(w, r, &model.RequiredError{Field: "uuid"}, nil)
 		return
 	}
 	result, err := c.service.ListIssueCertificateAttributes(r.Context(), uuidParam)
@@ -177,7 +177,7 @@ func (c *CertificateManagementAPIController) ListRevokeCertificateAttributes(w h
 	params := mux.Vars(r)
 	uuidParam := params["uuid"]
 	if uuidParam == "" {
-		c.errorHandler(w, r, &model.RequiredError{"uuid"}, nil)
+		c.errorHandler(w, r, &model.RequiredError{Field: "uuid"}, nil)
 		return
 	}
 	result, err := c.service.ListRevokeCertificateAttributes(r.Context(), uuidParam)
@@ -195,17 +195,17 @@ func (c *CertificateManagementAPIController) RenewCertificate(w http.ResponseWri
 	params := mux.Vars(r)
 	uuidParam := params["uuid"]
 	if uuidParam == "" {
-		c.errorHandler(w, r, &model.RequiredError{"uuid"}, nil)
+		c.errorHandler(w, r, &model.RequiredError{Field: "uuid"}, nil)
 		return
 	}
 	certificateRenewRequestDtoParam := model.CertificateRenewRequestDto{}
-	json, err := io.ReadAll(r.Body)
+	jsonContent, err := io.ReadAll(r.Body)
 	if err != nil {
 		c.errorHandler(w, r, &model.ParsingError{Err: err}, nil)
 		return
 	}
 
-	certificateRenewRequestDtoParam.Unmarshal(json)
+	certificateRenewRequestDtoParam.Unmarshal(jsonContent)
 	if err := model.AssertCertificateRenewRequestDtoRequired(certificateRenewRequestDtoParam); err != nil {
 		c.errorHandler(w, r, err, nil)
 		return
@@ -229,17 +229,17 @@ func (c *CertificateManagementAPIController) RevokeCertificate(w http.ResponseWr
 	params := mux.Vars(r)
 	uuidParam := params["uuid"]
 	if uuidParam == "" {
-		c.errorHandler(w, r, &model.RequiredError{"uuid"}, nil)
+		c.errorHandler(w, r, &model.RequiredError{Field: "uuid"}, nil)
 		return
 	}
 	certRevocationDtoParam := model.CertRevocationDto{}
-	json, err := io.ReadAll(r.Body)
+	jsonContent, err := io.ReadAll(r.Body)
 	if err != nil {
 		c.errorHandler(w, r, &model.ParsingError{Err: err}, nil)
 		return
 	}
 
-	certRevocationDtoParam.Unmarshal(json)
+	certRevocationDtoParam.Unmarshal(jsonContent)
 	if err := model.AssertCertRevocationDtoRequired(certRevocationDtoParam); err != nil {
 		c.errorHandler(w, r, err, nil)
 		return
@@ -263,10 +263,10 @@ func (c *CertificateManagementAPIController) ValidateIssueCertificateAttributes(
 	params := mux.Vars(r)
 	uuidParam := params["uuid"]
 	if uuidParam == "" {
-		c.errorHandler(w, r, &model.RequiredError{"uuid"}, nil)
+		c.errorHandler(w, r, &model.RequiredError{Field: "uuid"}, nil)
 		return
 	}
-	requestAttributeDtoParam := []model.RequestAttributeDto{}
+	var requestAttributeDtoParam []model.RequestAttributeDto
 	d := json.NewDecoder(r.Body)
 	d.DisallowUnknownFields()
 	if err := d.Decode(&requestAttributeDtoParam); err != nil {
@@ -294,10 +294,10 @@ func (c *CertificateManagementAPIController) ValidateRevokeCertificateAttributes
 	params := mux.Vars(r)
 	uuidParam := params["uuid"]
 	if uuidParam == "" {
-		c.errorHandler(w, r, &model.RequiredError{"uuid"}, nil)
+		c.errorHandler(w, r, &model.RequiredError{Field: "uuid"}, nil)
 		return
 	}
-	requestAttributeDtoParam := []model.RequestAttributeDto{}
+	var requestAttributeDtoParam []model.RequestAttributeDto
 	d := json.NewDecoder(r.Body)
 	d.DisallowUnknownFields()
 	if err := d.Decode(&requestAttributeDtoParam); err != nil {

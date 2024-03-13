@@ -157,7 +157,7 @@ func parseTimes(param string) ([]time.Time, error) {
 	return times, nil
 }
 
-// parseTime will parses a string parameter into a time.Time using the RFC3339 format
+// parseTime will parse a string parameter into a time.Time using the RFC3339 format
 func parseTime(param string) (time.Time, error) {
 	if param == "" {
 		return time.Time{}, nil
@@ -171,7 +171,7 @@ type Number interface {
 
 type ParseString[T Number | string | bool] func(v string) (T, error)
 
-// parseFloat64 parses a string parameter to an float64.
+// parseFloat64 parses a string parameter to float64.
 func parseFloat64(param string) (float64, error) {
 	if param == "" {
 		return 0, nil
@@ -180,7 +180,7 @@ func parseFloat64(param string) (float64, error) {
 	return strconv.ParseFloat(param, 64)
 }
 
-// parseFloat32 parses a string parameter to an float32.
+// parseFloat32 parses a string parameter to float32.
 func parseFloat32(param string) (float32, error) {
 	if param == "" {
 		return 0, nil
@@ -209,7 +209,7 @@ func parseInt32(param string) (int32, error) {
 	return int32(val), err
 }
 
-// parseBool parses a string parameter to an bool.
+// parseBool parses a string parameter to bool.
 func parseBool(param string) (bool, error) {
 	if param == "" {
 		return false, nil

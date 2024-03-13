@@ -40,18 +40,18 @@ func NewConnectorAttributesAPIController(s ConnectorAttributesAPIServicer, opts 
 	return controller
 }
 
-// model.Routes returns all the api routes for the ConnectorAttributesAPIController
+// Routes returns all the api routes for the ConnectorAttributesAPIController
 func (c *ConnectorAttributesAPIController) Routes() model.Routes {
 	return model.Routes{
 		"ListAttributeDefinitions": model.Route{
-			strings.ToUpper("Get"),
-			"/v1/discoveryProvider/{kind}/attributes",
-			c.ListAttributeDefinitions,
+			Method:      strings.ToUpper("Get"),
+			Pattern:     "/v1/discoveryProvider/{kind}/attributes",
+			HandlerFunc: c.ListAttributeDefinitions,
 		},
 		"ValidateAttributes": model.Route{
-			strings.ToUpper("Post"),
-			"/v1/discoveryProvider/{kind}/attributes/validate",
-			c.ValidateAttributes,
+			Method:      strings.ToUpper("Post"),
+			Pattern:     "/v1/discoveryProvider/{kind}/attributes/validate",
+			HandlerFunc: c.ValidateAttributes,
 		},
 	}
 }
@@ -61,7 +61,7 @@ func (c *ConnectorAttributesAPIController) ListAttributeDefinitions(w http.Respo
 	params := mux.Vars(r)
 	kindParam := params["kind"]
 	if kindParam == "" {
-		c.errorHandler(w, r, &model.RequiredError{"kind"}, nil)
+		c.errorHandler(w, r, &model.RequiredError{Field: "kind"}, nil)
 		return
 	}
 	result, err := c.service.ListAttributeDefinitions(r.Context(), kindParam)
@@ -79,7 +79,7 @@ func (c *ConnectorAttributesAPIController) ValidateAttributes(w http.ResponseWri
 	params := mux.Vars(r)
 	kindParam := params["kind"]
 	if kindParam == "" {
-		c.errorHandler(w, r, &model.RequiredError{"kind"}, nil)
+		c.errorHandler(w, r, &model.RequiredError{Field: "kind"}, nil)
 		return
 	}
 	json, err := io.ReadAll(r.Body)

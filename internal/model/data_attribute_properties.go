@@ -3,7 +3,7 @@ package model
 // DataAttributeProperties - Properties of the Attributes
 type DataAttributeProperties struct {
 
-	// Friendly name of the the Attribute
+	// Friendly name of the Attribute
 	Label string `json:"label"`
 
 	// Boolean determining if the Attribute is visible and can be displayed, otherwise it should be hidden to the user.
