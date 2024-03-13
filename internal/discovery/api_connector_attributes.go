@@ -71,7 +71,10 @@ func (c *ConnectorAttributesAPIController) ListAttributeDefinitions(w http.Respo
 		return
 	}
 	// If no error, encode the body and the result code
-	model.EncodeJSONResponse(result.Body, &result.Code, w)
+	err = model.EncodeJSONResponse(result.Body, &result.Code, w)
+	if err != nil {
+		return
+	}
 }
 
 // ValidateAttributes - Validate Attributes
@@ -96,5 +99,8 @@ func (c *ConnectorAttributesAPIController) ValidateAttributes(w http.ResponseWri
 		return
 	}
 	// If no error, encode the body and the result code
-	model.EncodeJSONResponse(result.Body, &result.Code, w)
+	err = model.EncodeJSONResponse(result.Body, &result.Code, w)
+	if err != nil {
+		return
+	}
 }

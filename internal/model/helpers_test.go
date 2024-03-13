@@ -19,7 +19,10 @@ func TestUnmarshalAttribute(t *testing.T) {
 	fmt.Println(result)
 	resultString, _ := json.Marshal(result)
 	var unmarshaled []interface{}
-	json.Unmarshal([]byte(JSON_STRING_ARR), &unmarshaled)
+	err := json.Unmarshal([]byte(JSON_STRING_ARR), &unmarshaled)
+	if err != nil {
+		return
+	}
 	marshaled, _ := json.Marshal(unmarshaled)
 	if equal, err := compareJSON(string(marshaled), string(resultString)); err != nil {
 		t.Fatalf("Error comparing JSON:")

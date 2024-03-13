@@ -45,16 +45,25 @@ func (d *DiscoveryRepository) AssociateCertificatesToDiscovery(discovery *Discov
 	for _, certificate := range certificates {
 		d.db.FirstOrCreate(&certificate, Certificate{SerialNumber: certificate.SerialNumber})
 	}
-	d.db.Model(&discovery).Association("Certificates").Append(&certificates)
+	assoc := d.db.Model(&discovery).Association("Certificates")
+	err := assoc.Append(&certificates)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
-func (d *DiscoveryRepository) CreateDiscoveryAndAssociateCertificates(discovery *Discovery, certificates ...*Certificate) {
+func (d *DiscoveryRepository) CreateDiscoveryAndAssociateCertificates(discovery *Discovery, certificates ...*Certificate) error {
 	d.db.Create(&discovery)
 	for _, certificate := range certificates {
 		d.db.FirstOrCreate(&certificate, Certificate{SerialNumber: certificate.SerialNumber})
-		d.db.Model(&discovery).Association("Certificates").Append(&certificate)
+		assoc := d.db.Model(&discovery).Association("Certificates")
+		err := assoc.Append(&certificate)
+		if err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 func (d *DiscoveryRepository) FindDiscoveryByUUID(uuid string) (*Discovery, error) {
@@ -104,9 +113,9 @@ func paginate(value interface{}, pagination *Pagination, db *gorm.DB) func(db *g
 }
 
 type Pagination struct {
-	Limit      int         `json:"limit,omitempty;query:limit"`
-	Page       int         `json:"page,omitempty;query:page"`
-	Sort       string      `json:"sort,omitempty;query:sort"`
+	Limit      int         `json:"limit,omitempty"`
+	Page       int         `json:"page,omitempty"`
+	Sort       string      `json:"sort,omitempty"`
 	TotalRows  int64       `json:"total_rows"`
 	TotalPages int         `json:"total_pages"`
 	Rows       interface{} `json:"rows"`

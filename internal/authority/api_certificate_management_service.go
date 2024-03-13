@@ -86,11 +86,18 @@ func (s *CertificateManagementAPIService) IssueCertificate(ctx context.Context, 
 	commonName := utils.ExtractCommonName(certificateSignRequestDto.Pkcs10)
 	fmt.Println("Common Name:", commonName)
 
-	signRequest := schema.PkiIssuerSignWithRoleRequest{
-		CommonName: commonName,
-		Csr:        certificateSignRequestDto.Pkcs10,
+	decoded, err := base64.StdEncoding.DecodeString(certificateSignRequestDto.Pkcs10)
+	if err != nil {
+		return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{
+			Message: err.Error(),
+		}), nil
 	}
-	certificateSignResponse, err := client.Secrets.PkiIssuerSignWithRole(ctx, "default", role, signRequest, vault2.WithMountPath(engineName))
+
+	signRequest := schema.PkiSignWithRoleRequest{
+		CommonName: commonName,
+		Csr:        string(decoded),
+	}
+	certificateSignResponse, err := client.Secrets.PkiSignWithRole(ctx, role, signRequest, vault2.WithMountPath(engineName))
 	if err != nil {
 		s.log.Error(err.Error())
 		return model.Response(http.StatusBadRequest, model.ErrorMessageDto{

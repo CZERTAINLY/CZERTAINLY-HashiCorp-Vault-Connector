@@ -63,7 +63,10 @@ func (l LoginWithToken) Login(client *vault.Client) (*vault.Client, error) {
 		return nil, fmt.Errorf("no auth info was returned after login")
 	}
 
-	client.SetToken(authInfo.Auth.ClientToken)
+	err = client.SetToken(authInfo.Auth.ClientToken)
+	if err != nil {
+		return nil, err
+	}
 	return client, nil
 }
 
@@ -84,7 +87,10 @@ func (l LoginWithK8sToken) Login(client *vault.Client) (*vault.Client, error) {
 		return nil, fmt.Errorf("no auth info was returned after login")
 	}
 
-	client.SetToken(authInfo.Auth.ClientToken)
+	err = client.SetToken(authInfo.Auth.ClientToken)
+	if err != nil {
+		return nil, err
+	}
 	return client, nil
 }
 func getLoginMethod(authority db.AuthorityInstance) LoginMethod {

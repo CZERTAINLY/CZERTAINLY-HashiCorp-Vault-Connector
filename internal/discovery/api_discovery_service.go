@@ -37,7 +37,10 @@ func (s *DiscoveryAPIService) DeleteDiscovery(ctx context.Context, uuid string) 
 	if err != nil {
 		return model.Response(http.StatusNotFound, model.ErrorMessageDto{Message: "Discovery " + uuid + " not found."}), nil
 	}
-	s.discoveryRepo.DeleteDiscovery(discovery)
+	err = s.discoveryRepo.DeleteDiscovery(discovery)
+	if err != nil {
+		return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{Message: "Unable to delete discover" + discovery.UUID}), nil
+	}
 
 	return model.Response(204, nil), nil
 }
@@ -61,7 +64,10 @@ func (s *DiscoveryAPIService) DiscoverCertificate(ctx context.Context, discovery
 		Meta:         nil,
 		Certificates: nil,
 	}
-	s.discoveryRepo.CreateDiscovery(discovery)
+	err := s.discoveryRepo.CreateDiscovery(discovery)
+	if err != nil {
+		return model.Response(http.StatusNotFound, model.ErrorMessageDto{Message: "Unable to create discovery " + discovery.UUID}), nil
+	}
 	go s.DiscoveryCertificates(&db.AuthorityInstance{}, discovery)
 
 	return model.Response(http.StatusOK, response), nil
@@ -101,7 +107,10 @@ func (s *DiscoveryAPIService) DiscoveryCertificates(authority *db.AuthorityInsta
 	client, err := vault.GetClient(*authority)
 	if err != nil {
 		discovery.Status = "FAILED"
-		s.discoveryRepo.UpdateDiscovery(discovery)
+		err := s.discoveryRepo.UpdateDiscovery(discovery)
+		if err != nil {
+			s.log.Fatal(err.Error())
+		}
 		s.log.Fatal(err.Error())
 		return
 	}
@@ -110,8 +119,11 @@ func (s *DiscoveryAPIService) DiscoveryCertificates(authority *db.AuthorityInsta
 	certificates, err := client.Secrets.PkiListCerts(ctx)
 	if err != nil {
 		discovery.Status = "FAILED"
-		s.discoveryRepo.UpdateDiscovery(discovery)
+		err := s.discoveryRepo.UpdateDiscovery(discovery)
 		s.log.Fatal(err.Error())
+		if err != nil {
+			s.log.Fatal(err.Error())
+		}
 		return
 	}
 	var certificateKeys []*db.Certificate
@@ -119,8 +131,12 @@ func (s *DiscoveryAPIService) DiscoveryCertificates(authority *db.AuthorityInsta
 		certificateData, err := client.Secrets.PkiReadCert(ctx, certificateKey)
 		if err != nil {
 			discovery.Status = "FAILED"
-			s.discoveryRepo.UpdateDiscovery(discovery)
 			s.log.Fatal(err.Error())
+			err := s.discoveryRepo.UpdateDiscovery(discovery)
+			if err != nil {
+				s.log.Fatal(err.Error())
+			}
+
 			return
 		}
 		certificate := db.Certificate{
@@ -130,10 +146,28 @@ func (s *DiscoveryAPIService) DiscoveryCertificates(authority *db.AuthorityInsta
 		}
 		certificateKeys = append(certificateKeys, &certificate)
 	}
-	s.discoveryRepo.AssociateCertificatesToDiscovery(discovery, certificateKeys...)
+	err = s.discoveryRepo.AssociateCertificatesToDiscovery(discovery, certificateKeys...)
+	if err != nil {
+		discovery.Status = "FAILED"
+		s.log.Fatal(err.Error())
+		err := s.discoveryRepo.UpdateDiscovery(discovery)
+		if err != nil {
+			s.log.Fatal(err.Error())
+		}
+		return
+	}
 
 	// Update discovery status to "COMPLETED"
 	discovery.Status = "COMPLETED"
-	s.discoveryRepo.UpdateDiscovery(discovery)
+	err = s.discoveryRepo.UpdateDiscovery(discovery)
+	if err != nil {
+		discovery.Status = "FAILED"
+		s.log.Fatal(err.Error())
+		err := s.discoveryRepo.UpdateDiscovery(discovery)
+		if err != nil {
+			s.log.Fatal(err.Error())
+		}
+		return
+	}
 
 }

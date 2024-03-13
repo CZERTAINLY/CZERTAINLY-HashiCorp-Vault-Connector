@@ -56,5 +56,8 @@ func (c *HealthCheckAPIController) CheckHealth(w http.ResponseWriter, r *http.Re
 		return
 	}
 	// If no error, encode the body and the result code
-	model.EncodeJSONResponse(result.Body, &result.Code, w)
+	err = model.EncodeJSONResponse(result.Body, &result.Code, w)
+	if err != nil {
+		return
+	}
 }

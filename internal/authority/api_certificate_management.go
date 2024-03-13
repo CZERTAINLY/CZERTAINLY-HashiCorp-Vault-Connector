@@ -117,7 +117,10 @@ func (c *CertificateManagementAPIController) IdentifyCertificate(w http.Response
 		return
 	}
 	// If no error, encode the body and the result code
-	model.EncodeJSONResponse(result.Body, &result.Code, w)
+	err = model.EncodeJSONResponse(result.Body, &result.Code, w)
+	if err != nil {
+		return
+	}
 }
 
 // IssueCertificate - Issue Certificate
@@ -151,7 +154,10 @@ func (c *CertificateManagementAPIController) IssueCertificate(w http.ResponseWri
 		return
 	}
 	// If no error, encode the body and the result code
-	model.EncodeJSONResponse(result.Body, &result.Code, w)
+	err = model.EncodeJSONResponse(result.Body, &result.Code, w)
+	if err != nil {
+		return
+	}
 }
 
 // ListIssueCertificateAttributes - List of Attributes to issue Certificate
@@ -169,7 +175,10 @@ func (c *CertificateManagementAPIController) ListIssueCertificateAttributes(w ht
 		return
 	}
 	// If no error, encode the body and the result code
-	model.EncodeJSONResponse(result.Body, &result.Code, w)
+	err = model.EncodeJSONResponse(result.Body, &result.Code, w)
+	if err != nil {
+		return
+	}
 }
 
 // ListRevokeCertificateAttributes - List of Attributes to revoke Certificate
@@ -187,7 +196,10 @@ func (c *CertificateManagementAPIController) ListRevokeCertificateAttributes(w h
 		return
 	}
 	// If no error, encode the body and the result code
-	model.EncodeJSONResponse(result.Body, &result.Code, w)
+	err = model.EncodeJSONResponse(result.Body, &result.Code, w)
+	if err != nil {
+		return
+	}
 }
 
 // RenewCertificate - Renew Certificate
@@ -221,7 +233,10 @@ func (c *CertificateManagementAPIController) RenewCertificate(w http.ResponseWri
 		return
 	}
 	// If no error, encode the body and the result code
-	model.EncodeJSONResponse(result.Body, &result.Code, w)
+	err = model.EncodeJSONResponse(result.Body, &result.Code, w)
+	if err != nil {
+		return
+	}
 }
 
 // RevokeCertificate - Revoke Certificate
@@ -255,7 +270,10 @@ func (c *CertificateManagementAPIController) RevokeCertificate(w http.ResponseWr
 		return
 	}
 	// If no error, encode the body and the result code
-	model.EncodeJSONResponse(result.Body, &result.Code, w)
+	err = model.EncodeJSONResponse(result.Body, &result.Code, w)
+	if err != nil {
+		return
+	}
 }
 
 // ValidateIssueCertificateAttributes - Validate list of Attributes to issue Certificate
@@ -286,7 +304,10 @@ func (c *CertificateManagementAPIController) ValidateIssueCertificateAttributes(
 		return
 	}
 	// If no error, encode the body and the result code
-	model.EncodeJSONResponse(result.Body, &result.Code, w)
+	err = model.EncodeJSONResponse(result.Body, &result.Code, w)
+	if err != nil {
+		return
+	}
 }
 
 // ValidateRevokeCertificateAttributes - Validate list of Attributes to revoke certificate
@@ -317,5 +338,8 @@ func (c *CertificateManagementAPIController) ValidateRevokeCertificateAttributes
 		return
 	}
 	// If no error, encode the body and the result code
-	model.EncodeJSONResponse(result.Body, &result.Code, w)
+	err = model.EncodeJSONResponse(result.Body, &result.Code, w)
+	if err != nil {
+		return
+	}
 }

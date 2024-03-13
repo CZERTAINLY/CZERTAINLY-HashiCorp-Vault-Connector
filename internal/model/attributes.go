@@ -211,7 +211,10 @@ func UnmarshalAttributes(content []byte) []Attribute {
 	var result []Attribute
 	for _, attribute := range attributes.Array() {
 		definition := AttributeDefinition{}
-		json.Unmarshal([]byte(attribute.Raw), &definition)
+		err := json.Unmarshal([]byte(attribute.Raw), &definition)
+		if err != nil {
+			return nil
+		}
 		if definition.AttributeType == "" || definition.AttributeContentType == "" {
 			def := GetAtributeByUUID(definition.Uuid)
 			definition.AttributeType = def.AttributeType

@@ -25,7 +25,7 @@ func main() {
 	routes = make(map[string][]model.EndpointDto)
 	log := logger.Get()
 	c := config.Get()
-
+	log.Info("Starting CZERTAINLY-HashiCorp-Vault-Connector", zap.String("version", version))
 	db.MigrateDB(c)
 	conn, _ := db.ConnectDB(c)
 	discoveryRepo, _ := db.NewDiscoveryRepository(conn)
@@ -104,7 +104,7 @@ func logMiddleware(next http.Handler) http.Handler {
 func populateRoutes(router *mux.Router, routeKey string) {
 	log := logger.Get()
 	routes[routeKey] = make([]model.EndpointDto, 0)
-	router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
+	err := router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
 		tpl, _ := route.GetPathTemplate()
 		met, _ := route.GetMethods()
 		endpoint := model.EndpointDto{
@@ -117,4 +117,7 @@ func populateRoutes(router *mux.Router, routeKey string) {
 		routes[routeKey] = append(routes[routeKey], endpoint)
 		return nil
 	})
+	if err != nil {
+		log.Error("Unable to walk routers:" + err.Error())
+	}
 }

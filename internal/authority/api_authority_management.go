@@ -128,7 +128,10 @@ func (c *AuthorityManagementAPIController) CreateAuthorityInstance(w http.Respon
 		return
 	}
 	// If no error, encode the body and the result code
-	model.EncodeJSONResponse(result.Body, &result.Code, w)
+	err = model.EncodeJSONResponse(result.Body, &result.Code, w)
+	if err != nil {
+		return
+	}
 }
 
 // GetAuthorityInstance - Get an Authority instance
@@ -146,7 +149,10 @@ func (c *AuthorityManagementAPIController) GetAuthorityInstance(w http.ResponseW
 		return
 	}
 	// If no error, encode the body and the result code
-	model.EncodeJSONResponse(result.Body, &result.Code, w)
+	err = model.EncodeJSONResponse(result.Body, &result.Code, w)
+	if err != nil {
+		return
+	}
 }
 
 // GetCaCertificates - Get the Authority Instance's certificate chain
@@ -180,7 +186,10 @@ func (c *AuthorityManagementAPIController) GetCaCertificates(w http.ResponseWrit
 		return
 	}
 	// If no error, encode the body and the result code
-	model.EncodeJSONResponse(result.Body, &result.Code, w)
+	err = model.EncodeJSONResponse(result.Body, &result.Code, w)
+	if err != nil {
+		return
+	}
 }
 
 // GetConnection - Connect to Authority
@@ -198,7 +207,10 @@ func (c *AuthorityManagementAPIController) GetConnection(w http.ResponseWriter, 
 		return
 	}
 	// If no error, encode the body and the result code
-	model.EncodeJSONResponse(result.Body, &result.Code, w)
+	err = model.EncodeJSONResponse(result.Body, &result.Code, w)
+	if err != nil {
+		return
+	}
 }
 
 // GetCrl - Get the latest CRL for the Authority Instance
@@ -232,7 +244,10 @@ func (c *AuthorityManagementAPIController) GetCrl(w http.ResponseWriter, r *http
 		return
 	}
 	// If no error, encode the body and the result code
-	model.EncodeJSONResponse(result.Body, &result.Code, w)
+	err = model.EncodeJSONResponse(result.Body, &result.Code, w)
+	if err != nil {
+		return
+	}
 }
 
 // ListAuthorityInstances - List Authority instances
@@ -244,7 +259,10 @@ func (c *AuthorityManagementAPIController) ListAuthorityInstances(w http.Respons
 		return
 	}
 	// If no error, encode the body and the result code
-	model.EncodeJSONResponse(result.Body, &result.Code, w)
+	err = model.EncodeJSONResponse(result.Body, &result.Code, w)
+	if err != nil {
+		return
+	}
 }
 
 // ListRAProfileAttributes - List RA Profile Attributes
@@ -262,7 +280,10 @@ func (c *AuthorityManagementAPIController) ListRAProfileAttributes(w http.Respon
 		return
 	}
 	// If no error, encode the body and the result code
-	model.EncodeJSONResponse(result.Body, &result.Code, w)
+	err = model.EncodeJSONResponse(result.Body, &result.Code, w)
+	if err != nil {
+		return
+	}
 }
 
 // RemoveAuthorityInstance - Remove Authority instance
@@ -280,7 +301,10 @@ func (c *AuthorityManagementAPIController) RemoveAuthorityInstance(w http.Respon
 		return
 	}
 	// If no error, encode the body and the result code
-	model.EncodeJSONResponse(result.Body, &result.Code, w)
+	err = model.EncodeJSONResponse(result.Body, &result.Code, w)
+	if err != nil {
+		return
+	}
 }
 
 // UpdateAuthorityInstance - Update Authority instance
@@ -306,7 +330,10 @@ func (c *AuthorityManagementAPIController) UpdateAuthorityInstance(w http.Respon
 		return
 	}
 	// If no error, encode the body and the result code
-	model.EncodeJSONResponse(result.Body, &result.Code, w)
+	err = model.EncodeJSONResponse(result.Body, &result.Code, w)
+	if err != nil {
+		return
+	}
 }
 
 // ValidateRAProfileAttributes - Validate RA Profile attributes
@@ -337,7 +364,10 @@ func (c *AuthorityManagementAPIController) ValidateRAProfileAttributes(w http.Re
 		return
 	}
 	// If no error, encode the body and the result code
-	model.EncodeJSONResponse(result.Body, &result.Code, w)
+	err = model.EncodeJSONResponse(result.Body, &result.Code, w)
+	if err != nil {
+		return
+	}
 }
 
 // RAProfileCallback - Validate RA Profile attributes
@@ -361,5 +391,8 @@ func (c *AuthorityManagementAPIController) RAProfileCallback(w http.ResponseWrit
 		return
 	}
 	// If no error, encode the body and the result code
-	model.EncodeJSONResponse(result.Body, &result.Code, w)
+	err = model.EncodeJSONResponse(result.Body, &result.Code, w)
+	if err != nil {
+		return
+	}
 }

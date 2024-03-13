@@ -75,7 +75,10 @@ func (c *DiscoveryAPIController) DeleteDiscovery(w http.ResponseWriter, r *http.
 		return
 	}
 	// If no error, encode the body and the result code
-	model.EncodeJSONResponse(result.Body, &result.Code, w)
+	err = model.EncodeJSONResponse(result.Body, &result.Code, w)
+	if err != nil {
+		return
+	}
 }
 
 // DiscoverCertificate - Initiate certificate Discovery
@@ -102,7 +105,10 @@ func (c *DiscoveryAPIController) DiscoverCertificate(w http.ResponseWriter, r *h
 		return
 	}
 	// If no error, encode the body and the result code
-	model.EncodeJSONResponse(result.Body, &result.Code, w)
+	err = model.EncodeJSONResponse(result.Body, &result.Code, w)
+	if err != nil {
+		return
+	}
 }
 
 // GetDiscovery - Get Discovery status and result
@@ -135,5 +141,8 @@ func (c *DiscoveryAPIController) GetDiscovery(w http.ResponseWriter, r *http.Req
 		return
 	}
 	// If no error, encode the body and the result code
-	model.EncodeJSONResponse(result.Body, &result.Code, w)
+	err = model.EncodeJSONResponse(result.Body, &result.Code, w)
+	if err != nil {
+		return
+	}
 }
