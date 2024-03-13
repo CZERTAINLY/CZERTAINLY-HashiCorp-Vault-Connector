@@ -37,7 +37,7 @@ func main() {
 	AuthorityManagementAPIService := authority.NewAuthorityManagementAPIService(authorityRepo, log)
 	AuthorityManagementAPIController := authority.NewAuthorityManagementAPIController(AuthorityManagementAPIService)
 
-	CertificateManagementAPIService := authority.NewCertificateManagementAPIService()
+	CertificateManagementAPIService := authority.NewCertificateManagementAPIService(authorityRepo, log)
 	CertificateManagementAPIController := authority.NewCertificateManagementAPIController(CertificateManagementAPIService)
 
 	DiscoveryConnectorAttributesAPIService := discovery.NewConnectorAttributesAPIService(authorityRepo, log)

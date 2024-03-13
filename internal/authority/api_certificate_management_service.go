@@ -1,67 +1,106 @@
 package authority
 
 import (
+	"CZERTAINLY-HashiCorp-Vault-Connector/internal/db"
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/model"
+	"CZERTAINLY-HashiCorp-Vault-Connector/internal/utils"
+	"CZERTAINLY-HashiCorp-Vault-Connector/internal/vault"
 	"context"
+	"encoding/base64"
 	"errors"
-	"net/http"
+	"fmt"
+	vault2 "github.com/hashicorp/vault-client-go"
+	"github.com/hashicorp/vault-client-go/schema"
+	"go.uber.org/zap"
 )
 
 // CertificateManagementAPIService is a service that implements the logic for the CertificateManagementAPIServicer
 // This service should implement the business logic for every endpoint for the CertificateManagementAPI API.
 // Include any external packages or services that will be required by this service.
 type CertificateManagementAPIService struct {
+	authorityRepo *db.AuthorityRepository
+	log           *zap.Logger
 }
 
 // NewCertificateManagementAPIService creates a default api service
-func NewCertificateManagementAPIService() CertificateManagementAPIServicer {
-	return &CertificateManagementAPIService{}
+func NewCertificateManagementAPIService(authorityRepo *db.AuthorityRepository, logger *zap.Logger) CertificateManagementAPIServicer {
+	return &CertificateManagementAPIService{
+		authorityRepo: authorityRepo,
+		log:           logger,
+	}
 }
 
 // IdentifyCertificate - Identify Certificate
 func (s *CertificateManagementAPIService) IdentifyCertificate(ctx context.Context, uuid string, certificateIdentificationRequestDto model.CertificateIdentificationRequestDto) (model.ImplResponse, error) {
-	// TODO - update IdentifyCertificate with the required logic for this service method.
-	// Add api_certificate_management_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
+	raAttributes := certificateIdentificationRequestDto.RaProfileAttributes
+	engineData := model.GetAttributeFromArrayByUUID(model.RA_PROFILE_ENGINE_ATTR, raAttributes).GetContent()[0].GetData().(map[string]interface{})
+	engineName := engineData["engineName"].(string)
+	authority, err := s.authorityRepo.FindAuthorityInstanceByUUID(uuid)
+	if err != nil {
+		return model.Response(404, model.ErrorMessageDto{
+			Message: "Authority not found",
+		}), nil
+	}
+	client, err := vault.GetClient(*authority)
+	serialNumber := utils.ExtractSerialNumber(certificateIdentificationRequestDto.Certificate)
 
-	// TODO: Uncomment the next line to return response model.Response(200, CertificateIdentificationResponseDto{}) or use other options such as http.Ok ...
-	// return model.Response(200, CertificateIdentificationResponseDto{}), nil
+	_, err = client.Secrets.PkiReadCert(ctx, serialNumber.Text(10), vault2.WithMountPath(engineName))
+	if err != nil {
+		s.log.Error(err.Error())
+		return model.Response(400, model.ErrorMessageDto{
+			Message: err.Error(),
+		}), nil
 
-	// TODO: Uncomment the next line to return response model.Response(422, []string{}) or use other options such as http.Ok ...
-	// return model.Response(422, []string{}), nil
+	}
+	response := model.CertificateIdentificationResponseDto{
+		Meta: nil,
+	}
 
-	// TODO: Uncomment the next line to return response model.Response(400, ErrorMessageDto{}) or use other options such as http.Ok ...
-	// return model.Response(400, ErrorMessageDto{}), nil
-
-	// TODO: Uncomment the next line to return response model.Response(500, {}) or use other options such as http.Ok ...
-	// return model.Response(500, nil),nil
-
-	// TODO: Uncomment the next line to return response model.Response(404, []string{}) or use other options such as http.Ok ...
-	// return model.Response(404, []string{}), nil
-
-	return model.Response(http.StatusNotImplemented, nil), errors.New("IdentifyCertificate method not implemented")
+	return model.Response(200, response), errors.New("IdentifyCertificate method not implemented")
 }
 
 // IssueCertificate - Issue Certificate
 func (s *CertificateManagementAPIService) IssueCertificate(ctx context.Context, uuid string, certificateSignRequestDto model.CertificateSignRequestDto) (model.ImplResponse, error) {
-	// TODO - update IssueCertificate with the required logic for this service method.
-	// Add api_certificate_management_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
+	raAttributes := certificateSignRequestDto.RaProfileAttributes
+	engineData := model.GetAttributeFromArrayByUUID(model.RA_PROFILE_ENGINE_ATTR, raAttributes).GetContent()[0].GetData().(map[string]interface{})
+	engineName := engineData["engineName"].(string)
+	role := model.GetAttributeFromArrayByUUID(model.RA_PROFILE_ROLE_ATTR, raAttributes).GetContent()[0].GetData().(string)
+	authority, err := s.authorityRepo.FindAuthorityInstanceByUUID(uuid)
+	if err != nil {
+		return model.Response(404, model.ErrorMessageDto{
+			Message: "Authority not found",
+		}), nil
+	}
+	client, err := vault.GetClient(*authority)
+	if err != nil {
+		s.log.Fatal(err.Error())
+	}
+	commonName := utils.ExtractCommonName(certificateSignRequestDto.Pkcs10)
+	fmt.Println("Common Name:", commonName)
 
-	// TODO: Uncomment the next line to return response model.Response(422, []string{}) or use other options such as http.Ok ...
-	// return model.Response(422, []string{}), nil
+	signRequest := schema.PkiIssuerSignWithRoleRequest{
+		CommonName: commonName,
+		Csr:        certificateSignRequestDto.Pkcs10,
+	}
+	certificateSignResponse, err := client.Secrets.PkiIssuerSignWithRole(ctx, "default", role, signRequest, vault2.WithMountPath(engineName))
+	if err != nil {
+		s.log.Error(err.Error())
+		return model.Response(400, model.ErrorMessageDto{
+			Message: err.Error(),
+		}), nil
 
-	// TODO: Uncomment the next line to return response model.Response(400, ErrorMessageDto{}) or use other options such as http.Ok ...
-	// return model.Response(400, ErrorMessageDto{}), nil
+	}
+	certificate := certificateSignResponse.Data.Certificate
+	serialNumber := certificateSignResponse.Data.SerialNumber
 
-	// TODO: Uncomment the next line to return response model.Response(500, {}) or use other options such as http.Ok ...
-	// return model.Response(500, nil),nil
+	CertificateDataResponseDto := model.CertificateDataResponseDto{
+		CertificateData: base64.StdEncoding.EncodeToString([]byte(certificate)),
+		Uuid:            utils.DeterministicGUID(serialNumber),
+		Meta:            nil,
+		CertificateType: "X.509",
+	}
 
-	// TODO: Uncomment the next line to return response model.Response(404, ErrorMessageDto{}) or use other options such as http.Ok ...
-	// return model.Response(404, ErrorMessageDto{}), nil
-
-	// TODO: Uncomment the next line to return response model.Response(200, CertificateDataResponseDto{}) or use other options such as http.Ok ...
-	// return model.Response(200, CertificateDataResponseDto{}), nil
-
-	return model.Response(http.StatusNotImplemented, nil), errors.New("IssueCertificate method not implemented")
+	return model.Response(200, CertificateDataResponseDto), nil
 }
 
 // ListIssueCertificateAttributes - List of Attributes to issue Certificate
@@ -76,48 +115,74 @@ func (s *CertificateManagementAPIService) ListRevokeCertificateAttributes(ctx co
 
 // RenewCertificate - Renew Certificate
 func (s *CertificateManagementAPIService) RenewCertificate(ctx context.Context, uuid string, certificateRenewRequestDto model.CertificateRenewRequestDto) (model.ImplResponse, error) {
-	// TODO - update RenewCertificate with the required logic for this service method.
-	// Add api_certificate_management_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
+	raAttributes := certificateRenewRequestDto.RaProfileAttributes
+	engineData := model.GetAttributeFromArrayByUUID(model.RA_PROFILE_ENGINE_ATTR, raAttributes).GetContent()[0].GetData().(map[string]interface{})
+	engineName := engineData["engineName"].(string)
+	role := model.GetAttributeFromArrayByUUID(model.RA_PROFILE_ROLE_ATTR, raAttributes).GetContent()[0].GetData().(string)
+	authority, err := s.authorityRepo.FindAuthorityInstanceByUUID(uuid)
+	if err != nil {
+		return model.Response(404, model.ErrorMessageDto{
+			Message: "Authority not found",
+		}), nil
+	}
 
-	// TODO: Uncomment the next line to return response model.Response(422, []string{}) or use other options such as http.Ok ...
-	// return model.Response(422, []string{}), nil
+	client, err := vault.GetClient(*authority)
+	if err != nil {
+		s.log.Fatal(err.Error())
+	}
 
-	// TODO: Uncomment the next line to return response model.Response(400, ErrorMessageDto{}) or use other options such as http.Ok ...
-	// return model.Response(400, ErrorMessageDto{}), nil
+	commonName := utils.ExtractCommonName(certificateRenewRequestDto.Pkcs10)
+	fmt.Println("Common Name:", commonName)
 
-	// TODO: Uncomment the next line to return response model.Response(500, {}) or use other options such as http.Ok ...
-	// return model.Response(500, nil),nil
+	signRequest := schema.PkiIssuerSignWithRoleRequest{
+		CommonName: commonName,
+		Csr:        certificateRenewRequestDto.Pkcs10,
+	}
+	certificateSignResponse, err := client.Secrets.PkiIssuerSignWithRole(ctx, "default", role, signRequest, vault2.WithMountPath(engineName))
+	if err != nil {
+		s.log.Error(err.Error())
+		return model.Response(400, model.ErrorMessageDto{
+			Message: err.Error(),
+		}), nil
 
-	// TODO: Uncomment the next line to return response model.Response(200, CertificateDataResponseDto{}) or use other options such as http.Ok ...
-	// return model.Response(200, CertificateDataResponseDto{}), nil
+	}
+	certificate := certificateSignResponse.Data.Certificate
+	serialNumber := certificateSignResponse.Data.SerialNumber
 
-	// TODO: Uncomment the next line to return response model.Response(404, ErrorMessageDto{}) or use other options such as http.Ok ...
-	// return model.Response(404, ErrorMessageDto{}), nil
+	CertificateDataResponseDto := model.CertificateDataResponseDto{
+		CertificateData: base64.StdEncoding.EncodeToString([]byte(certificate)),
+		Uuid:            utils.DeterministicGUID(serialNumber),
+		Meta:            nil,
+		CertificateType: "X.509",
+	}
 
-	return model.Response(http.StatusNotImplemented, nil), errors.New("RenewCertificate method not implemented")
+	return model.Response(200, CertificateDataResponseDto), nil
 }
 
 // RevokeCertificate - Revoke Certificate
 func (s *CertificateManagementAPIService) RevokeCertificate(ctx context.Context, uuid string, certRevocationDto model.CertRevocationDto) (model.ImplResponse, error) {
-	// TODO - update RevokeCertificate with the required logic for this service method.
-	// Add api_certificate_management_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
+	authority, err := s.authorityRepo.FindAuthorityInstanceByUUID(uuid)
+	if err != nil {
+		return model.Response(404, model.ErrorMessageDto{
+			Message: "Authority not found",
+		}), nil
+	}
+	client, err := vault.GetClient(*authority)
+	serialNumber := utils.ExtractSerialNumber(certRevocationDto.Certificate)
 
-	// TODO: Uncomment the next line to return response model.Response(422, []string{}) or use other options such as http.Ok ...
-	// return model.Response(422, []string{}), nil
+	revokeRequest := schema.PkiRevokeRequest{
+		SerialNumber: serialNumber.Text(10),
+	}
+	_, err = client.Secrets.PkiRevoke(ctx, revokeRequest)
+	if err != nil {
+		s.log.Error(err.Error())
+		return model.Response(400, model.ErrorMessageDto{
+			Message: err.Error(),
+		}), nil
 
-	// TODO: Uncomment the next line to return response model.Response(400, ErrorMessageDto{}) or use other options such as http.Ok ...
-	// return model.Response(400, ErrorMessageDto{}), nil
+	}
+	return model.Response(200, nil), nil
 
-	// TODO: Uncomment the next line to return response model.Response(500, {}) or use other options such as http.Ok ...
-	// return model.Response(500, nil),nil
-
-	// TODO: Uncomment the next line to return response model.Response(404, ErrorMessageDto{}) or use other options such as http.Ok ...
-	// return model.Response(404, ErrorMessageDto{}), nil
-
-	// TODO: Uncomment the next line to return response model.Response(200, {}) or use other options such as http.Ok ...
-	// return model.Response(200, nil),nil
-
-	return model.Response(http.StatusNotImplemented, nil), errors.New("RevokeCertificate method not implemented")
 }
 
 // ValidateIssueCertificateAttributes - Validate list of Attributes to issue Certificate

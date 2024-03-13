@@ -3,6 +3,7 @@ package authority
 import (
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/model"
 	"encoding/json"
+	"io"
 	"net/http"
 	"strings"
 
@@ -94,12 +95,13 @@ func (c *CertificateManagementAPIController) IdentifyCertificate(w http.Response
 		return
 	}
 	certificateIdentificationRequestDtoParam := model.CertificateIdentificationRequestDto{}
-	d := json.NewDecoder(r.Body)
-	d.DisallowUnknownFields()
-	if err := d.Decode(&certificateIdentificationRequestDtoParam); err != nil {
+	json, err := io.ReadAll(r.Body)
+	if err != nil {
 		c.errorHandler(w, r, &model.ParsingError{Err: err}, nil)
 		return
 	}
+
+	certificateIdentificationRequestDtoParam.Unmarshal(json)
 	if err := model.AssertCertificateIdentificationRequestDtoRequired(certificateIdentificationRequestDtoParam); err != nil {
 		c.errorHandler(w, r, err, nil)
 		return
@@ -127,12 +129,13 @@ func (c *CertificateManagementAPIController) IssueCertificate(w http.ResponseWri
 		return
 	}
 	certificateSignRequestDtoParam := model.CertificateSignRequestDto{}
-	d := json.NewDecoder(r.Body)
-	d.DisallowUnknownFields()
-	if err := d.Decode(&certificateSignRequestDtoParam); err != nil {
+	json, err := io.ReadAll(r.Body)
+	if err != nil {
 		c.errorHandler(w, r, &model.ParsingError{Err: err}, nil)
 		return
 	}
+
+	certificateSignRequestDtoParam.Unmarshal(json)
 	if err := model.AssertCertificateSignRequestDtoRequired(certificateSignRequestDtoParam); err != nil {
 		c.errorHandler(w, r, err, nil)
 		return
@@ -196,12 +199,13 @@ func (c *CertificateManagementAPIController) RenewCertificate(w http.ResponseWri
 		return
 	}
 	certificateRenewRequestDtoParam := model.CertificateRenewRequestDto{}
-	d := json.NewDecoder(r.Body)
-	d.DisallowUnknownFields()
-	if err := d.Decode(&certificateRenewRequestDtoParam); err != nil {
+	json, err := io.ReadAll(r.Body)
+	if err != nil {
 		c.errorHandler(w, r, &model.ParsingError{Err: err}, nil)
 		return
 	}
+
+	certificateRenewRequestDtoParam.Unmarshal(json)
 	if err := model.AssertCertificateRenewRequestDtoRequired(certificateRenewRequestDtoParam); err != nil {
 		c.errorHandler(w, r, err, nil)
 		return
@@ -229,12 +233,13 @@ func (c *CertificateManagementAPIController) RevokeCertificate(w http.ResponseWr
 		return
 	}
 	certRevocationDtoParam := model.CertRevocationDto{}
-	d := json.NewDecoder(r.Body)
-	d.DisallowUnknownFields()
-	if err := d.Decode(&certRevocationDtoParam); err != nil {
+	json, err := io.ReadAll(r.Body)
+	if err != nil {
 		c.errorHandler(w, r, &model.ParsingError{Err: err}, nil)
 		return
 	}
+
+	certRevocationDtoParam.Unmarshal(json)
 	if err := model.AssertCertRevocationDtoRequired(certRevocationDtoParam); err != nil {
 		c.errorHandler(w, r, err, nil)
 		return

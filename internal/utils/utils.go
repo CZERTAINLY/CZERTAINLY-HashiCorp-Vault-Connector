@@ -2,8 +2,12 @@ package utils
 
 import (
 	"crypto/md5"
+	"crypto/x509"
+	"encoding/base64"
 	"encoding/hex"
+	"encoding/pem"
 	"log"
+	"math/big"
 
 	"github.com/google/uuid"
 )
@@ -31,3 +35,33 @@ func DeterministicGUID(parts ...string) string {
 	return uuid.String()
 }
 
+func ExtractCommonName(csr string) string {
+	decodedCsr, _ := base64.StdEncoding.DecodeString(csr)
+
+	block, _ := pem.Decode([]byte(decodedCsr))
+	if block == nil {
+		log.Fatalf("Failed to parse PEM block containing the CSR")
+	}
+
+	csrParsed, err := x509.ParseCertificateRequest(block.Bytes)
+	if err != nil {
+		log.Fatalf("Failed to parse CSR: %v", err)
+	}
+
+	commonName := csrParsed.Subject.CommonName
+	return commonName
+}
+
+func ExtractSerialNumber(certificate string) *big.Int {
+	block, _ := pem.Decode([]byte(certificate))
+	if block == nil {
+		log.Fatalf("Failed to parse PEM block containing the certificate")
+	}
+
+	certificateParsed, err := x509.ParseCertificate(block.Bytes)
+	if err != nil {
+		log.Fatalf("Failed to parse certificate: %v", err)
+	}
+	serialNumber := certificateParsed.SerialNumber
+	return serialNumber
+}

@@ -1,12 +1,19 @@
 package model
 
+import "github.com/tidwall/gjson"
+
 type CertificateIdentificationRequestDto struct {
 
 	// Base64 Certificate content. (certificate to be identified)
 	Certificate string `json:"certificate"`
 
 	// List of RA Profiles attributes
-	RaProfileAttributes []RequestAttributeDto `json:"raProfileAttributes"`
+	RaProfileAttributes []Attribute `json:"raProfileAttributes"`
+}
+
+func (a *CertificateIdentificationRequestDto) Unmarshal(json []byte) {
+	a.Certificate = gjson.GetBytes(json, "certificate").String()
+	a.RaProfileAttributes = UnmarshalAttributesValues([]byte(gjson.GetBytes(json, "raProfileAttributes").Raw))
 }
 
 // AssertCertificateIdentificationRequestDtoRequired checks if the required fields are not zero-ed

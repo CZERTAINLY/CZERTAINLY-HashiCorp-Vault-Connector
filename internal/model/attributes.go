@@ -18,11 +18,15 @@ const (
 	RA_PROFILE_AUTHORITY_ATTR  string = "RA_PROFILE_AUTHORITY_ATTR_UUID"
 )
 
+type AttributeName string
+
 const (
 	KUBERNETES_CRED string = "kubernetes"
 	ROLE_CRED       string = "role"
 	TOKEN_CRED      string = "jwt"
 )
+
+type CredentialType string
 
 func GetCredentialTypeByName(credentialType string) AttributeContent {
 	for _, attribute := range GetCredentialTypes() {

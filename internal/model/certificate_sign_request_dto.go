@@ -1,15 +1,22 @@
 package model
 
+import "github.com/tidwall/gjson"
+
 type CertificateSignRequestDto struct {
 
 	// Certificate sign request (PKCS#10) encoded as Base64 string
 	Pkcs10 string `json:"pkcs10"`
 
 	// List of RA Profiles attributes
-	RaProfileAttributes []RequestAttributeDto `json:"raProfileAttributes"`
+	RaProfileAttributes []Attribute `json:"raProfileAttributes"`
 
 	// List of Attributes to issue Certificate
-	Attributes []RequestAttributeDto `json:"attributes"`
+	Attributes []Attribute `json:"attributes"`
+}
+
+func (a *CertificateSignRequestDto) Unmarshal(json []byte) {
+	a.Pkcs10 = gjson.GetBytes(json, "pkcs10").String()
+	a.RaProfileAttributes = UnmarshalAttributesValues([]byte(gjson.GetBytes(json, "raProfileAttributes").Raw))
 }
 
 // AssertCertificateSignRequestDtoRequired checks if the required fields are not zero-ed
@@ -17,7 +24,6 @@ func AssertCertificateSignRequestDtoRequired(obj CertificateSignRequestDto) erro
 	elements := map[string]interface{}{
 		"pkcs10":              obj.Pkcs10,
 		"raProfileAttributes": obj.RaProfileAttributes,
-		"attributes":          obj.Attributes,
 	}
 	for name, el := range elements {
 		if isZero := IsZeroValue(el); isZero {

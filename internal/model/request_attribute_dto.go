@@ -32,7 +32,7 @@ func (d RequestAttributeDto) GetAttributeContentType() AttributeContentType {
 }
 
 // AssertRequestAttributeDtoRequired checks if the required fields are not zero-ed
-func AssertRequestAttributeDtoRequired(obj RequestAttributeDto) error {
+func AssertRequestAttributeDtoRequired(obj Attribute) error {
 	elements := map[string]interface{}{
 		"name":    obj.GetName(),
 		"content": obj.GetContent(),

@@ -1,18 +1,25 @@
 package model
 
+import "github.com/tidwall/gjson"
+
 type CertificateRenewRequestDto struct {
 
 	// Certificate sign request (PKCS#10) encoded as Base64 string
 	Pkcs10 string `json:"pkcs10"`
 
 	// List of RA Profiles attributes
-	RaProfileAttributes []RequestAttributeDto `json:"raProfileAttributes"`
+	RaProfileAttributes []Attribute `json:"raProfileAttributes"`
 
 	// Base64 Certificate content. (Certificate to be renewed)
 	Certificate string `json:"certificate"`
 
 	// Metadata for the Certificate
-	Meta []MetadataAttribute `json:"meta"`
+	Meta []Attribute `json:"meta"`
+}
+
+func (a *CertificateRenewRequestDto) Unmarshal(json []byte) {
+	a.Pkcs10 = gjson.GetBytes(json, "pkcs10").String()
+	a.RaProfileAttributes = UnmarshalAttributesValues([]byte(gjson.GetBytes(json, "raProfileAttributes").Raw))
 }
 
 // AssertCertificateRenewRequestDtoRequired checks if the required fields are not zero-ed
@@ -21,7 +28,6 @@ func AssertCertificateRenewRequestDtoRequired(obj CertificateRenewRequestDto) er
 		"pkcs10":              obj.Pkcs10,
 		"raProfileAttributes": obj.RaProfileAttributes,
 		"certificate":         obj.Certificate,
-		"meta":                obj.Meta,
 	}
 	for name, el := range elements {
 		if isZero := IsZeroValue(el); isZero {
