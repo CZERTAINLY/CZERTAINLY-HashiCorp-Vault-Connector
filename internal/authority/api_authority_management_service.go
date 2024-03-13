@@ -7,7 +7,6 @@ import (
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/vault"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	vault2 "github.com/hashicorp/vault-client-go"
 	"net/http"
@@ -118,7 +117,7 @@ func (s *AuthorityManagementAPIService) GetCaCertificates(ctx context.Context, u
 
 	}
 	var caChainCertificates []model.CertificateDataResponseDto
-	chain, err := utils.GetCertificatesFromChain([]byte(certificateCaResponse.Data.CaChain))
+	chain, err := utils.GetCertificatesFromDer([]byte(certificateCaResponse.Data.CaChain))
 	if err != nil {
 		return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{
 			Message: "Failed to parse certificate chain",
@@ -161,22 +160,70 @@ func (s *AuthorityManagementAPIService) GetConnection(ctx context.Context, uuid 
 
 // GetCrl - Get the latest CRL for the Authority Instance
 func (s *AuthorityManagementAPIService) GetCrl(ctx context.Context, uuid string, certificateRevocationListRequestDto model.CertificateRevocationListRequestDto) (model.ImplResponse, error) {
-	// TODO - update GetCrl with the required logic for this service method.
-	// Add api_authority_management_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
+	authority, err := s.authorityRepo.FindAuthorityInstanceByUUID(uuid)
+	if err != nil {
+		return model.Response(http.StatusNotFound, model.ErrorMessageDto{
+			Message: "Authority not found",
+		}), nil
+	}
 
-	// TODO: Uncomment the next line to return response model.Response(http.StatusBadRequest, ErrorMessageDto{}) or use other options such as http.Ok ...
-	// return model.Response(http.StatusBadRequest, ErrorMessageDto{}), nil
+	client, err := vault.GetClient(*authority)
+	engineData := model.GetAttributeFromArrayByUUID(model.RA_PROFILE_ENGINE_ATTR, certificateRevocationListRequestDto.RaProfileAttributes).GetContent()[0].GetData().(map[string]interface{})
+	engineName := engineData["engineName"].(string)
+	var chain []string
+	if certificateRevocationListRequestDto.Delta {
+		deltaCrl, err := client.Secrets.PkiReadCertDeltaCrl(ctx, vault2.WithMountPath(engineName))
+		if err != nil {
+			return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{
+				Message: "Failed to read Delta CRL",
+			}), err
+		}
+		chain, err = utils.GetCertificatesFromDer([]byte(deltaCrl.Data.CaChain))
+		if err != nil {
+			return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{
+				Message: "Failed to parse delta CRL records",
+			}), err
 
-	// TODO: Uncomment the next line to return response model.Response(http.StatusInternalServerError, {}) or use other options such as http.Ok ...
-	// return model.Response(http.StatusInternalServerError, nil),nil
+		}
 
-	// TODO: Uncomment the next line to return response model.Response(http.StatusNotFound, ErrorMessageDto{}) or use other options such as http.Ok ...
-	// return model.Response(http.StatusNotFound, ErrorMessageDto{}), nil
+	} else {
+		completeCrl, err := client.Secrets.PkiReadCertCrl(ctx, vault2.WithMountPath(engineName))
+		if err != nil {
+			return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{
+				Message: "Failed to read CRL",
+			}), err
+		}
+		chain, err = utils.GetCertificatesFromDer([]byte(completeCrl.Data.CaChain))
+		if err != nil {
+			return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{
+				Message: "Failed to parse CRL records",
+			}), err
 
-	// TODO: Uncomment the next line to return response model.Response(http.StatusOK, CertificateRevocationListResponseDto{}) or use other options such as http.Ok ...
-	// return model.Response(http.StatusOK, CertificateRevocationListResponseDto{}), nil
+		}
+	}
 
-	return model.Response(http.StatusNotImplemented, nil), errors.New("GetCrl method not implemented")
+	if err != nil {
+		s.log.Error(err.Error())
+		return model.Response(http.StatusBadRequest, model.ErrorMessageDto{
+			Message: err.Error(),
+		}), nil
+
+	}
+	var caChainCertificates []model.CertificateDataResponseDto
+
+	for _, cert := range chain {
+		caChainCertificates = append(caChainCertificates, model.CertificateDataResponseDto{
+			CertificateData: cert,
+			Uuid:            utils.DeterministicGUID(),
+			Meta:            nil,
+			CertificateType: "X.509",
+		})
+	}
+	caCertificatesResponseDto := model.CaCertificatesResponseDto{
+		Certificates: caChainCertificates,
+	}
+
+	return model.Response(http.StatusOK, caCertificatesResponseDto), nil
 }
 
 // ListAuthorityInstances - List Authority instances

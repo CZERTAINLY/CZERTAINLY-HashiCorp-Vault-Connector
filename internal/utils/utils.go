@@ -67,7 +67,7 @@ func ExtractSerialNumber(certificate string) *big.Int {
 	return serialNumber
 }
 
-func GetCertificatesFromChain(pemData []byte) ([]string, error) {
+func GetCertificatesFromDer(pemData []byte) ([]string, error) {
 
 	var certs []string
 	for {
