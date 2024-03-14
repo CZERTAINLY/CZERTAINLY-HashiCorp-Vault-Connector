@@ -2,15 +2,17 @@ package vault
 
 import (
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/db"
+	"CZERTAINLY-HashiCorp-Vault-Connector/internal/logger"
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/model"
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/hashicorp/vault-client-go"
 	"github.com/hashicorp/vault-client-go/schema"
 )
+
+var log = logger.Get()
 
 const DEFAULT_K8S_TOKEN_PATH = "/var/run/secrets/kubernetes.io/serviceaccount/token"
 
@@ -34,12 +36,12 @@ func (l AppRoleLogin) Login(client *vault.Client) (*vault.Client, error) {
 		//vault.WithMountPath("my/approle/path"), // optional, defaults to "approle"
 	)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err.Error())
 		return nil, err
 	}
 	//fmt.Println(resp.Auth.ClientToken)
 	if err := client.SetToken(resp.Auth.ClientToken); err != nil {
-		log.Fatal(err)
+		log.Error(err.Error())
 		return nil, err
 	}
 	return client, nil
@@ -117,7 +119,7 @@ func GetClient(authority db.AuthorityInstance) (*vault.Client, error) {
 		vault.WithRequestTimeout(30*time.Second),
 	)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err.Error())
 	}
 	return getLoginMethod(authority).Login(client)
 }

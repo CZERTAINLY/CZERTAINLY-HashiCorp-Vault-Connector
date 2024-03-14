@@ -1,17 +1,20 @@
 package utils
 
 import (
+	"CZERTAINLY-HashiCorp-Vault-Connector/internal/logger"
 	"crypto/md5"
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/pem"
 	"fmt"
-	"log"
+
 	"math/big"
 
 	"github.com/google/uuid"
 )
+
+var log = logger.Get()
 
 func DeterministicGUID(parts ...string) string {
 	// concatenate all strings
@@ -30,7 +33,7 @@ func DeterministicGUID(parts ...string) string {
 	// first 16 bytes of the MD5 hash
 	uuidByte, err := uuid.FromBytes([]byte(md5string[0:16]))
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err.Error())
 	}
 
 	return uuidByte.String()
@@ -41,12 +44,12 @@ func ExtractCommonName(csr string) string {
 
 	block, _ := pem.Decode(decodedCsr)
 	if block == nil {
-		log.Fatalf("Failed to parse PEM block containing the CSR")
+		log.Error("Failed to parse PEM block containing the CSR")
 	}
 
 	csrParsed, err := x509.ParseCertificateRequest(block.Bytes)
 	if err != nil {
-		log.Fatalf("Failed to parse CSR: %v", err)
+		log.Error("Failed to parse CSR: " + err.Error())
 	}
 
 	commonName := csrParsed.Subject.CommonName
@@ -56,12 +59,12 @@ func ExtractCommonName(csr string) string {
 func ExtractSerialNumber(certificate string) *big.Int {
 	block, _ := pem.Decode([]byte(certificate))
 	if block == nil {
-		log.Fatalf("Failed to parse PEM block containing the certificate")
+		log.Error("Failed to parse PEM block containing the certificate")
 	}
 
 	certificateParsed, err := x509.ParseCertificate(block.Bytes)
 	if err != nil {
-		log.Fatalf("Failed to parse certificate: %v", err)
+		log.Error("Failed to parse certificate: " + err.Error())
 	}
 	serialNumber := certificateParsed.SerialNumber
 	return serialNumber

@@ -7,8 +7,6 @@ import (
 	"context"
 	"os"
 
-	// "encoding/json"
-	"errors"
 	"net/http"
 
 	"go.uber.org/zap"
@@ -68,6 +66,5 @@ func (s *ConnectorAttributesAPIService) CredentialAttributesCallback(ctx context
 
 // ValidateAttributes - Validate Attributes
 func (s *ConnectorAttributesAPIService) ValidateAttributes(ctx context.Context, kind string, requestAttributeDto []model.Attribute) (model.ImplResponse, error) {
-
-	return model.Response(http.StatusNotImplemented, nil), errors.New("ValidateAttributes method not implemented")
+	return model.Response(http.StatusOK, nil), nil
 }

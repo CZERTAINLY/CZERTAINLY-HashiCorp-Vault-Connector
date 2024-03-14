@@ -7,7 +7,6 @@ import (
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/vault"
 	"context"
 	"encoding/json"
-	"fmt"
 	vault2 "github.com/hashicorp/vault-client-go"
 	"net/http"
 
@@ -260,7 +259,6 @@ func (s *AuthorityManagementAPIService) ListRAProfileAttributes(ctx context.Cont
 		}), err
 	}
 	mounts, _ := client.System.MountsListSecretsEngines(ctx)
-	fmt.Print(mounts)
 	var engineList []model.AttributeContent
 	for engineName, engineData := range mounts.Data {
 		if engineData.(map[string]any)["type"] == "pki" {

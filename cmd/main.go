@@ -21,9 +21,10 @@ var version = "0.0.1"
 
 var routes map[string][]model.EndpointDto
 
+var log = logger.Get()
+
 func main() {
 	routes = make(map[string][]model.EndpointDto)
-	log := logger.Get()
 	c := config.Get()
 	log.Info("Starting CZERTAINLY-HashiCorp-Vault-Connector", zap.String("version", version))
 	db.MigrateDB(c)
@@ -94,15 +95,14 @@ func main() {
 }
 
 func logMiddleware(next http.Handler) http.Handler {
-	l := logger.Get()
+
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		l.Info("Request received", zap.String("path", r.URL.Path))
+		log.Info("Request received", zap.String("path", r.URL.Path))
 		next.ServeHTTP(w, r)
 	})
 }
 
 func populateRoutes(router *mux.Router, routeKey string) {
-	log := logger.Get()
 	routes[routeKey] = make([]model.EndpointDto, 0)
 	err := router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
 		tpl, _ := route.GetPathTemplate()

@@ -8,7 +8,6 @@ import (
 	"context"
 	"encoding/base64"
 	"errors"
-	"fmt"
 	vault2 "github.com/hashicorp/vault-client-go"
 	"github.com/hashicorp/vault-client-go/schema"
 	"go.uber.org/zap"
@@ -84,7 +83,6 @@ func (s *CertificateManagementAPIService) IssueCertificate(ctx context.Context, 
 		}), nil
 	}
 	commonName := utils.ExtractCommonName(certificateSignRequestDto.Pkcs10)
-	fmt.Println("Common Name:", commonName)
 
 	decoded, err := base64.StdEncoding.DecodeString(certificateSignRequestDto.Pkcs10)
 	if err != nil {
@@ -149,7 +147,6 @@ func (s *CertificateManagementAPIService) RenewCertificate(ctx context.Context, 
 	}
 
 	commonName := utils.ExtractCommonName(certificateRenewRequestDto.Pkcs10)
-	fmt.Println("Common Name:", commonName)
 
 	signRequest := schema.PkiIssuerSignWithRoleRequest{
 		CommonName: commonName,
