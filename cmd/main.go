@@ -107,8 +107,10 @@ func populateRoutes(router *mux.Router, routeKey string) {
 	err := router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
 		tpl, _ := route.GetPathTemplate()
 		met, _ := route.GetMethods()
+		name := route.GetName()
 		endpoint := model.EndpointDto{
 			Method:   met[0],
+			Name:     strings.ToLower(string(name[0])) + name[1:],
 			Uuid:     utils.DeterministicGUID(met[0] + tpl),
 			Context:  tpl,
 			Required: true,
