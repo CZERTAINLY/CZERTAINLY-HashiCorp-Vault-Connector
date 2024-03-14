@@ -1,17 +1,20 @@
 package utils
 
 import (
+	"CZERTAINLY-HashiCorp-Vault-Connector/internal/logger"
 	"crypto/md5"
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/pem"
 	"fmt"
-	"log"
+
 	"math/big"
 
 	"github.com/google/uuid"
 )
+
+var log = logger.Get()
 
 func DeterministicGUID(parts ...string) string {
 	// concatenate all strings
@@ -30,41 +33,48 @@ func DeterministicGUID(parts ...string) string {
 	// first 16 bytes of the MD5 hash
 	uuidByte, err := uuid.FromBytes([]byte(md5string[0:16]))
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err.Error())
 	}
 
 	return uuidByte.String()
 }
 
-func ExtractCommonName(csr string) string {
+func ExtractCommonName(csr string) (string, error) {
 	decodedCsr, _ := base64.StdEncoding.DecodeString(csr)
 
 	block, _ := pem.Decode(decodedCsr)
 	if block == nil {
-		log.Fatalf("Failed to parse PEM block containing the CSR")
+		log.Error("Failed to parse PEM block containing the CSR")
+		return "", fmt.Errorf("failed to parse PEM block containing the CSR")
 	}
 
 	csrParsed, err := x509.ParseCertificateRequest(block.Bytes)
 	if err != nil {
-		log.Fatalf("Failed to parse CSR: %v", err)
+		log.Error("Failed to parse CSR: " + err.Error())
+		return "", fmt.Errorf("failed to parse CSR: %v", err)
 	}
 
 	commonName := csrParsed.Subject.CommonName
-	return commonName
+	return commonName, nil
 }
 
-func ExtractSerialNumber(certificate string) *big.Int {
-	block, _ := pem.Decode([]byte(certificate))
+func ExtractSerialNumber(certificate string) (*big.Int, error) {
+	block, err := pem.Decode([]byte(certificate))
+	if err != nil {
+		log.Error("Failed to parse PEM block containing the certificate")
+		return nil, fmt.Errorf("failed to parse PEM block containing the certificate")
+	}
 	if block == nil {
-		log.Fatalf("Failed to parse PEM block containing the certificate")
+		log.Error("Failed to parse PEM block containing the certificate")
+		return nil, fmt.Errorf("failed to parse PEM block containing the certificate")
 	}
 
-	certificateParsed, err := x509.ParseCertificate(block.Bytes)
-	if err != nil {
-		log.Fatalf("Failed to parse certificate: %v", err)
+	certificateParsed, errParse := x509.ParseCertificate(block.Bytes)
+	if errParse != nil {
+		log.Error("Failed to parse certificate: " + errParse.Error())
 	}
 	serialNumber := certificateParsed.SerialNumber
-	return serialNumber
+	return serialNumber, nil
 }
 
 func GetCertificatesFromDer(pemData []byte) ([]string, error) {

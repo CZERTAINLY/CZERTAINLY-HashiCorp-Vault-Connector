@@ -8,7 +8,6 @@ import (
 	"context"
 	"encoding/base64"
 	"errors"
-	"fmt"
 	vault2 "github.com/hashicorp/vault-client-go"
 	"github.com/hashicorp/vault-client-go/schema"
 	"go.uber.org/zap"
@@ -48,7 +47,13 @@ func (s *CertificateManagementAPIService) IdentifyCertificate(ctx context.Contex
 			Message: err.Error(),
 		}), nil
 	}
-	serialNumber := utils.ExtractSerialNumber(certificateIdentificationRequestDto.Certificate)
+	serialNumber, err := utils.ExtractSerialNumber(certificateIdentificationRequestDto.Certificate)
+	if err != nil {
+		return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{
+			Message: err.Error(),
+		}), nil
+
+	}
 
 	_, err = client.Secrets.PkiReadCert(ctx, serialNumber.Text(10), vault2.WithMountPath(engineName))
 	if err != nil {
@@ -83,9 +88,13 @@ func (s *CertificateManagementAPIService) IssueCertificate(ctx context.Context, 
 			Message: err.Error(),
 		}), nil
 	}
-	commonName := utils.ExtractCommonName(certificateSignRequestDto.Pkcs10)
-	fmt.Println("Common Name:", commonName)
+	commonName, err := utils.ExtractCommonName(certificateSignRequestDto.Pkcs10)
+	if err != nil {
+		return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{
+			Message: err.Error(),
+		}), nil
 
+	}
 	decoded, err := base64.StdEncoding.DecodeString(certificateSignRequestDto.Pkcs10)
 	if err != nil {
 		return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{
@@ -148,9 +157,13 @@ func (s *CertificateManagementAPIService) RenewCertificate(ctx context.Context, 
 		}), nil
 	}
 
-	commonName := utils.ExtractCommonName(certificateRenewRequestDto.Pkcs10)
-	fmt.Println("Common Name:", commonName)
+	commonName, err := utils.ExtractCommonName(certificateRenewRequestDto.Pkcs10)
+	if err != nil {
+		return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{
+			Message: err.Error(),
+		}), nil
 
+	}
 	signRequest := schema.PkiIssuerSignWithRoleRequest{
 		CommonName: commonName,
 		Csr:        certificateRenewRequestDto.Pkcs10,
@@ -190,8 +203,13 @@ func (s *CertificateManagementAPIService) RevokeCertificate(ctx context.Context,
 			Message: err.Error(),
 		}), nil
 	}
-	serialNumber := utils.ExtractSerialNumber(certRevocationDto.Certificate)
+	serialNumber, err := utils.ExtractSerialNumber(certRevocationDto.Certificate)
+	if err != nil {
+		return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{
+			Message: err.Error(),
+		}), nil
 
+	}
 	revokeRequest := schema.PkiRevokeRequest{
 		SerialNumber: serialNumber.Text(10),
 	}
