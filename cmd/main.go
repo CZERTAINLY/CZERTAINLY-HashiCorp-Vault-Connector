@@ -109,6 +109,7 @@ func populateRoutes(router *mux.Router, routeKey string) {
 		met, _ := route.GetMethods()
 		endpoint := model.EndpointDto{
 			Method:   met[0],
+			Name:     met[0] + tpl,
 			Uuid:     utils.DeterministicGUID(met[0] + tpl),
 			Context:  tpl,
 			Required: true,
