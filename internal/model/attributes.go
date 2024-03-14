@@ -6,16 +6,16 @@ import (
 )
 
 const (
-	URL_ATTR                   string = "URL_ATR_UUID"
-	CREDENTIAL_TYPE_ATTR       string = "CREDENTIAL_TYPE_ATR_UUID"
-	GROUP_CREDENTIAL_TYPE_ATTR string = "GROUP_CREDENTIAL_TYPE_ATR_UUID"
-	JWT_TOKEN_ATTR             string = "JWT_TOKEN_ATR_UUID"
-	ROLE_ID_ATTR               string = "ROLE_ID_ATR_UUID"
-	ROLE_SECRET_ATTR           string = "ROLE_SECRET_ATR_UUID"
-	AUTHORITY_ATTR             string = "AUTHORITY_ATTR_UUID"
-	RA_PROFILE_ENGINE_ATTR     string = "RA_PROFILE_ENGINE_ATTR_UUID"
-	RA_PROFILE_ROLE_ATTR       string = "RA_PROFILE_ROLE_ATTR_UUID"
-	RA_PROFILE_AUTHORITY_ATTR  string = "RA_PROFILE_AUTHORITY_ATTR_UUID"
+	URL_ATTR                   string = "8a68156a-d1f5-4322-b2a5-26e872a6fc0e"
+	CREDENTIAL_TYPE_ATTR       string = "85197836-2ceb-4e77-b14e-53d2e9761cfc"
+	GROUP_CREDENTIAL_TYPE_ATTR string = "335aede7-dd1f-4c87-9ff8-7dc93f18c5fe"
+	JWT_TOKEN_ATTR             string = "924a5013-0aee-4c3f-ac59-420bf68b230c"
+	ROLE_ID_ATTR               string = "97a46e73-bf7d-421d-ae5a-2d0f453eb300"
+	ROLE_SECRET_ATTR           string = "60daa99e-5b08-4f36-8f51-d136ecba74e9"
+	AUTHORITY_ATTR             string = "24531b64-efd2-4a16-8ba8-ffef90890356"
+	RA_PROFILE_ENGINE_ATTR     string = "e7817459-41cf-40d4-ad3d-9808ef14cad7"
+	RA_PROFILE_ROLE_ATTR       string = "389dfa3c-cf45-458e-bca4-507d11b2858c"
+	RA_PROFILE_AUTHORITY_ATTR  string = "5af5693a-74bf-4ec4-b101-44ce35d8455b"
 )
 
 type AttributeName string
@@ -343,29 +343,29 @@ func getAuthorityManagementAttributes() []Attribute {
 		DataAttribute{
 			Uuid:        URL_ATTR,
 			Name:        "authority_url",
-			Description: "Authority definition for discovery",
+			Description: "Vault URL for authority",
 			Type:        DATA,
 			Content:     nil,
 			ContentType: STRING,
 			Properties: &DataAttributeProperties{
-				Label:       "Authority to discover",
+				Label:       "Vault URL",
 				Visible:     true,
 				Group:       "",
 				Required:    true,
 				ReadOnly:    false,
-				List:        true,
+				List:        false,
 				MultiSelect: false,
 			},
 		},
 		DataAttribute{
 			Uuid:        CREDENTIAL_TYPE_ATTR,
 			Name:        "credentials_type",
-			Description: "Authority definition for discovery",
+			Description: "Credentials type for authority connection",
 			Type:        DATA,
 			Content:     nil,
 			ContentType: STRING,
 			Properties: &DataAttributeProperties{
-				Label:       "Authority to discover",
+				Label:       "Credential type",
 				Visible:     true,
 				Group:       "",
 				Required:    true,
