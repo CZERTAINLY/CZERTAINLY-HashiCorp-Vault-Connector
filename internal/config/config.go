@@ -10,7 +10,7 @@ type Config struct {
 		Port string
 	}
 	Database struct {
-		Name	 string
+		Name     string
 		Host     string
 		Port     string
 		Username string
@@ -26,13 +26,13 @@ func Get() Config {
 	l := logger.Get()
 
 	config.Server.Port = os.Getenv("SERVER_PORT")
-	config.Database.Host = os.Getenv("DB_HOST")
-	config.Database.Port = os.Getenv("DB_PORT")
-	config.Database.Username = os.Getenv("DB_USERNAME")
-	config.Database.Password = os.Getenv("DB_PASSWORD")
-	config.Database.Props = os.Getenv("DB_PROPS")
-	config.Database.Name = os.Getenv("DB_DB")
-	config.Database.Schema = os.Getenv("DB_SCHEMA")
+	config.Database.Host = os.Getenv("DATABASE_HOST")
+	config.Database.Port = os.Getenv("DATABASE_PORT")
+	config.Database.Username = os.Getenv("DATABASE_USER")
+	config.Database.Password = os.Getenv("DATABASE_PASSWORD")
+	config.Database.Props = os.Getenv("DATABASE_PROPS")
+	config.Database.Name = os.Getenv("DATABASE_NAME")
+	config.Database.Schema = os.Getenv("DATABASE_SCHEMA")
 
 	if config.Server.Port == "" {
 		config.Server.Port = "8080"
@@ -47,15 +47,19 @@ func Get() Config {
 	}
 
 	if config.Database.Schema == "" {
-		l.Info("DB_SCHEMA is mandatory to set!")
+		l.Info("DATABASE_SCHEMA is mandatory to set!")
 	}
 
 	if config.Database.Username == "" {
-		l.Info("DB_USERNAME is mandatory to set!")
+		l.Info("DATABASE_USER is mandatory to set!")
 	}
 
 	if config.Database.Password == "" {
-		l.Info("DB_PASSWORD is mandatory to set!")
+		l.Info("DATABASE_PASSWORD is mandatory to set!")
+	}
+
+	if config.Database.Name == "" {
+		l.Info("DATABASE_NAME is mandatory to set!")
 	}
 
 	return config
