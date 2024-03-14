@@ -33,8 +33,5 @@ build/
 .vscode/
 
 .DS_Store
-<<<<<<< HEAD
-/setenv.sh
-=======
 setenv.sh
->>>>>>> feature/openapi-gen
+
