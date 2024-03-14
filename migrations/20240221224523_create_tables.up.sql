@@ -1,4 +1,4 @@
-create schema hvault
+-- create schema hvault
 
 
 create table hvault.authority_instances
