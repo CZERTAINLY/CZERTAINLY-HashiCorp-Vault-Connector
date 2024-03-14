@@ -55,7 +55,7 @@ const (
 	JSON_STRING_ARR = `
 [
 {
-"uuid": "URL_ATR_UUID",
+"uuid": "8a68156a-d1f5-4322-b2a5-26e872a6fc0e",
 "name": "Attribute",
 "description": "string",
 "type": "data",
@@ -82,7 +82,7 @@ const (
 	JSON_STRING_VALUE_ARR = `
 [
     {
-        "uuid": "URL_ATR_UUID",
+        "uuid": "8a68156a-d1f5-4322-b2a5-26e872a6fc0e",
         "name": "AuthorityUrl",
         "content": [
             {
@@ -92,7 +92,7 @@ const (
         ]
     },
     {
-        "uuid": "CREDENTIAL_TYPE_ATR_UUID",
+        "uuid": "85197836-2ceb-4e77-b14e-53d2e9761cfc",
         "name": "CredentialsType",
         "description": "Authority definition for discovery",
         "content": [
