@@ -32,9 +32,7 @@ func NewRouter(routers ...Router) *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
 	for _, api := range routers {
 		for name, route := range api.Routes() {
-			var handler http.Handler
-			handler = route.HandlerFunc
-
+			var handler = route.HandlerFunc
 			router.
 				Methods(route.Method).
 				Path(route.Pattern).

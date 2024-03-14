@@ -39,35 +39,42 @@ func DeterministicGUID(parts ...string) string {
 	return uuidByte.String()
 }
 
-func ExtractCommonName(csr string) string {
+func ExtractCommonName(csr string) (string, error) {
 	decodedCsr, _ := base64.StdEncoding.DecodeString(csr)
 
 	block, _ := pem.Decode(decodedCsr)
 	if block == nil {
 		log.Error("Failed to parse PEM block containing the CSR")
+		return "", fmt.Errorf("failed to parse PEM block containing the CSR")
 	}
 
 	csrParsed, err := x509.ParseCertificateRequest(block.Bytes)
 	if err != nil {
 		log.Error("Failed to parse CSR: " + err.Error())
+		return "", fmt.Errorf("failed to parse CSR: %v", err)
 	}
 
 	commonName := csrParsed.Subject.CommonName
-	return commonName
+	return commonName, nil
 }
 
-func ExtractSerialNumber(certificate string) *big.Int {
-	block, _ := pem.Decode([]byte(certificate))
+func ExtractSerialNumber(certificate string) (*big.Int, error) {
+	block, err := pem.Decode([]byte(certificate))
+	if err != nil {
+		log.Error("Failed to parse PEM block containing the certificate")
+		return nil, fmt.Errorf("failed to parse PEM block containing the certificate")
+	}
 	if block == nil {
 		log.Error("Failed to parse PEM block containing the certificate")
+		return nil, fmt.Errorf("failed to parse PEM block containing the certificate")
 	}
 
-	certificateParsed, err := x509.ParseCertificate(block.Bytes)
-	if err != nil {
-		log.Error("Failed to parse certificate: " + err.Error())
+	certificateParsed, errParse := x509.ParseCertificate(block.Bytes)
+	if errParse != nil {
+		log.Error("Failed to parse certificate: " + errParse.Error())
 	}
 	serialNumber := certificateParsed.SerialNumber
-	return serialNumber
+	return serialNumber, nil
 }
 
 func GetCertificatesFromDer(pemData []byte) ([]string, error) {
