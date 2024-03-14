@@ -55,7 +55,7 @@ const (
 	JSON_STRING_ARR = `
 [
 {
-"uuid": "166b5cf52-63f2-11ec-90d6-0242ac120003",
+"uuid": "URL_ATR_UUID",
 "name": "Attribute",
 "description": "string",
 "type": "data",
