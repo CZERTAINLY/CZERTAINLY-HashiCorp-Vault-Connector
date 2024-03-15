@@ -35,8 +35,8 @@ func (s *ConnectorAttributesAPIService) ListAttributeDefinitions(ctx context.Con
 	attributes = append(attributes, model.GetAttributeDefByUUID(model.GROUP_CREDENTIAL_TYPE_ATTR))
 	credentialTypeAttribute := model.GetAttributeDefByUUID(model.CREDENTIAL_TYPE_ATTR).(model.DataAttribute)
 	credentialTypes := []model.AttributeContent{
-		model.GetCredentialTypeByName(model.ROLE_CRED),
-		model.GetCredentialTypeByName(model.TOKEN_CRED),
+		model.GetCredentialTypeByName(model.APPROLE_CRED),
+		model.GetCredentialTypeByName(model.JWTOIDC_CRED),
 	}
 	_, err := os.OpenFile(vault.DEFAULT_K8S_TOKEN_PATH, os.O_RDONLY, 0644)
 	if !os.IsNotExist(err) {

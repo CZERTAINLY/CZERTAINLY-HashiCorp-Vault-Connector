@@ -1,5 +1,6 @@
 package model
 
+// RegexpAttributeConstraint - Regular Expression Attribute Constraint implements the BaseAttributeConstraint
 type RegexpAttributeConstraint struct {
 
 	// Description of the constraint
@@ -12,6 +13,10 @@ type RegexpAttributeConstraint struct {
 
 	// Regular Expression Attribute Constraint Data
 	Data string `json:"data,omitempty"`
+}
+
+func (a RegexpAttributeConstraint) GetConstraintType() AttributeConstraintType {
+	return a.Type
 }
 
 // AssertRegexpAttributeConstraintRequired checks if the required fields are not zero-ed

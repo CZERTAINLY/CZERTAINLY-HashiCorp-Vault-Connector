@@ -19,6 +19,10 @@ type AttributeDefinition struct {
 	AttributeContentType AttributeContentType
 }
 
+type AttributeConstraint interface {
+	GetConstraintType() AttributeConstraintType
+}
+
 type Unmarshalable interface {
 	Unmarshal(json []byte)
 }

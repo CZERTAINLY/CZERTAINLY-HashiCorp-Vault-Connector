@@ -13,13 +13,32 @@ type InfoAttribute struct {
 	Description string `json:"description,omitempty"`
 
 	// Content of the Attribute
-	Content []BaseAttributeContentDto `json:"content"`
+	Content []AttributeContent `json:"content,omitempty"`
 
 	Type AttributeType `json:"type"`
 
 	ContentType AttributeContentType `json:"contentType"`
 
 	Properties InfoAttributeProperties `json:"properties"`
+}
+
+func (d InfoAttribute) GetContent() []AttributeContent {
+	return d.Content
+}
+func (d InfoAttribute) GetUuid() string {
+	return d.Uuid
+}
+
+func (d InfoAttribute) GetName() string {
+	return d.Name
+}
+
+func (d InfoAttribute) GetAttributeType() AttributeType {
+	return d.Type
+}
+
+func (d InfoAttribute) GetAttributeContentType() AttributeContentType {
+	return d.ContentType
 }
 
 // AssertInfoAttributeRequired checks if the required fields are not zero-ed
