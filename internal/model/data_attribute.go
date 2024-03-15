@@ -21,7 +21,7 @@ type DataAttribute struct {
 	Properties *DataAttributeProperties `json:"properties"`
 
 	// Optional regular expressions and constraints used for validating the Attribute content
-	Constraints []BaseAttributeConstraint `json:"constraints,omitempty"`
+	Constraints []AttributeConstraint `json:"constraints,omitempty"`
 
 	AttributeCallback *AttributeCallback `json:"attributeCallback,omitempty"`
 }

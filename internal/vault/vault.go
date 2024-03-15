@@ -97,13 +97,13 @@ func (l LoginWithK8sToken) Login(client *vault.Client) (*vault.Client, error) {
 }
 func getLoginMethod(authority db.AuthorityInstance) LoginMethod {
 	switch authority.CredentialType {
-	case model.TOKEN_CRED:
+	case model.JWTOIDC_CRED:
 		return LoginWithToken{
 			Token: authority.Jwt,
 		}
 	case model.KUBERNETES_CRED:
 		return LoginWithK8sToken{}
-	case model.ROLE_CRED:
+	case model.APPROLE_CRED:
 		return AppRoleLogin{
 			RoleId:   authority.RoleId,
 			SecretId: authority.RoleSecret,

@@ -6,6 +6,7 @@ import (
 )
 
 const (
+	AUTHORITY_INFO_ATTR        string = "34f9569d-eba1-423a-a0c2-995e9c15665d"
 	URL_ATTR                   string = "8a68156a-d1f5-4322-b2a5-26e872a6fc0e"
 	CREDENTIAL_TYPE_ATTR       string = "85197836-2ceb-4e77-b14e-53d2e9761cfc"
 	GROUP_CREDENTIAL_TYPE_ATTR string = "335aede7-dd1f-4c87-9ff8-7dc93f18c5fe"
@@ -22,8 +23,8 @@ type AttributeName string
 
 const (
 	KUBERNETES_CRED string = "kubernetes"
-	ROLE_CRED       string = "role"
-	TOKEN_CRED      string = "jwt"
+	APPROLE_CRED    string = "role"
+	JWTOIDC_CRED    string = "jwt"
 )
 
 type CredentialType string
@@ -40,14 +41,14 @@ func GetCredentialTypes() []AttributeContent {
 	return []AttributeContent{
 
 		StringAttributeContent{
-			Reference: "Kubernetes token",
+			Reference: "Kubernetes",
 			Data:      KUBERNETES_CRED,
 		}, StringAttributeContent{
-			Reference: "Role ID",
-			Data:      ROLE_CRED,
+			Reference: "AppRole",
+			Data:      APPROLE_CRED,
 		}, StringAttributeContent{
-			Reference: "JWT",
-			Data:      TOKEN_CRED,
+			Reference: "JWT/OIDC",
+			Data:      JWTOIDC_CRED,
 		},
 	}
 }
@@ -340,12 +341,35 @@ func getDiscoveryAttributes() []Attribute {
 
 func getAuthorityManagementAttributes() []Attribute {
 	return []Attribute{
+		InfoAttribute{
+			Uuid:        AUTHORITY_INFO_ATTR,
+			Name:        "authority_info",
+			Description: "Authority definition for discovery",
+			Type:        INFO,
+			ContentType: TEXT,
+			Content: []AttributeContent{
+				TextAttributeContent{
+					Data: `### HashiCorp Vault instance configuration.
+
+Provide URL of your Vault and select one of the available authentication methods:
+-  **AppRole** - Use AppRole authentication method with Role ID and Secret ID
+-  **Kubernetes** - Use Kubernetes authentication method with Service Account Token (automatically taken from the environment)
+-  **JWT/OIDC** - Use JWT/OIDC authentication method with provided JWT token (automatically taken from the environment)
+`,
+				},
+			},
+			Properties: InfoAttributeProperties{
+				Label:   "Authority Info",
+				Visible: true,
+				Group:   "",
+			},
+		},
 		DataAttribute{
 			Uuid:        URL_ATTR,
 			Name:        "authority_url",
 			Description: "Vault URL for authority",
 			Type:        DATA,
-			Content:     nil,
+			Content:     []AttributeContent{},
 			ContentType: STRING,
 			Properties: &DataAttributeProperties{
 				Label:       "Vault URL",
@@ -355,6 +379,14 @@ func getAuthorityManagementAttributes() []Attribute {
 				ReadOnly:    false,
 				List:        false,
 				MultiSelect: false,
+			},
+			Constraints: []AttributeConstraint{
+				RegexpAttributeConstraint{
+					Description:  "URL for the HashiCorp Vault",
+					ErrorMessage: "URL must be a valid URL",
+					Type:         REG_EXP,
+					Data:         "^(http|https)://[a-zA-Z0-9.-]+(:[0-9]+)?",
+				},
 			},
 		},
 		DataAttribute{
