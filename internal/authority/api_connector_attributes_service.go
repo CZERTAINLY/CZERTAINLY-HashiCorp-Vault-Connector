@@ -5,6 +5,7 @@ import (
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/model"
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/vault"
 	"context"
+	"fmt"
 	"os"
 
 	"net/http"
@@ -30,7 +31,13 @@ func NewConnectorAttributesAPIService(authorityRepo *db.AuthorityRepository, log
 
 // ListAttributeDefinitions - List available Attributes
 func (s *ConnectorAttributesAPIService) ListAttributeDefinitions(ctx context.Context, kind string) (model.ImplResponse, error) {
+	if kind != "HVault" {
+		message := fmt.Sprintf("Unrecognized Authority Instance kind: %s", kind)
+		return model.Response(http.StatusUnprocessableEntity, message), nil
+	}
+
 	attributes := make([]model.Attribute, 0)
+	attributes = append(attributes, model.GetAttributeDefByUUID(model.AUTHORITY_INFO_ATTR))
 	attributes = append(attributes, model.GetAttributeDefByUUID(model.URL_ATTR))
 	attributes = append(attributes, model.GetAttributeDefByUUID(model.GROUP_CREDENTIAL_TYPE_ATTR))
 	credentialTypeAttribute := model.GetAttributeDefByUUID(model.CREDENTIAL_TYPE_ATTR).(model.DataAttribute)
@@ -58,7 +65,7 @@ func (s *ConnectorAttributesAPIService) CredentialAttributesCallback(ctx context
 		attributes = append(attributes, model.GetAttributeDefByUUID(model.ROLE_ID_ATTR))
 		attributes = append(attributes, model.GetAttributeDefByUUID(model.ROLE_SECRET_ATTR))
 	case "jwt":
-		attributes = append(attributes, model.GetAttributeDefByUUID(model.JWT_TOKEN_ATTR))
+		break
 	}
 
 	return model.Response(http.StatusOK, attributes), nil
@@ -66,5 +73,10 @@ func (s *ConnectorAttributesAPIService) CredentialAttributesCallback(ctx context
 
 // ValidateAttributes - Validate Attributes
 func (s *ConnectorAttributesAPIService) ValidateAttributes(ctx context.Context, kind string, requestAttributeDto []model.Attribute) (model.ImplResponse, error) {
+	if kind != "HVault" {
+		message := fmt.Sprintf("Unrecognized Authority Instance kind: %s", kind)
+		return model.Response(http.StatusUnprocessableEntity, message), nil
+	}
+
 	return model.Response(http.StatusOK, nil), nil
 }
