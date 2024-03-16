@@ -9,7 +9,7 @@ import (
 
 func TestUnmarshalAttributeValue(t *testing.T) {
 	result := UnmarshalAttributesValues([]byte(JSON_STRING_VALUE_ARR))
-	content := GetAttributeFromArrayByUUID(URL_ATTR, result).GetContent()[0]
+	content := GetAttributeFromArrayByUUID(AUTHORITY_URL_ATTR, result).GetContent()[0]
 	URL := content.GetData().(string)
 	fmt.Println(URL)
 }

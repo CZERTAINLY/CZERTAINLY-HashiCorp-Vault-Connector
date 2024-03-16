@@ -32,18 +32,14 @@ func NewAuthorityManagementAPIService(authorityRepo *db.AuthorityRepository, log
 // CreateAuthorityInstance - Create Authority instance
 func (s *AuthorityManagementAPIService) CreateAuthorityInstance(ctx context.Context, request model.AuthorityProviderInstanceRequestDto) (model.ImplResponse, error) {
 	attributes := request.Attributes
-	URL := model.GetAttributeFromArrayByUUID(model.URL_ATTR, attributes).GetContent()[0].GetData().(string)
-	credentialType := model.GetAttributeFromArrayByUUID(model.CREDENTIAL_TYPE_ATTR, attributes).GetContent()[0].GetData().(string)
+	URL := model.GetAttributeFromArrayByUUID(model.AUTHORITY_URL_ATTR, attributes).GetContent()[0].GetData().(string)
+	credentialType := model.GetAttributeFromArrayByUUID(model.AUTHORITY_CREDENTIAL_TYPE_ATTR, attributes).GetContent()[0].GetData().(string)
 	var roleId, secretId, token string
 	switch credentialType {
 	case "role":
-		roleId = model.GetAttributeFromArrayByUUID(model.ROLE_ID_ATTR, attributes).GetContent()[0].(model.SecretAttributeContent).GetData().(model.SecretAttributeContentData).Secret
-		secretId = model.GetAttributeFromArrayByUUID(model.ROLE_SECRET_ATTR, attributes).GetContent()[0].(model.SecretAttributeContent).GetData().(model.SecretAttributeContentData).Secret
+		roleId = model.GetAttributeFromArrayByUUID(model.AUTHORITY_ROLE_ID_ATTR, attributes).GetContent()[0].(model.SecretAttributeContent).GetData().(model.SecretAttributeContentData).Secret
+		secretId = model.GetAttributeFromArrayByUUID(model.AUTHORITY_ROLE_SECRET_ATTR, attributes).GetContent()[0].(model.SecretAttributeContent).GetData().(model.SecretAttributeContentData).Secret
 		token = ""
-	case "token":
-		roleId = ""
-		secretId = ""
-		token = model.GetAttributeFromArrayByUUID(model.JWT_TOKEN_ATTR, attributes).GetContent()[0].(model.SecretAttributeContent).GetData().(model.SecretAttributeContentData).Secret
 	}
 	authorityName := request.Name
 	marshaledAttrs, err := json.Marshal(attributes)
@@ -312,19 +308,15 @@ func (s *AuthorityManagementAPIService) UpdateAuthorityInstance(ctx context.Cont
 		}), err
 	}
 	attributes := request.Attributes
-	URL := model.GetAttributeFromArrayByUUID(model.URL_ATTR, attributes).GetContent()[0].GetData().(string)
-	credentialType := model.GetAttributeFromArrayByUUID(model.CREDENTIAL_TYPE_ATTR, attributes).GetContent()[0].GetData().(string)
+	URL := model.GetAttributeFromArrayByUUID(model.AUTHORITY_URL_ATTR, attributes).GetContent()[0].GetData().(string)
+	credentialType := model.GetAttributeFromArrayByUUID(model.AUTHORITY_CREDENTIAL_TYPE_ATTR, attributes).GetContent()[0].GetData().(string)
 	authorityName := request.Name
 	var roleId, secretId, token string
 	switch credentialType {
 	case "role":
-		roleId = model.GetAttributeFromArrayByUUID(model.ROLE_ID_ATTR, attributes).GetContent()[0].(model.SecretAttributeContent).GetData().(model.SecretAttributeContentData).Secret
-		secretId = model.GetAttributeFromArrayByUUID(model.ROLE_SECRET_ATTR, attributes).GetContent()[0].(model.SecretAttributeContent).GetData().(model.SecretAttributeContentData).Secret
+		roleId = model.GetAttributeFromArrayByUUID(model.AUTHORITY_ROLE_ID_ATTR, attributes).GetContent()[0].(model.SecretAttributeContent).GetData().(model.SecretAttributeContentData).Secret
+		secretId = model.GetAttributeFromArrayByUUID(model.AUTHORITY_ROLE_SECRET_ATTR, attributes).GetContent()[0].(model.SecretAttributeContent).GetData().(model.SecretAttributeContentData).Secret
 		token = ""
-	case "token":
-		roleId = ""
-		secretId = ""
-		token = model.GetAttributeFromArrayByUUID(model.JWT_TOKEN_ATTR, attributes).GetContent()[0].(model.SecretAttributeContent).GetData().(model.SecretAttributeContentData).Secret
 	}
 	marshaledAttrs, err := json.Marshal(attributes)
 	if err != nil {

@@ -49,7 +49,7 @@ func (s *ConnectorAttributesAPIService) ListAttributeDefinitions(ctx context.Con
 				Data:      authorityData,
 			})
 	}
-	attribute := model.GetAttributeDefByUUID(model.AUTHORITY_ATTR).(model.DataAttribute)
+	attribute := model.GetAttributeDefByUUID(model.DISCOVERY_AUTHORITY_ATTR).(model.DataAttribute)
 	attribute.Content = objectContents
 	return model.Response(http.StatusOK, []model.Attribute{attribute}), nil
 
@@ -61,8 +61,8 @@ func (s *ConnectorAttributesAPIService) ValidateAttributes(ctx context.Context, 
 		message := fmt.Sprintf("Unrecognized Authority Instance kind: %s", kind)
 		return model.Response(http.StatusUnprocessableEntity, message), nil
 	}
-	
-	authorityAttribute := model.GetAttributeFromArrayByUUID(model.AUTHORITY_ATTR, requestAttributeDto).(model.DataAttribute)
+
+	authorityAttribute := model.GetAttributeFromArrayByUUID(model.DISCOVERY_AUTHORITY_ATTR, requestAttributeDto).(model.DataAttribute)
 	content := authorityAttribute.GetContent()[0]
 	authUuid := content.(model.ObjectAttributeContent).GetData().(map[string]any)["uuid"].(string)
 	auth, _ := s.authorityRepo.FindAuthorityInstanceByUUID(authUuid)

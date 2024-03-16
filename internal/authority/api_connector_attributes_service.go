@@ -38,9 +38,9 @@ func (s *ConnectorAttributesAPIService) ListAttributeDefinitions(ctx context.Con
 
 	attributes := make([]model.Attribute, 0)
 	attributes = append(attributes, model.GetAttributeDefByUUID(model.AUTHORITY_INFO_ATTR))
-	attributes = append(attributes, model.GetAttributeDefByUUID(model.URL_ATTR))
-	attributes = append(attributes, model.GetAttributeDefByUUID(model.GROUP_CREDENTIAL_TYPE_ATTR))
-	credentialTypeAttribute := model.GetAttributeDefByUUID(model.CREDENTIAL_TYPE_ATTR).(model.DataAttribute)
+	attributes = append(attributes, model.GetAttributeDefByUUID(model.AUTHORITY_URL_ATTR))
+	attributes = append(attributes, model.GetAttributeDefByUUID(model.AUTHORITY_GROUP_CREDENTIAL_TYPE_ATTR))
+	credentialTypeAttribute := model.GetAttributeDefByUUID(model.AUTHORITY_CREDENTIAL_TYPE_ATTR).(model.DataAttribute)
 	credentialTypes := []model.AttributeContent{
 		model.GetCredentialTypeByName(model.APPROLE_CRED),
 		model.GetCredentialTypeByName(model.JWTOIDC_CRED),
@@ -62,8 +62,8 @@ func (s *ConnectorAttributesAPIService) CredentialAttributesCallback(ctx context
 	case "kubernetes":
 		break
 	case "role":
-		attributes = append(attributes, model.GetAttributeDefByUUID(model.ROLE_ID_ATTR))
-		attributes = append(attributes, model.GetAttributeDefByUUID(model.ROLE_SECRET_ATTR))
+		attributes = append(attributes, model.GetAttributeDefByUUID(model.AUTHORITY_ROLE_ID_ATTR))
+		attributes = append(attributes, model.GetAttributeDefByUUID(model.AUTHORITY_ROLE_SECRET_ATTR))
 	case "jwt":
 		break
 	}

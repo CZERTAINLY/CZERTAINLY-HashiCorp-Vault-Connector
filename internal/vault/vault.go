@@ -47,15 +47,13 @@ func (l AppRoleLogin) Login(client *vault.Client) (*vault.Client, error) {
 	return client, nil
 }
 
-type LoginWithToken struct {
-	Token string
-}
+type LoginWithToken struct{}
 
 func (l LoginWithToken) Login(client *vault.Client) (*vault.Client, error) {
 	ctx := context.Background()
 
 	authInfo, err := client.Auth.JwtLogin(ctx, schema.JwtLoginRequest{
-		Jwt:  l.Token,
+		Jwt:  DEFAULT_K8S_TOKEN_PATH,
 		Role: "dev-role-k8s",
 	})
 	if err != nil {
@@ -98,9 +96,7 @@ func (l LoginWithK8sToken) Login(client *vault.Client) (*vault.Client, error) {
 func getLoginMethod(authority db.AuthorityInstance) LoginMethod {
 	switch authority.CredentialType {
 	case model.JWTOIDC_CRED:
-		return LoginWithToken{
-			Token: authority.Jwt,
-		}
+		return LoginWithToken{}
 	case model.KUBERNETES_CRED:
 		return LoginWithK8sToken{}
 	case model.APPROLE_CRED:
