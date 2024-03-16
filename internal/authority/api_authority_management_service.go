@@ -8,9 +8,8 @@ import (
 	"context"
 	"encoding/json"
 	vault2 "github.com/hashicorp/vault-client-go"
-	"net/http"
-
 	"go.uber.org/zap"
+	"net/http"
 )
 
 // AuthorityManagementAPIService is a service that implements the logic for the AuthorityManagementAPIServicer
@@ -58,6 +57,15 @@ func (s *AuthorityManagementAPIService) CreateAuthorityInstance(ctx context.Cont
 		Attributes:     string(marshaledAttrs),
 		CredentialType: credentialType,
 	}
+
+	// Do not store the authority in the database before the connection is validated
+	_, err = vault.GetClient(authority)
+	if err != nil {
+		return model.Response(http.StatusBadRequest, model.ErrorMessageDto{
+			Message: "Failed to connect to vault",
+		}), nil
+	}
+
 	err = s.authorityRepo.CreateAuthorityInstance(&authority)
 	if err != nil {
 		return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{
