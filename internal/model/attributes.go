@@ -6,17 +6,21 @@ import (
 )
 
 const (
-	AUTHORITY_INFO_ATTR        string = "34f9569d-eba1-423a-a0c2-995e9c15665d"
-	URL_ATTR                   string = "8a68156a-d1f5-4322-b2a5-26e872a6fc0e"
-	CREDENTIAL_TYPE_ATTR       string = "85197836-2ceb-4e77-b14e-53d2e9761cfc"
-	GROUP_CREDENTIAL_TYPE_ATTR string = "335aede7-dd1f-4c87-9ff8-7dc93f18c5fe"
-	JWT_TOKEN_ATTR             string = "924a5013-0aee-4c3f-ac59-420bf68b230c"
-	ROLE_ID_ATTR               string = "97a46e73-bf7d-421d-ae5a-2d0f453eb300"
-	ROLE_SECRET_ATTR           string = "60daa99e-5b08-4f36-8f51-d136ecba74e9"
-	AUTHORITY_ATTR             string = "24531b64-efd2-4a16-8ba8-ffef90890356"
-	RA_PROFILE_ENGINE_ATTR     string = "e7817459-41cf-40d4-ad3d-9808ef14cad7"
-	RA_PROFILE_ROLE_ATTR       string = "389dfa3c-cf45-458e-bca4-507d11b2858c"
-	RA_PROFILE_AUTHORITY_ATTR  string = "5af5693a-74bf-4ec4-b101-44ce35d8455b"
+	// Authority Attributes
+	AUTHORITY_INFO_ATTR                  string = "34f9569d-eba1-423a-a0c2-995e9c15665d"
+	AUTHORITY_URL_ATTR                   string = "8a68156a-d1f5-4322-b2a5-26e872a6fc0e"
+	AUTHORITY_CREDENTIAL_TYPE_ATTR       string = "85197836-2ceb-4e77-b14e-53d2e9761cfc"
+	AUTHORITY_GROUP_CREDENTIAL_TYPE_ATTR string = "335aede7-dd1f-4c87-9ff8-7dc93f18c5fe"
+	AUTHORITY_ROLE_ID_ATTR               string = "97a46e73-bf7d-421d-ae5a-2d0f453eb300"
+	AUTHORITY_ROLE_SECRET_ATTR           string = "60daa99e-5b08-4f36-8f51-d136ecba74e9"
+
+	// RA Profile Attributes
+	RA_PROFILE_ENGINE_ATTR    string = "e7817459-41cf-40d4-ad3d-9808ef14cad7"
+	RA_PROFILE_ROLE_ATTR      string = "389dfa3c-cf45-458e-bca4-507d11b2858c"
+	RA_PROFILE_AUTHORITY_ATTR string = "5af5693a-74bf-4ec4-b101-44ce35d8455b"
+
+	// Discovery Attributes
+	DISCOVERY_AUTHORITY_ATTR string = "24531b64-efd2-4a16-8ba8-ffef90890356"
 )
 
 type AttributeName string
@@ -319,7 +323,7 @@ func getRAProfilesAttributes() []Attribute {
 func getDiscoveryAttributes() []Attribute {
 	return []Attribute{
 		DataAttribute{
-			Uuid:        AUTHORITY_ATTR,
+			Uuid:        DISCOVERY_AUTHORITY_ATTR,
 			Name:        "authority_to_discover",
 			Description: "Authority definition for discovery",
 			Type:        DATA,
@@ -365,7 +369,7 @@ Provide URL of your Vault and select one of the available authentication methods
 			},
 		},
 		DataAttribute{
-			Uuid:        URL_ATTR,
+			Uuid:        AUTHORITY_URL_ATTR,
 			Name:        "authority_url",
 			Description: "Vault URL for authority",
 			Type:        DATA,
@@ -390,14 +394,14 @@ Provide URL of your Vault and select one of the available authentication methods
 			},
 		},
 		DataAttribute{
-			Uuid:        CREDENTIAL_TYPE_ATTR,
+			Uuid:        AUTHORITY_CREDENTIAL_TYPE_ATTR,
 			Name:        "credentials_type",
-			Description: "Credentials type for authority connection",
+			Description: "Authentication method for Vault connection",
 			Type:        DATA,
 			Content:     nil,
 			ContentType: STRING,
 			Properties: &DataAttributeProperties{
-				Label:       "Credential type",
+				Label:       "Authentication method",
 				Visible:     true,
 				Group:       "",
 				Required:    true,
@@ -407,9 +411,9 @@ Provide URL of your Vault and select one of the available authentication methods
 			},
 		},
 		GroupAttribute{
-			Uuid:        GROUP_CREDENTIAL_TYPE_ATTR,
+			Uuid:        AUTHORITY_GROUP_CREDENTIAL_TYPE_ATTR,
 			Name:        "credential_group",
-			Description: "Authority definition for discovery",
+			Description: "Authentication method data",
 			Type:        GROUP,
 			AttributeCallback: &AttributeCallback{
 				CallbackContext: "v1/authorityProvider/credentialType/{credentialsType}/callback",
@@ -428,9 +432,9 @@ Provide URL of your Vault and select one of the available authentication methods
 			},
 		},
 		DataAttribute{
-			Uuid:        ROLE_ID_ATTR,
+			Uuid:        AUTHORITY_ROLE_ID_ATTR,
 			Name:        "role_id",
-			Description: "RoleId for connection to vault",
+			Description: "Role ID for connection to Vault",
 			Type:        DATA,
 			Content:     nil,
 			ContentType: SECRET,
@@ -445,31 +449,14 @@ Provide URL of your Vault and select one of the available authentication methods
 			},
 		},
 		DataAttribute{
-			Uuid:        ROLE_SECRET_ATTR,
+			Uuid:        AUTHORITY_ROLE_SECRET_ATTR,
 			Name:        "role_secret",
-			Description: "RoleSecret for connection to vault",
+			Description: "Role Secret for connection to Vault",
 			Type:        DATA,
 			Content:     nil,
 			ContentType: SECRET,
 			Properties: &DataAttributeProperties{
 				Label:       "Role Secret",
-				Visible:     true,
-				Group:       "",
-				Required:    true,
-				ReadOnly:    false,
-				List:        true,
-				MultiSelect: false,
-			},
-		},
-		DataAttribute{
-			Uuid:        JWT_TOKEN_ATTR,
-			Name:        "jwt_token",
-			Description: "JWT Token for connection to vault",
-			Type:        DATA,
-			Content:     nil,
-			ContentType: SECRET,
-			Properties: &DataAttributeProperties{
-				Label:       "JWT Token",
 				Visible:     true,
 				Group:       "",
 				Required:    true,
