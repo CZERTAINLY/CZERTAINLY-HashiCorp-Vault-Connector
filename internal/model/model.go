@@ -14,6 +14,7 @@ type AttributeContent interface {
 }
 
 type AttributeDefinition struct {
+	Name                 string
 	Uuid                 string
 	AttributeType        AttributeType
 	AttributeContentType AttributeContentType

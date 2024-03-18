@@ -66,6 +66,15 @@ func GetAttributeDefByUUID(uuid string) Attribute {
 	return nil
 }
 
+func GetAttributeDefByName(name string) Attribute {
+	for _, attr := range GetAttributeList() {
+		if attr.GetName() == name {
+			return attr
+		}
+	}
+	return nil
+}
+
 const (
 	AuthorityManagementAttributes string = "AuthorityManagementAttributes"
 	DisoveryAttributes            string = "DiscoveryAttributes"
@@ -96,6 +105,21 @@ func GetAtributeByUUID(uuid string) AttributeDefinition {
 	for _, attr := range GetAttributeList() {
 		if attr.GetUuid() == uuid {
 			return AttributeDefinition{
+				Name:                 attr.GetName(),
+				Uuid:                 attr.GetUuid(),
+				AttributeType:        attr.GetAttributeType(),
+				AttributeContentType: attr.GetAttributeContentType(),
+			}
+		}
+	}
+	return AttributeDefinition{}
+}
+
+func GetAttributeByName(name string) AttributeDefinition {
+	for _, attr := range GetAttributeList() {
+		if attr.GetName() == name {
+			return AttributeDefinition{
+				Name:                 attr.GetName(),
 				Uuid:                 attr.GetUuid(),
 				AttributeType:        attr.GetAttributeType(),
 				AttributeContentType: attr.GetAttributeContentType(),
@@ -188,7 +212,7 @@ func unmarshalAttributeValue(content []byte, attrDef AttributeDefinition) Attrib
 	var result Attribute
 	switch attrDef.AttributeType {
 	case DATA:
-		data := GetAttributeDefByUUID(attrDef.Uuid).(DataAttribute)
+		data := GetAttributeDefByName(attrDef.Name).(DataAttribute)
 		contents := gjson.GetBytes(content, "content")
 		data.Content = []AttributeContent{}
 		for _, content := range contents.Array() {
@@ -204,7 +228,7 @@ func UnmarshalAttributesValues(content []byte) []Attribute {
 	attributes := gjson.GetBytes(content, "@values")
 	var result []Attribute
 	for _, attribute := range attributes.Array() {
-		def := GetAtributeByUUID(gjson.Get(attribute.Raw, "uuid").String())
+		def := GetAttributeByName(gjson.Get(attribute.Raw, "name").String())
 		attributeObject := unmarshalAttributeValue([]byte(attribute.Raw), def)
 		result = append(result, attributeObject)
 	}
