@@ -83,7 +83,7 @@ const (
 [
     {
         "uuid": "8a68156a-d1f5-4322-b2a5-26e872a6fc0e",
-        "name": "AuthorityUrl",
+        "name": "authority_url",
         "content": [
             {
                 "reference": "string",
