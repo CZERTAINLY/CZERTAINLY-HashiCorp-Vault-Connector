@@ -6,10 +6,8 @@ import (
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/utils"
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/vault"
 	"context"
-	"fmt"
 	"net/http"
 
-	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
@@ -47,10 +45,8 @@ func (s *DiscoveryAPIService) DeleteDiscovery(ctx context.Context, uuid string) 
 
 // DiscoverCertificate - Initiate certificate Discovery
 func (s *DiscoveryAPIService) DiscoverCertificate(ctx context.Context, discoveryRequestDto model.DiscoveryRequestDto) (model.ImplResponse, error) {
-	id := uuid.New()
-	fmt.Println(id)
 	response := model.DiscoveryProviderDto{
-		Uuid:                        utils.DeterministicGUID("name"),
+		Uuid:                        utils.DeterministicGUID(discoveryRequestDto.Name),
 		Name:                        discoveryRequestDto.Name,
 		Status:                      model.IN_PROGRESS,
 		TotalCertificatesDiscovered: 0,
@@ -68,7 +64,12 @@ func (s *DiscoveryAPIService) DiscoverCertificate(ctx context.Context, discovery
 	if err != nil {
 		return model.Response(http.StatusNotFound, model.ErrorMessageDto{Message: "Unable to create discovery " + discovery.UUID}), nil
 	}
-	go s.DiscoveryCertificates(&db.AuthorityInstance{}, discovery)
+	uuid := model.GetAttributeFromArrayByUUID(model.DISCOVERY_AUTHORITY_ATTR, discoveryRequestDto.Attributes).GetContent()[0].GetData().(map[string]interface{})["uuid"].(string)
+	authority, err := s.authorityRepo.FindAuthorityInstanceByUUID(uuid)
+	if err != nil {
+		return model.Response(http.StatusNotFound, model.ErrorMessageDto{Message: "Authority not found  " + uuid}), nil
+	}
+	go s.DiscoveryCertificates(authority, discovery)
 
 	return model.Response(http.StatusOK, response), nil
 }
