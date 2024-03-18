@@ -33,7 +33,7 @@ func NewConnectorAttributesAPIService(authorityRepo *db.AuthorityRepository, log
 func (s *ConnectorAttributesAPIService) ListAttributeDefinitions(ctx context.Context, kind string) (model.ImplResponse, error) {
 	if kind != "HVault" {
 		message := fmt.Sprintf("Unrecognized Authority Instance kind: %s", kind)
-		return model.Response(http.StatusUnprocessableEntity, message), nil
+		return model.Response(http.StatusUnprocessableEntity, []string{message}), nil
 	}
 
 	attributes := make([]model.Attribute, 0)
@@ -75,7 +75,7 @@ func (s *ConnectorAttributesAPIService) CredentialAttributesCallback(ctx context
 func (s *ConnectorAttributesAPIService) ValidateAttributes(ctx context.Context, kind string, requestAttributeDto []model.Attribute) (model.ImplResponse, error) {
 	if kind != "HVault" {
 		message := fmt.Sprintf("Unrecognized Authority Instance kind: %s", kind)
-		return model.Response(http.StatusUnprocessableEntity, message), nil
+		return model.Response(http.StatusUnprocessableEntity, []string{message}), nil
 	}
 
 	return model.Response(http.StatusOK, nil), nil
