@@ -3,6 +3,7 @@ package discovery
 import (
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/model"
 	"encoding/json"
+	"io"
 	"net/http"
 	"strings"
 
@@ -84,12 +85,14 @@ func (c *DiscoveryAPIController) DeleteDiscovery(w http.ResponseWriter, r *http.
 // DiscoverCertificate - Initiate certificate Discovery
 func (c *DiscoveryAPIController) DiscoverCertificate(w http.ResponseWriter, r *http.Request) {
 	discoveryRequestDtoParam := model.DiscoveryRequestDto{}
-	d := json.NewDecoder(r.Body)
-	d.DisallowUnknownFields()
-	if err := d.Decode(&discoveryRequestDtoParam); err != nil {
+	jsonContent, err := io.ReadAll(r.Body)
+
+	discoveryRequestDtoParam.Unmarshal(jsonContent)
+	if err != nil {
 		c.errorHandler(w, r, &model.ParsingError{Err: err}, nil)
 		return
 	}
+
 	if err := model.AssertDiscoveryRequestDtoRequired(discoveryRequestDtoParam); err != nil {
 		c.errorHandler(w, r, err, nil)
 		return
@@ -98,6 +101,7 @@ func (c *DiscoveryAPIController) DiscoverCertificate(w http.ResponseWriter, r *h
 		c.errorHandler(w, r, err, nil)
 		return
 	}
+
 	result, err := c.service.DiscoverCertificate(r.Context(), discoveryRequestDtoParam)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
