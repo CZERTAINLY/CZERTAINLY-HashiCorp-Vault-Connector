@@ -444,8 +444,16 @@ Provide URL of your Vault and select one of the available authentication methods
 				Group:       "",
 				Required:    true,
 				ReadOnly:    false,
-				List:        true,
+				List:        false,
 				MultiSelect: false,
+			},
+			Constraints: []AttributeConstraint{
+				RegexpAttributeConstraint{
+					Description:  "Unique UUID as the Role ID",
+					ErrorMessage: "Role ID must be a valid UUID",
+					Type:         REG_EXP,
+					Data:         "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+				},
 			},
 		},
 		DataAttribute{
@@ -461,8 +469,16 @@ Provide URL of your Vault and select one of the available authentication methods
 				Group:       "",
 				Required:    true,
 				ReadOnly:    false,
-				List:        true,
+				List:        false,
 				MultiSelect: false,
+			},
+			Constraints: []AttributeConstraint{
+				RegexpAttributeConstraint{
+					Description:  "Generated UUID as the Role Secret",
+					ErrorMessage: "Role Secret must be a valid UUID",
+					Type:         REG_EXP,
+					Data:         "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+				},
 			},
 		},
 	}
