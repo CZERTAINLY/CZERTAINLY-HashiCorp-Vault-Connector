@@ -27,6 +27,11 @@ MAINTAINER CZERTAINLY <support@czertainly.com>
 # add non root user czertainly
 RUN addgroup --system --gid 10001 czertainly && adduser --system --home /opt/czertainly --uid 10001 --ingroup czertainly czertainly
 
+RUN apk --update upgrade && \
+    apk add curl ca-certificates && \
+    update-ca-certificates && \
+    rm -rf /var/cache/apk/*
+
 COPY --from=builder /app/docker /
 COPY --from=builder /app /opt/czertainly
 
