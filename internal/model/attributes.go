@@ -252,7 +252,7 @@ func UnmarshalAttributes(content []byte) []Attribute {
 			return nil
 		}
 		if definition.AttributeType == "" || definition.AttributeContentType == "" {
-			def := GetAttributeByName(definition.Uuid)
+			def := GetAttributeByName(definition.Name)
 			definition.AttributeType = def.AttributeType
 			definition.AttributeContentType = def.AttributeContentType
 		}

@@ -3,7 +3,7 @@ package model
 // DataAttribute - Data attribute allows to store and transfer dynamic data. Its content can be edited and send in requests to store.
 type DataAttribute struct {
 	// UUID of the Attribute for unique identification
-	Uuid string `json:"uuid"`
+	Uuid string `json:"uuid,omitempty"`
 
 	// Name of the Attribute that is used for identification
 	Name string `json:"name"`
