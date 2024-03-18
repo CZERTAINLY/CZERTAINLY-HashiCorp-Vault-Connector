@@ -35,7 +35,7 @@ func (s *AuthorityManagementAPIService) CreateAuthorityInstance(ctx context.Cont
 	credentialType := model.GetAttributeFromArrayByUUID(model.AUTHORITY_CREDENTIAL_TYPE_ATTR, attributes).GetContent()[0].GetData().(string)
 	var roleId, secretId, token string
 	switch credentialType {
-	case "role":
+	case model.APPROLE_CRED:
 		roleId = model.GetAttributeFromArrayByUUID(model.AUTHORITY_ROLE_ID_ATTR, attributes).GetContent()[0].(model.SecretAttributeContent).GetData().(model.SecretAttributeContentData).Secret
 		secretId = model.GetAttributeFromArrayByUUID(model.AUTHORITY_ROLE_SECRET_ATTR, attributes).GetContent()[0].(model.SecretAttributeContent).GetData().(model.SecretAttributeContentData).Secret
 		token = ""
@@ -321,7 +321,7 @@ func (s *AuthorityManagementAPIService) UpdateAuthorityInstance(ctx context.Cont
 	authorityName := request.Name
 	var roleId, secretId, token string
 	switch credentialType {
-	case "role":
+	case model.APPROLE_CRED:
 		roleId = model.GetAttributeFromArrayByUUID(model.AUTHORITY_ROLE_ID_ATTR, attributes).GetContent()[0].(model.SecretAttributeContent).GetData().(model.SecretAttributeContentData).Secret
 		secretId = model.GetAttributeFromArrayByUUID(model.AUTHORITY_ROLE_SECRET_ATTR, attributes).GetContent()[0].(model.SecretAttributeContent).GetData().(model.SecretAttributeContentData).Secret
 		token = ""
