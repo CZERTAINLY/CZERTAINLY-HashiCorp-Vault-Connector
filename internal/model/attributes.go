@@ -252,7 +252,7 @@ func UnmarshalAttributes(content []byte) []Attribute {
 			return nil
 		}
 		if definition.AttributeType == "" || definition.AttributeContentType == "" {
-			def := GetAtributeByUUID(definition.Uuid)
+			def := GetAttributeByName(definition.Uuid)
 			definition.AttributeType = def.AttributeType
 			definition.AttributeContentType = def.AttributeContentType
 		}
@@ -366,7 +366,7 @@ func getDiscoveryAttributes() []Attribute {
 				Group:       "",
 				Required:    true,
 				ReadOnly:    false,
-				List:        false,
+				List:        true,
 				MultiSelect: false,
 			},
 		},
