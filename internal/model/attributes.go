@@ -155,9 +155,16 @@ func unmarshalAttributeContent(content []byte, contentType AttributeContentType)
 		}
 
 	case SECRET:
-		secretAttributeContent := SecretAttributeContent{}
-		err := json.Unmarshal(content, &secretAttributeContent)
-		result = secretAttributeContent
+		//TODO: remove conversion to string after UI will be able to handle SecretAttributeContentData
+		//secretAttributeContent := SecretAttributeContent{}
+		stringData := StringAttributeContent{}
+		err := json.Unmarshal(content, &stringData)
+		result = SecretAttributeContent{
+			Reference: stringData.Reference,
+			Data: SecretAttributeContentData{
+				Secret: stringData.Data,
+			},
+		}
 		if err != nil {
 			panic(err)
 		}
