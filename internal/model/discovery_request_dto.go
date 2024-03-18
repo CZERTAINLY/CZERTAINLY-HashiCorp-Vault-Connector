@@ -1,5 +1,7 @@
 package model
 
+import "github.com/tidwall/gjson"
+
 type DiscoveryRequestDto struct {
 
 	// Name of the Discovery
@@ -9,7 +11,13 @@ type DiscoveryRequestDto struct {
 	Kind string `json:"kind"`
 
 	// Discovery Provider Attributes. Mandatory for creating new Discovery
-	Attributes []RequestAttributeDto `json:"attributes,omitempty"`
+	Attributes []Attribute `json:"attributes,omitempty"`
+}
+
+func (a *DiscoveryRequestDto) Unmarshal(json []byte) {
+	a.Name = gjson.GetBytes(json, "name").String()
+	a.Kind = gjson.GetBytes(json, "kind").String()
+	a.Attributes = UnmarshalAttributesValues([]byte(gjson.GetBytes(json, "attributes").Raw))
 }
 
 // AssertDiscoveryRequestDtoRequired checks if the required fields are not zero-ed
