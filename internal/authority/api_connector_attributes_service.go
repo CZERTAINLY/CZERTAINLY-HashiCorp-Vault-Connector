@@ -59,12 +59,12 @@ func (s *ConnectorAttributesAPIService) ListAttributeDefinitions(ctx context.Con
 func (s *ConnectorAttributesAPIService) CredentialAttributesCallback(ctx context.Context, credentialType string) (model.ImplResponse, error) {
 	attributes := make([]model.Attribute, 0)
 	switch credentialType {
-	case "kubernetes":
+	case model.KUBERNETES_CRED:
 		break
-	case "role":
+	case model.APPROLE_CRED:
 		attributes = append(attributes, model.GetAttributeDefByUUID(model.AUTHORITY_ROLE_ID_ATTR))
 		attributes = append(attributes, model.GetAttributeDefByUUID(model.AUTHORITY_ROLE_SECRET_ATTR))
-	case "jwt":
+	case model.JWTOIDC_CRED:
 		break
 	}
 
