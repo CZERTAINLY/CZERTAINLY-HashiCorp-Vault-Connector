@@ -278,13 +278,19 @@ func (s *AuthorityManagementAPIService) ListRAProfileAttributes(ctx context.Cont
 			})
 		}
 	}
+	var resultAttributes []model.Attribute
 	attribute := model.GetAttributeDefByUUID(model.RA_PROFILE_ENGINE_ATTR).(model.DataAttribute)
 	attribute.Content = engineList
-	resultAttributes := []model.Attribute{
-		attribute,
-		model.GetAttributeDefByUUID(model.RA_PROFILE_ROLE_ATTR),
+	resultAttributes = append(resultAttributes, attribute)
+	attribute = model.GetAttributeDefByUUID(model.RA_PROFILE_AUTHORITY_ATTR).(model.DataAttribute)
+	attribute.Content = []model.AttributeContent{
+		model.StringAttributeContent{
+			Reference: authority.Name,
+			Data:      authority.UUID,
+		},
 	}
-
+	resultAttributes = append(resultAttributes, attribute)
+	resultAttributes = append(resultAttributes, model.GetAttributeDefByUUID(model.RA_PROFILE_ROLE_ATTR))
 	return model.Response(http.StatusOK, resultAttributes), nil
 }
 
