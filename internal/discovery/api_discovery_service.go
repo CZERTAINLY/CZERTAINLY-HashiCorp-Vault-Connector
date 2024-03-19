@@ -6,6 +6,7 @@ import (
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/utils"
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/vault"
 	"context"
+	"encoding/base64"
 	"net/http"
 
 	"go.uber.org/zap"
@@ -84,12 +85,12 @@ func (s *DiscoveryAPIService) GetDiscovery(ctx context.Context, uuid string, dis
 		return model.Response(http.StatusOK, model.DiscoveryProviderDto{Uuid: discovery.UUID, Name: discovery.Name, Status: model.IN_PROGRESS, TotalCertificatesDiscovered: 0, CertificateData: nil, Meta: nil}), nil
 	} else {
 		pagination := db.Pagination{
-			Page:  1,
-			Limit: 10,
+			Page:  int(discoveryDataRequestDto.PageNumber),
+			Limit: int(discoveryDataRequestDto.ItemsPerPage),
 		}
 		result, _ := s.discoveryRepo.List(pagination)
 		var certificateDtos []model.DiscoveryProviderCertificateDataDto
-		rows, _ := result.Rows.([]*db.Certificate) // Convert interface{} to []db.CertificateData
+		rows, _ := result.Rows.([]*db.Certificate)
 		for _, certificateData := range rows {
 			discoveryProviderCertificateDataDto := model.DiscoveryProviderCertificateDataDto{
 				Uuid:          certificateData.UUID,
@@ -98,7 +99,7 @@ func (s *DiscoveryAPIService) GetDiscovery(ctx context.Context, uuid string, dis
 			certificateDtos = append(certificateDtos, discoveryProviderCertificateDataDto)
 		}
 
-		return model.Response(http.StatusOK, model.DiscoveryProviderDto{Uuid: discovery.UUID, Name: discovery.Name, Status: model.COMPLETED, TotalCertificatesDiscovered: 0, CertificateData: certificateDtos, Meta: nil}), nil
+		return model.Response(http.StatusOK, model.DiscoveryProviderDto{Uuid: discovery.UUID, Name: discovery.Name, Status: model.COMPLETED, TotalCertificatesDiscovered: result.TotalRows, CertificateData: certificateDtos, Meta: nil}), nil
 	}
 
 }
@@ -110,9 +111,9 @@ func (s *DiscoveryAPIService) DiscoveryCertificates(authority *db.AuthorityInsta
 		discovery.Status = "FAILED"
 		err := s.discoveryRepo.UpdateDiscovery(discovery)
 		if err != nil {
-			s.log.Fatal(err.Error())
+			s.log.Error(err.Error())
 		}
-		s.log.Fatal(err.Error())
+		s.log.Error(err.Error())
 		return
 	}
 	// get the certificates
@@ -121,9 +122,8 @@ func (s *DiscoveryAPIService) DiscoveryCertificates(authority *db.AuthorityInsta
 	if err != nil {
 		discovery.Status = "FAILED"
 		err := s.discoveryRepo.UpdateDiscovery(discovery)
-		s.log.Fatal(err.Error())
 		if err != nil {
-			s.log.Fatal(err.Error())
+			s.log.Error(err.Error())
 		}
 		return
 	}
@@ -132,10 +132,10 @@ func (s *DiscoveryAPIService) DiscoveryCertificates(authority *db.AuthorityInsta
 		certificateData, err := client.Secrets.PkiReadCert(ctx, certificateKey)
 		if err != nil {
 			discovery.Status = "FAILED"
-			s.log.Fatal(err.Error())
+			s.log.Error(err.Error())
 			err := s.discoveryRepo.UpdateDiscovery(discovery)
 			if err != nil {
-				s.log.Fatal(err.Error())
+				s.log.Error(err.Error())
 			}
 
 			return
@@ -143,17 +143,17 @@ func (s *DiscoveryAPIService) DiscoveryCertificates(authority *db.AuthorityInsta
 		certificate := db.Certificate{
 			SerialNumber:  certificateKey,
 			UUID:          utils.DeterministicGUID(certificateKey),
-			Base64Content: certificateData.Data.Certificate,
+			Base64Content: base64.StdEncoding.EncodeToString([]byte(certificateData.Data.Certificate)),
 		}
 		certificateKeys = append(certificateKeys, &certificate)
 	}
 	err = s.discoveryRepo.AssociateCertificatesToDiscovery(discovery, certificateKeys...)
 	if err != nil {
 		discovery.Status = "FAILED"
-		s.log.Fatal(err.Error())
+		s.log.Error(err.Error())
 		err := s.discoveryRepo.UpdateDiscovery(discovery)
 		if err != nil {
-			s.log.Fatal(err.Error())
+			s.log.Error(err.Error())
 		}
 		return
 	}
@@ -163,10 +163,10 @@ func (s *DiscoveryAPIService) DiscoveryCertificates(authority *db.AuthorityInsta
 	err = s.discoveryRepo.UpdateDiscovery(discovery)
 	if err != nil {
 		discovery.Status = "FAILED"
-		s.log.Fatal(err.Error())
+		s.log.Error(err.Error())
 		err := s.discoveryRepo.UpdateDiscovery(discovery)
 		if err != nil {
-			s.log.Fatal(err.Error())
+			s.log.Error(err.Error())
 		}
 		return
 	}

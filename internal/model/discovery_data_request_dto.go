@@ -9,10 +9,10 @@ type DiscoveryDataRequestDto struct {
 	Kind string `json:"kind"`
 
 	// Page number for the retrieved certificates
-	PageNumber int32 `json:"pageNumber"`
+	PageNumber int64 `json:"pageNumber"`
 
 	// Number of certificates per page
-	ItemsPerPage int32 `json:"itemsPerPage"`
+	ItemsPerPage int64 `json:"itemsPerPage"`
 }
 
 // AssertDiscoveryDataRequestDtoRequired checks if the required fields are not zero-ed

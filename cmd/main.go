@@ -10,6 +10,8 @@ import (
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/logger"
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/model"
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/utils"
+	"bytes"
+	"io"
 	"net/http"
 	"strings"
 
@@ -97,7 +99,13 @@ func main() {
 func logMiddleware(next http.Handler) http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Info("Request received", zap.String("path", r.URL.Path))
+		//TODO: remove body logging
+		buf, _ := io.ReadAll(r.Body)
+		rdr1 := io.NopCloser(bytes.NewBuffer(buf))
+		rdr2 := io.NopCloser(bytes.NewBuffer(buf))
+		body, _ := io.ReadAll(rdr1)
+		log.Info("Request received", zap.String("path", r.URL.Path), zap.String("body", string(body)))
+		r.Body = rdr2
 		next.ServeHTTP(w, r)
 	})
 }
