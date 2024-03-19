@@ -20,7 +20,8 @@ const (
 	RA_PROFILE_AUTHORITY_ATTR string = "5af5693a-74bf-4ec4-b101-44ce35d8455b"
 
 	// Discovery Attributes
-	DISCOVERY_AUTHORITY_ATTR string = "24531b64-efd2-4a16-8ba8-ffef90890356"
+	DISCOVERY_AUTHORITY_ATTR  string = "24531b64-efd2-4a16-8ba8-ffef90890356"
+	DISCOVERY_PKI_ENGINE_ATTR string = "12a10e1e-1fdf-4ca5-b65f-68d92ef905a0"
 )
 
 type AttributeName string
@@ -368,6 +369,38 @@ func getDiscoveryAttributes() []Attribute {
 				ReadOnly:    false,
 				List:        true,
 				MultiSelect: false,
+			},
+		},
+		DataAttribute{
+			Uuid:        DISCOVERY_PKI_ENGINE_ATTR,
+			Name:        "pki_engines_to_discover",
+			Description: "Set of PKI engines to discover",
+			Type:        DATA,
+			Content:     nil,
+			ContentType: OBJECT,
+			Properties: &DataAttributeProperties{
+				Label:       "Authority to discover",
+				Visible:     true,
+				Group:       "",
+				Required:    true,
+				ReadOnly:    false,
+				List:        true,
+				MultiSelect: true,
+			},
+			AttributeCallback: &AttributeCallback{
+				CallbackContext: "v1/discoveryProvider/{uuid}/pkiengines/callback",
+				CallbackMethod:  "GET",
+				Mappings: []AttributeCallbackMapping{
+					{
+						From:                 "authority_to_discover.data.uuid",
+						AttributeType:        DATA,
+						AttributeContentType: STRING,
+						To:                   "uuid",
+						Targets: []AttributeValueTarget{
+							PATH_VARIABLE,
+						},
+					},
+				},
 			},
 		},
 	}

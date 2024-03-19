@@ -12,6 +12,7 @@ import (
 type ConnectorAttributesAPIRouter interface {
 	ListAttributeDefinitions(http.ResponseWriter, *http.Request)
 	ValidateAttributes(http.ResponseWriter, *http.Request)
+	PkiEnginesCallback(http.ResponseWriter, *http.Request)
 }
 
 // DiscoveryAPIRouter defines the required methods for binding the api requests to a responses for the DiscoveryAPI
@@ -30,6 +31,7 @@ type DiscoveryAPIRouter interface {
 type ConnectorAttributesAPIServicer interface {
 	ListAttributeDefinitions(context.Context, string) (model.ImplResponse, error)
 	ValidateAttributes(context.Context, string, []model.Attribute) (model.ImplResponse, error)
+	PkiEnginesCallback(context.Context, string) (model.ImplResponse, error)
 }
 
 // DiscoveryAPIServicer defines the api actions for the DiscoveryAPI service

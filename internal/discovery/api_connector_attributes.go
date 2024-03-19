@@ -53,6 +53,31 @@ func (c *ConnectorAttributesAPIController) Routes() model.Routes {
 			Pattern:     "/v1/discoveryProvider/{kind}/attributes/validate",
 			HandlerFunc: c.ValidateAttributes,
 		},
+		"PkiEnginesCallback": model.Route{
+			Method:      strings.ToUpper("GET"),
+			Pattern:     "/v1/discoveryProvider/{uuid}/pkiengines/callback",
+			HandlerFunc: c.PkiEnginesCallback,
+		},
+	}
+}
+
+func (c *ConnectorAttributesAPIController) PkiEnginesCallback(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	authorityUuid := params["uuid"]
+	if authorityUuid == "" {
+		c.errorHandler(w, r, &model.RequiredError{Field: "authorityUuid"}, nil)
+		return
+	}
+	result, err := c.service.PkiEnginesCallback(r.Context(), authorityUuid)
+	// If an error occurred, encode the error with the status code
+	if err != nil {
+		c.errorHandler(w, r, err, &result)
+		return
+	}
+	// If no error, encode the body and the result code
+	err = model.EncodeJSONResponse(result.Body, &result.Code, w)
+	if err != nil {
+		return
 	}
 }
 
