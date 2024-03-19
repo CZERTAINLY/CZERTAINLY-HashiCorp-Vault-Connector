@@ -286,7 +286,7 @@ func getRAProfilesAttributes() []Attribute {
 				Group:       "",
 				Required:    true,
 				ReadOnly:    false,
-				List:        false,
+				List:        true,
 				MultiSelect: false,
 			},
 		},
