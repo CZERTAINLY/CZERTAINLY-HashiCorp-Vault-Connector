@@ -7,6 +7,7 @@ import (
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/vault"
 	"context"
 	"encoding/base64"
+	vault2 "github.com/hashicorp/vault-client-go"
 	"net/http"
 
 	"go.uber.org/zap"
@@ -66,11 +67,22 @@ func (s *DiscoveryAPIService) DiscoverCertificate(ctx context.Context, discovery
 		return model.Response(http.StatusNotFound, model.ErrorMessageDto{Message: "Unable to create discovery " + discovery.UUID}), nil
 	}
 	uuid := model.GetAttributeFromArrayByUUID(model.DISCOVERY_AUTHORITY_ATTR, discoveryRequestDto.Attributes).GetContent()[0].GetData().(map[string]interface{})["uuid"].(string)
+	engines := model.GetAttributeFromArrayByUUID(model.DISCOVERY_PKI_ENGINE_ATTR, discoveryRequestDto.Attributes).GetContent()
+	if len(engines) == 0 {
+		return model.Response(http.StatusBadRequest, model.ErrorMessageDto{Message: "No PKI engine selected"}), nil
+
+	}
+	enginesList := make([]string, 0)
+	for _, engine := range engines {
+		engineData := engine.(model.ObjectAttributeContent).GetData().(map[string]interface{})
+		engineName := engineData["engineName"].(string)
+		enginesList = append(enginesList, engineName)
+	}
 	authority, err := s.authorityRepo.FindAuthorityInstanceByUUID(uuid)
 	if err != nil {
 		return model.Response(http.StatusNotFound, model.ErrorMessageDto{Message: "Authority not found  " + uuid}), nil
 	}
-	go s.DiscoveryCertificates(authority, discovery)
+	go s.DiscoveryCertificates(authority, discovery, enginesList)
 
 	return model.Response(http.StatusOK, response), nil
 }
@@ -104,7 +116,7 @@ func (s *DiscoveryAPIService) GetDiscovery(ctx context.Context, uuid string, dis
 
 }
 
-func (s *DiscoveryAPIService) DiscoveryCertificates(authority *db.AuthorityInstance, discovery *db.Discovery) {
+func (s *DiscoveryAPIService) DiscoveryCertificates(authority *db.AuthorityInstance, discovery *db.Discovery, list []string) {
 	// get the vault client
 	client, err := vault.GetClient(*authority)
 	if err != nil {
@@ -118,18 +130,37 @@ func (s *DiscoveryAPIService) DiscoveryCertificates(authority *db.AuthorityInsta
 	}
 	// get the certificates
 	ctx := context.Background()
-	certificates, err := client.Secrets.PkiListCerts(ctx)
-	if err != nil {
-		discovery.Status = "FAILED"
-		err := s.discoveryRepo.UpdateDiscovery(discovery)
+	for _, engine := range list {
+		certificates, err := client.Secrets.PkiListCerts(ctx, vault2.WithMountPath(engine))
 		if err != nil {
-			s.log.Error(err.Error())
+			discovery.Status = "FAILED"
+			err := s.discoveryRepo.UpdateDiscovery(discovery)
+			if err != nil {
+				s.log.Error(err.Error())
+			}
+			return
 		}
-		return
-	}
-	var certificateKeys []*db.Certificate
-	for _, certificateKey := range certificates.Data.Keys {
-		certificateData, err := client.Secrets.PkiReadCert(ctx, certificateKey)
+		var certificateKeys []*db.Certificate
+		for _, certificateKey := range certificates.Data.Keys {
+			certificateData, err := client.Secrets.PkiReadCert(ctx, certificateKey)
+			if err != nil {
+				discovery.Status = "FAILED"
+				s.log.Error(err.Error())
+				err := s.discoveryRepo.UpdateDiscovery(discovery)
+				if err != nil {
+					s.log.Error(err.Error())
+				}
+
+				return
+			}
+			certificate := db.Certificate{
+				SerialNumber:  certificateKey,
+				UUID:          utils.DeterministicGUID(certificateKey),
+				Base64Content: base64.StdEncoding.EncodeToString([]byte(certificateData.Data.Certificate)),
+			}
+			certificateKeys = append(certificateKeys, &certificate)
+		}
+		err = s.discoveryRepo.AssociateCertificatesToDiscovery(discovery, certificateKeys...)
 		if err != nil {
 			discovery.Status = "FAILED"
 			s.log.Error(err.Error())
@@ -137,27 +168,9 @@ func (s *DiscoveryAPIService) DiscoveryCertificates(authority *db.AuthorityInsta
 			if err != nil {
 				s.log.Error(err.Error())
 			}
-
 			return
 		}
-		certificate := db.Certificate{
-			SerialNumber:  certificateKey,
-			UUID:          utils.DeterministicGUID(certificateKey),
-			Base64Content: base64.StdEncoding.EncodeToString([]byte(certificateData.Data.Certificate)),
-		}
-		certificateKeys = append(certificateKeys, &certificate)
 	}
-	err = s.discoveryRepo.AssociateCertificatesToDiscovery(discovery, certificateKeys...)
-	if err != nil {
-		discovery.Status = "FAILED"
-		s.log.Error(err.Error())
-		err := s.discoveryRepo.UpdateDiscovery(discovery)
-		if err != nil {
-			s.log.Error(err.Error())
-		}
-		return
-	}
-
 	// Update discovery status to "COMPLETED"
 	discovery.Status = "COMPLETED"
 	err = s.discoveryRepo.UpdateDiscovery(discovery)
