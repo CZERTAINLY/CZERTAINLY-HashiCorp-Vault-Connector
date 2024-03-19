@@ -389,11 +389,5 @@ func (s *AuthorityManagementAPIService) RAProfileCallback(ctx context.Context, u
 		})
 
 	}
-	attribute := model.GetAttributeDefByUUID(model.RA_PROFILE_ROLE_ATTR).(model.DataAttribute)
-	attribute.Content = roleList
-	resultAttributes := []model.Attribute{
-		attribute,
-	}
-
-	return model.Response(http.StatusOK, resultAttributes), nil
+	return model.Response(http.StatusOK, roleList), nil
 }
