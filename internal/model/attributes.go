@@ -297,7 +297,7 @@ func getRAProfilesAttributes() []Attribute {
 			Description: "",
 			Type:        DATA,
 			Content:     nil,
-			ContentType: OBJECT,
+			ContentType: STRING,
 			Properties: &DataAttributeProperties{
 				Label:       "Authority used for PKI engine query",
 				Visible:     false,
@@ -338,7 +338,7 @@ func getRAProfilesAttributes() []Attribute {
 						},
 					},
 					{
-						From:                 "ra_profile_authority.uuid",
+						From:                 "ra_profile_authority.data",
 						AttributeType:        DATA,
 						AttributeContentType: STRING,
 						To:                   "uuid",
@@ -379,7 +379,7 @@ func getDiscoveryAttributes() []Attribute {
 			Content:     nil,
 			ContentType: OBJECT,
 			Properties: &DataAttributeProperties{
-				Label:       "Authority to discover",
+				Label:       "Set of PKI engines to discover",
 				Visible:     true,
 				Group:       "",
 				Required:    true,
