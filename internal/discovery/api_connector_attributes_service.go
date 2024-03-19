@@ -109,5 +109,6 @@ func (s *ConnectorAttributesAPIService) PkiEnginesCallback(ctx context.Context, 
 	}
 	attribute := model.GetAttributeDefByUUID(model.DISCOVERY_PKI_ENGINE_ATTR).(model.DataAttribute)
 	attribute.Content = engineList
+	attribute.AttributeCallback = nil
 	return model.Response(http.StatusOK, []model.Attribute{attribute}), nil
 }
