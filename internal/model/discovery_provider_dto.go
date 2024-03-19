@@ -11,7 +11,7 @@ type DiscoveryProviderDto struct {
 	Status DiscoveryStatus `json:"status"`
 
 	// Number of Certificates discovered
-	TotalCertificatesDiscovered int32 `json:"totalCertificatesDiscovered,omitempty"`
+	TotalCertificatesDiscovered int64 `json:"totalCertificatesDiscovered"`
 
 	// Certificate data
 	CertificateData []DiscoveryProviderCertificateDataDto `json:"certificateData"`
