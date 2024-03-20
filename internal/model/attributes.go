@@ -1,9 +1,13 @@
 package model
 
 import (
+	"CZERTAINLY-HashiCorp-Vault-Connector/internal/logger"
 	"encoding/json"
 	"github.com/tidwall/gjson"
+	"go.uber.org/zap"
 )
+
+var log = logger.Get()
 
 const (
 	// Authority Attributes
@@ -138,21 +142,30 @@ func unmarshalAttributeContent(content []byte, contentType AttributeContentType)
 		err := json.Unmarshal(content, &stringContent)
 		result = stringContent
 		if err != nil {
-			panic(err)
+			log.Error(err.Error(), zap.String("content", string(content)))
 		}
 	case OBJECT:
-		objectContent := ObjectAttributeContent{}
-		err := json.Unmarshal(content, &objectContent)
-		result = objectContent
+		stringData := StringAttributeContent{}
+		err := json.Unmarshal(content, &stringData)
+		result = ObjectAttributeContent{
+			Reference: stringData.Reference,
+			Data:      map[string]interface{}{"objectData": stringData.Data},
+		}
 		if err != nil {
-			panic(err)
+			log.Error(err.Error(), zap.String("content", string(content)))
+			objectData := ObjectAttributeContent{}
+			err := json.Unmarshal(content, &objectData)
+			if err != nil {
+				log.Error(err.Error(), zap.String("content", string(content)))
+			}
+			result = objectData
 		}
 	case BOOLEAN:
 		booleanContent := BooleanAttributeContent{}
 		err := json.Unmarshal(content, &booleanContent)
 		result = booleanContent
 		if err != nil {
-			panic(err)
+			log.Error(err.Error(), zap.String("content", string(content)))
 		}
 
 	case SECRET:
@@ -167,7 +180,13 @@ func unmarshalAttributeContent(content []byte, contentType AttributeContentType)
 			},
 		}
 		if err != nil {
-			panic(err)
+			log.Error(err.Error(), zap.String("content", string(content)))
+			secretData := SecretAttributeContent{}
+			err := json.Unmarshal(content, &secretData)
+			if err != nil {
+				log.Error(err.Error(), zap.String("content", string(content)))
+			}
+			result = secretData
 		}
 	}
 
@@ -193,21 +212,21 @@ func unmarshalAttribute(content []byte, attrDef AttributeDefinition) Attribute {
 		if properties != "" {
 			err := json.Unmarshal([]byte(properties), &data.Properties)
 			if err != nil {
-				panic(err)
+				log.Error(err.Error(), zap.String("content", string(content)))
 			}
 		}
 		constraints := gjson.GetBytes(content, "constrains").Raw
 		if constraints != "" {
 			err := json.Unmarshal([]byte(constraints), &data.Constraints)
 			if err != nil {
-				panic(err)
+				log.Error(err.Error(), zap.String("content", string(content)))
 			}
 		}
 		callbacks := gjson.GetBytes(content, "attributeCallback").Raw
 		if callbacks != "" {
 			err := json.Unmarshal([]byte(callbacks), &data.AttributeCallback)
 			if err != nil {
-				panic(err)
+				log.Error(err.Error(), zap.String("content", string(content)))
 			}
 		}
 		result = data
