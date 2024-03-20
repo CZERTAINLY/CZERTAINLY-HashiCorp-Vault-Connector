@@ -145,6 +145,7 @@ func unmarshalAttributeContent(content []byte, contentType AttributeContentType)
 			log.Error(err.Error(), zap.String("content", string(content)))
 		}
 	case OBJECT:
+		//TODO: remove conversion to string after UI will be able to handle ObjectAttributeContent
 		stringData := StringAttributeContent{}
 		err := json.Unmarshal(content, &stringData)
 		result = ObjectAttributeContent{
