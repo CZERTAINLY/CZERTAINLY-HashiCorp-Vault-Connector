@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"go.uber.org/zap"
 )
@@ -94,6 +95,7 @@ func (s *ConnectorAttributesAPIService) PkiEnginesCallback(ctx context.Context, 
 	mounts, _ := client.System.MountsListSecretsEngines(ctx)
 	var engineList []model.AttributeContent
 	for engineName, engineData := range mounts.Data {
+		engineName = strings.TrimSuffix(engineName, "/")
 		if engineData.(map[string]any)["type"] == "pki" {
 
 			engineDataObject := make(map[string]interface{})

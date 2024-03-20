@@ -55,7 +55,7 @@ func (s *CertificateManagementAPIService) IdentifyCertificate(ctx context.Contex
 
 	}
 
-	_, err = client.Secrets.PkiReadCert(ctx, serialNumber.Text(10), vault2.WithMountPath(engineName))
+	_, err = client.Secrets.PkiReadCert(ctx, serialNumber.Text(10), vault2.WithMountPath(engineName+"/"))
 	if err != nil {
 		s.log.Error(err.Error())
 		return model.Response(http.StatusBadRequest, model.ErrorMessageDto{
@@ -106,7 +106,7 @@ func (s *CertificateManagementAPIService) IssueCertificate(ctx context.Context, 
 		CommonName: commonName,
 		Csr:        string(decoded),
 	}
-	certificateSignResponse, err := client.Secrets.PkiSignWithRole(ctx, role, signRequest, vault2.WithMountPath(engineName))
+	certificateSignResponse, err := client.Secrets.PkiSignWithRole(ctx, role, signRequest, vault2.WithMountPath(engineName+"/"))
 	if err != nil {
 		s.log.Error(err.Error())
 		return model.Response(http.StatusBadRequest, model.ErrorMessageDto{
@@ -168,7 +168,7 @@ func (s *CertificateManagementAPIService) RenewCertificate(ctx context.Context, 
 		CommonName: commonName,
 		Csr:        certificateRenewRequestDto.Pkcs10,
 	}
-	certificateSignResponse, err := client.Secrets.PkiIssuerSignWithRole(ctx, "default", role, signRequest, vault2.WithMountPath(engineName))
+	certificateSignResponse, err := client.Secrets.PkiIssuerSignWithRole(ctx, "default", role, signRequest, vault2.WithMountPath(engineName+"/"))
 	if err != nil {
 		s.log.Error(err.Error())
 		return model.Response(http.StatusBadRequest, model.ErrorMessageDto{

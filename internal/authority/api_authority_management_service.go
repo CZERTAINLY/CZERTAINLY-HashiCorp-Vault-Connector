@@ -10,6 +10,7 @@ import (
 	vault2 "github.com/hashicorp/vault-client-go"
 	"go.uber.org/zap"
 	"net/http"
+	"strings"
 )
 
 // AuthorityManagementAPIService is a service that implements the logic for the AuthorityManagementAPIServicer
@@ -115,7 +116,7 @@ func (s *AuthorityManagementAPIService) GetCaCertificates(ctx context.Context, u
 	engineData := model.GetAttributeFromArrayByUUID(model.RA_PROFILE_ENGINE_ATTR, caCertificatesRequestDto.RaProfileAttributes).GetContent()[0].GetData().(map[string]interface{})
 	engineName := engineData["engineName"].(string)
 	//https://github.com/hashicorp/vault/issues/919 do not use PkiReadCaChainPem
-	certificateCaResponse, err := client.Secrets.PkiReadCertCaChain(ctx, vault2.WithMountPath(engineName))
+	certificateCaResponse, err := client.Secrets.PkiReadCertCaChain(ctx, vault2.WithMountPath(engineName+"/"))
 
 	if err != nil {
 		s.log.Error(err.Error())
@@ -185,7 +186,7 @@ func (s *AuthorityManagementAPIService) GetCrl(ctx context.Context, uuid string,
 	engineName := engineData["engineName"].(string)
 	var chain []string
 	if certificateRevocationListRequestDto.Delta {
-		deltaCrl, err := client.Secrets.PkiReadCertDeltaCrl(ctx, vault2.WithMountPath(engineName))
+		deltaCrl, err := client.Secrets.PkiReadCertDeltaCrl(ctx, vault2.WithMountPath(engineName+"/"))
 		if err != nil {
 			return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{
 				Message: "Failed to read Delta CRL",
@@ -200,7 +201,7 @@ func (s *AuthorityManagementAPIService) GetCrl(ctx context.Context, uuid string,
 		}
 
 	} else {
-		completeCrl, err := client.Secrets.PkiReadCertCrl(ctx, vault2.WithMountPath(engineName))
+		completeCrl, err := client.Secrets.PkiReadCertCrl(ctx, vault2.WithMountPath(engineName+"/"))
 		if err != nil {
 			return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{
 				Message: "Failed to read CRL",
@@ -265,6 +266,7 @@ func (s *AuthorityManagementAPIService) ListRAProfileAttributes(ctx context.Cont
 	mounts, _ := client.System.MountsListSecretsEngines(ctx)
 	var engineList []model.AttributeContent
 	for engineName, engineData := range mounts.Data {
+		engineName = strings.TrimSuffix(engineName, "/")
 		if engineData.(map[string]any)["type"] == "pki" {
 
 			engineDataObject := make(map[string]interface{})
@@ -379,7 +381,7 @@ func (s *AuthorityManagementAPIService) RAProfileCallback(ctx context.Context, u
 			Message: "Failed to create vault client",
 		}), err
 	}
-	roles, _ := client.Secrets.PkiListRoles(ctx, vault2.WithMountPath(engineName))
+	roles, _ := client.Secrets.PkiListRoles(ctx, vault2.WithMountPath(engineName+"/"))
 	var roleList []model.AttributeContent
 	for _, roleName := range roles.Data.Keys {
 
