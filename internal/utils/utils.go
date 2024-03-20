@@ -4,7 +4,6 @@ import (
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/logger"
 	"crypto/md5"
 	"crypto/x509"
-	"encoding/base64"
 	"encoding/hex"
 	"encoding/pem"
 	"fmt"
@@ -39,16 +38,9 @@ func DeterministicGUID(parts ...string) string {
 	return uuidByte.String()
 }
 
-func ExtractCommonName(csr string) (string, error) {
-	decodedCsr, _ := base64.StdEncoding.DecodeString(csr)
+func ExtractCommonName(csr []byte) (string, error) {
 
-	block, _ := pem.Decode(decodedCsr)
-	if block == nil {
-		log.Error("Failed to parse PEM block containing the CSR")
-		return "", fmt.Errorf("failed to parse PEM block containing the CSR")
-	}
-
-	csrParsed, err := x509.ParseCertificateRequest(block.Bytes)
+	csrParsed, err := x509.ParseCertificateRequest(csr)
 	if err != nil {
 		log.Error("Failed to parse CSR: " + err.Error())
 		return "", fmt.Errorf("failed to parse CSR: %v", err)

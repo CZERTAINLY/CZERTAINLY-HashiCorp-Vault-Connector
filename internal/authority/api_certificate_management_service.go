@@ -7,10 +7,12 @@ import (
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/vault"
 	"context"
 	"encoding/base64"
+	"encoding/pem"
 	"errors"
 	vault2 "github.com/hashicorp/vault-client-go"
 	"github.com/hashicorp/vault-client-go/schema"
 	"go.uber.org/zap"
+	"log"
 	"net/http"
 )
 
@@ -72,6 +74,7 @@ func (s *CertificateManagementAPIService) IdentifyCertificate(ctx context.Contex
 
 // IssueCertificate - Issue Certificate
 func (s *CertificateManagementAPIService) IssueCertificate(ctx context.Context, uuid string, certificateSignRequestDto model.CertificateSignRequestDto) (model.ImplResponse, error) {
+	//TODO: refactor and merge code with renew certificate
 	raAttributes := certificateSignRequestDto.RaProfileAttributes
 	engineData := model.GetAttributeFromArrayByUUID(model.RA_PROFILE_ENGINE_ATTR, raAttributes).GetContent()[0].GetData().(map[string]interface{})
 	engineName := engineData["engineName"].(string)
@@ -88,23 +91,36 @@ func (s *CertificateManagementAPIService) IssueCertificate(ctx context.Context, 
 			Message: err.Error(),
 		}), nil
 	}
-	commonName, err := utils.ExtractCommonName(certificateSignRequestDto.Pkcs10)
-	if err != nil {
-		return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{
-			Message: err.Error(),
-		}), nil
-
-	}
 	decoded, err := base64.StdEncoding.DecodeString(certificateSignRequestDto.Pkcs10)
 	if err != nil {
 		return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{
 			Message: err.Error(),
 		}), nil
+
 	}
+	commonName, err := utils.ExtractCommonName(decoded)
+	if err != nil {
+		return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{
+			Message: err.Error(),
+		}), nil
+
+	}
+
+	if err != nil {
+		return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{
+			Message: err.Error(),
+		}), nil
+	}
+	// Encode to PEM format
+	pemBlock := &pem.Block{
+		Type:  "CERTIFICATE REQUEST", // Or "CERTIFICATE", depending on what's in the DER file
+		Bytes: decoded,
+	}
+	pemBytes := pem.EncodeToMemory(pemBlock)
 
 	signRequest := schema.PkiSignWithRoleRequest{
 		CommonName: commonName,
-		Csr:        string(decoded),
+		Csr:        string(pemBytes),
 	}
 	certificateSignResponse, err := client.Secrets.PkiSignWithRole(ctx, role, signRequest, vault2.WithMountPath(engineName+"/"))
 	if err != nil {
@@ -116,9 +132,14 @@ func (s *CertificateManagementAPIService) IssueCertificate(ctx context.Context, 
 	}
 	certificate := certificateSignResponse.Data.Certificate
 	serialNumber := certificateSignResponse.Data.SerialNumber
+	pemBlock, _ = pem.Decode([]byte(certificate))
+	if pemBlock == nil {
+		log.Fatalf("Failed to decode PEM file")
+	}
+	derBytes := pemBlock.Bytes
 
 	CertificateDataResponseDto := model.CertificateDataResponseDto{
-		CertificateData: base64.StdEncoding.EncodeToString([]byte(certificate)),
+		CertificateData: base64.StdEncoding.EncodeToString(derBytes),
 		Uuid:            utils.DeterministicGUID(serialNumber),
 		Meta:            nil,
 		CertificateType: "X.509",
@@ -156,17 +177,28 @@ func (s *CertificateManagementAPIService) RenewCertificate(ctx context.Context, 
 			Message: err.Error(),
 		}), nil
 	}
-
-	commonName, err := utils.ExtractCommonName(certificateRenewRequestDto.Pkcs10)
+	decoded, err := base64.StdEncoding.DecodeString(certificateRenewRequestDto.Pkcs10)
 	if err != nil {
 		return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{
 			Message: err.Error(),
 		}), nil
 
 	}
+	commonName, err := utils.ExtractCommonName(decoded)
+	if err != nil {
+		return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{
+			Message: err.Error(),
+		}), nil
+
+	}
+	pemBlock := &pem.Block{
+		Type:  "CERTIFICATE REQUEST", // Or "CERTIFICATE", depending on what's in the DER file
+		Bytes: decoded,
+	}
+	pemBytes := pem.EncodeToMemory(pemBlock)
 	signRequest := schema.PkiIssuerSignWithRoleRequest{
 		CommonName: commonName,
-		Csr:        certificateRenewRequestDto.Pkcs10,
+		Csr:        string(pemBytes),
 	}
 	certificateSignResponse, err := client.Secrets.PkiIssuerSignWithRole(ctx, "default", role, signRequest, vault2.WithMountPath(engineName+"/"))
 	if err != nil {
@@ -178,9 +210,14 @@ func (s *CertificateManagementAPIService) RenewCertificate(ctx context.Context, 
 	}
 	certificate := certificateSignResponse.Data.Certificate
 	serialNumber := certificateSignResponse.Data.SerialNumber
+	pemBlock, _ = pem.Decode([]byte(certificate))
+	if pemBlock == nil {
+		log.Fatalf("Failed to decode PEM file")
+	}
+	derBytes := pemBlock.Bytes
 
 	CertificateDataResponseDto := model.CertificateDataResponseDto{
-		CertificateData: base64.StdEncoding.EncodeToString([]byte(certificate)),
+		CertificateData: base64.StdEncoding.EncodeToString(derBytes),
 		Uuid:            utils.DeterministicGUID(serialNumber),
 		Meta:            nil,
 		CertificateType: "X.509",
