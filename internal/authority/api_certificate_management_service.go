@@ -12,7 +12,6 @@ import (
 	vault2 "github.com/hashicorp/vault-client-go"
 	"github.com/hashicorp/vault-client-go/schema"
 	"go.uber.org/zap"
-	"log"
 	"net/http"
 )
 
@@ -49,7 +48,14 @@ func (s *CertificateManagementAPIService) IdentifyCertificate(ctx context.Contex
 			Message: err.Error(),
 		}), nil
 	}
-	serialNumber, err := utils.ExtractSerialNumber(certificateIdentificationRequestDto.Certificate)
+	decoded, err := base64.StdEncoding.DecodeString(certificateIdentificationRequestDto.Certificate)
+	if err != nil {
+		return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{
+			Message: err.Error(),
+		}), nil
+
+	}
+	serialNumber, err := utils.ExtractSerialNumber(decoded)
 	if err != nil {
 		return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{
 			Message: err.Error(),
@@ -57,7 +63,7 @@ func (s *CertificateManagementAPIService) IdentifyCertificate(ctx context.Contex
 
 	}
 
-	_, err = client.Secrets.PkiReadCert(ctx, serialNumber.Text(10), vault2.WithMountPath(engineName+"/"))
+	_, err = client.Secrets.PkiReadCert(ctx, serialNumber, vault2.WithMountPath(engineName+"/"))
 	if err != nil {
 		s.log.Error(err.Error())
 		return model.Response(http.StatusBadRequest, model.ErrorMessageDto{
@@ -134,7 +140,13 @@ func (s *CertificateManagementAPIService) IssueCertificate(ctx context.Context, 
 	serialNumber := certificateSignResponse.Data.SerialNumber
 	pemBlock, _ = pem.Decode([]byte(certificate))
 	if pemBlock == nil {
-		log.Fatalf("Failed to decode PEM file")
+		s.log.Error("Failed to decode PEM file")
+		if err != nil {
+			return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{
+				Message: "Failed to decode PEM file",
+			}), nil
+
+		}
 	}
 	derBytes := pemBlock.Bytes
 
@@ -212,7 +224,13 @@ func (s *CertificateManagementAPIService) RenewCertificate(ctx context.Context, 
 	serialNumber := certificateSignResponse.Data.SerialNumber
 	pemBlock, _ = pem.Decode([]byte(certificate))
 	if pemBlock == nil {
-		log.Fatalf("Failed to decode PEM file")
+		s.log.Error("Failed to decode PEM file")
+		if err != nil {
+			return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{
+				Message: "Failed to decode PEM file",
+			}), nil
+
+		}
 	}
 	derBytes := pemBlock.Bytes
 
@@ -240,15 +258,19 @@ func (s *CertificateManagementAPIService) RevokeCertificate(ctx context.Context,
 			Message: err.Error(),
 		}), nil
 	}
-	serialNumber, err := utils.ExtractSerialNumber(certRevocationDto.Certificate)
+	decoded, err := base64.StdEncoding.DecodeString(certRevocationDto.Certificate)
 	if err != nil {
 		return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{
 			Message: err.Error(),
 		}), nil
-
 	}
+	pemBlock := &pem.Block{
+		Type:  "CERTIFICATE REQUEST", // Or "CERTIFICATE", depending on what's in the DER file
+		Bytes: decoded,
+	}
+	pemBytes := pem.EncodeToMemory(pemBlock)
 	revokeRequest := schema.PkiRevokeRequest{
-		SerialNumber: serialNumber.Text(10),
+		Certificate: string(pemBytes),
 	}
 	_, err = client.Secrets.PkiRevoke(ctx, revokeRequest)
 	if err != nil {
