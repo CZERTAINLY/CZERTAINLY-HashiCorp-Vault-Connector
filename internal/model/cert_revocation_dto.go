@@ -26,7 +26,6 @@ func AssertCertRevocationDtoRequired(obj CertRevocationDto) error {
 	elements := map[string]interface{}{
 		"reason":              obj.Reason,
 		"raProfileAttributes": obj.RaProfileAttributes,
-		"attributes":          obj.Attributes,
 		"certificate":         obj.Certificate,
 	}
 	for name, el := range elements {

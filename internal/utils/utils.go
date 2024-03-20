@@ -8,8 +8,6 @@ import (
 	"encoding/pem"
 	"fmt"
 
-	"math/big"
-
 	"github.com/google/uuid"
 )
 
@@ -50,22 +48,12 @@ func ExtractCommonName(csr []byte) (string, error) {
 	return commonName, nil
 }
 
-func ExtractSerialNumber(certificate string) (*big.Int, error) {
-	block, err := pem.Decode([]byte(certificate))
-	if err != nil {
-		log.Error("Failed to parse PEM block containing the certificate")
-		return nil, fmt.Errorf("failed to parse PEM block containing the certificate")
-	}
-	if block == nil {
-		log.Error("Failed to parse PEM block containing the certificate")
-		return nil, fmt.Errorf("failed to parse PEM block containing the certificate")
-	}
-
-	certificateParsed, errParse := x509.ParseCertificate(block.Bytes)
+func ExtractSerialNumber(certificate []byte) (string, error) {
+	certificateParsed, errParse := x509.ParseCertificate(certificate)
 	if errParse != nil {
 		log.Error("Failed to parse certificate: " + errParse.Error())
 	}
-	serialNumber := certificateParsed.SerialNumber
+	serialNumber := certificateParsed.SerialNumber.Text(10)
 	return serialNumber, nil
 }
 
