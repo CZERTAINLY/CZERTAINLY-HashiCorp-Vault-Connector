@@ -12,23 +12,24 @@ type RequestAttributeDto struct {
 	Content []AttributeContent `json:"content"`
 }
 
-func (d RequestAttributeDto) GetUuid() string {
-	return d.Uuid
-}
-
-func (d RequestAttributeDto) GetName() string {
-	return d.Name
-}
-
-func (d RequestAttributeDto) GetContent() []AttributeContent {
-	return d.Content
-}
-
-func (d RequestAttributeDto) GetAttributeType() AttributeType {
+func (r RequestAttributeDto) GetAttributeType() AttributeType {
 	return ""
 }
-func (d RequestAttributeDto) GetAttributeContentType() AttributeContentType {
+
+func (r RequestAttributeDto) GetAttributeContentType() AttributeContentType {
 	return ""
+}
+
+func (r RequestAttributeDto) GetContent() []AttributeContent {
+	return r.Content
+}
+
+func (r RequestAttributeDto) GetName() string {
+	return r.Name
+}
+
+func (r RequestAttributeDto) GetUuid() string {
+	return r.Uuid
 }
 
 // AssertRequestAttributeDtoRequired checks if the required fields are not zero-ed

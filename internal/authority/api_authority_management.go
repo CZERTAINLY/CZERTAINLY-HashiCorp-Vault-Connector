@@ -2,7 +2,6 @@ package authority
 
 import (
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/model"
-	"encoding/json"
 	"io"
 	"net/http"
 	"strings"
@@ -345,12 +344,12 @@ func (c *AuthorityManagementAPIController) ValidateRAProfileAttributes(w http.Re
 		return
 	}
 	var requestAttributeDtoParam []model.RequestAttributeDto
-	d := json.NewDecoder(r.Body)
-	d.DisallowUnknownFields()
-	if err := d.Decode(&requestAttributeDtoParam); err != nil {
+	jsonContent, err := io.ReadAll(r.Body)
+	if err != nil {
 		c.errorHandler(w, r, &model.ParsingError{Err: err}, nil)
 		return
 	}
+	model.UnmarshalAttributesValues(jsonContent)
 	for _, el := range requestAttributeDtoParam {
 		if err := model.AssertRequestAttributeDtoRequired(el); err != nil {
 			c.errorHandler(w, r, err, nil)
