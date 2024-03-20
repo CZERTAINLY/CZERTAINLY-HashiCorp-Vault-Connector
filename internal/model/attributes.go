@@ -402,7 +402,7 @@ func getDiscoveryAttributes() []Attribute {
 				Label:       "Set of PKI engines to discover",
 				Visible:     true,
 				Group:       "",
-				Required:    true,
+				Required:    false,
 				ReadOnly:    false,
 				List:        true,
 				MultiSelect: true,

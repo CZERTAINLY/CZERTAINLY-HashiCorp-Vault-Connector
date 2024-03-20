@@ -208,11 +208,11 @@ func (s *CertificateManagementAPIService) RenewCertificate(ctx context.Context, 
 		Bytes: decoded,
 	}
 	pemBytes := pem.EncodeToMemory(pemBlock)
-	signRequest := schema.PkiIssuerSignWithRoleRequest{
+	signRequest := schema.PkiSignWithRoleRequest{
 		CommonName: commonName,
 		Csr:        string(pemBytes),
 	}
-	certificateSignResponse, err := client.Secrets.PkiIssuerSignWithRole(ctx, "default", role, signRequest, vault2.WithMountPath(engineName+"/"))
+	certificateSignResponse, err := client.Secrets.PkiSignWithRole(ctx, role, signRequest, vault2.WithMountPath(engineName+"/"))
 	if err != nil {
 		s.log.Error(err.Error())
 		return model.Response(http.StatusBadRequest, model.ErrorMessageDto{
