@@ -371,9 +371,17 @@ func (s *AuthorityManagementAPIService) ValidateRAProfileAttributes(ctx context.
 func (s *AuthorityManagementAPIService) RAProfileCallback(ctx context.Context, uuid string, engineName string) (model.ImplResponse, error) {
 	authority, err := s.authorityRepo.FindAuthorityInstanceByUUID(uuid)
 	if err != nil {
-		return model.Response(http.StatusNotFound, model.ErrorMessageDto{
-			Message: "Authority not found",
-		}), nil
+		s.log.Error(err.Error())
+		//return model.Response(http.StatusNotFound, model.ErrorMessageDto{
+		//	Message: "Authority not found by UUID"+ uuid,
+		//}), nil
+		//TODO: UI is sending back name instead of UUID, try to search also by name
+		authority, err = s.authorityRepo.FindAuthorityInstanceByName(uuid)
+		if err != nil {
+			return model.Response(http.StatusNotFound, model.ErrorMessageDto{
+				Message: "Authority not found by name" + uuid,
+			}), nil
+		}
 	}
 	client, err := vault.GetClient(*authority)
 	if err != nil {
