@@ -54,13 +54,13 @@ func (l LoginWithToken) Login(client *vault.Client) (*vault.Client, error) {
 
 	authInfo, err := client.Auth.JwtLogin(ctx, schema.JwtLoginRequest{
 		Jwt:  DEFAULT_K8S_TOKEN_PATH,
-		Role: "dev-role-k8s",
-	})
+		Role: "czertainly-role",
+	}, vault.WithMountPath("jwt"))
 	if err != nil {
-		return nil, fmt.Errorf("unable to log in with Kubernetes auth: %w", err)
+		return nil, fmt.Errorf("unable to log in with JWT auth: %w", err)
 	}
 	if authInfo == nil {
-		return nil, fmt.Errorf("no auth info was returned after login")
+		return nil, fmt.Errorf("no auth info was returned after JWT login")
 	}
 
 	err = client.SetToken(authInfo.Auth.ClientToken)
@@ -78,13 +78,13 @@ func (l LoginWithK8sToken) Login(client *vault.Client) (*vault.Client, error) {
 
 	authInfo, err := client.Auth.KubernetesLogin(ctx, schema.KubernetesLoginRequest{
 		Jwt:  DEFAULT_K8S_TOKEN_PATH,
-		Role: "dev-role-k8s",
-	})
+		Role: "czertainly-role",
+	}, vault.WithMountPath("kubernetes"))
 	if err != nil {
 		return nil, fmt.Errorf("unable to log in with Kubernetes auth: %w", err)
 	}
 	if authInfo == nil {
-		return nil, fmt.Errorf("no auth info was returned after login")
+		return nil, fmt.Errorf("no auth info was returned after K8s login")
 	}
 
 	err = client.SetToken(authInfo.Auth.ClientToken)

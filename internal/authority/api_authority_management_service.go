@@ -263,9 +263,10 @@ func (s *AuthorityManagementAPIService) ListRAProfileAttributes(ctx context.Cont
 			Message: "Failed to create vault client",
 		}), err
 	}
-	mounts, _ := client.System.MountsListSecretsEngines(ctx)
+	//Due to the nature of its intended usage, there is no guarantee on backwards compatibility for this endpoint.
+	mounts, _ := client.System.InternalUiListEnabledVisibleMounts(ctx)
 	var engineList []model.AttributeContent
-	for engineName, engineData := range mounts.Data {
+	for engineName, engineData := range mounts.Data.Secret {
 		engineName = strings.TrimSuffix(engineName, "/")
 		if engineData.(map[string]any)["type"] == "pki" {
 

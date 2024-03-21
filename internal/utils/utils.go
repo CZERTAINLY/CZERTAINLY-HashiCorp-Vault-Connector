@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"encoding/pem"
 	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 )
@@ -53,8 +54,13 @@ func ExtractSerialNumber(certificate []byte) (string, error) {
 	if errParse != nil {
 		log.Error("Failed to parse certificate: " + errParse.Error())
 	}
-	serialNumber := certificateParsed.SerialNumber.Text(10)
-	return serialNumber, nil
+	bytes := certificateParsed.SerialNumber.Bytes()
+
+	hexStr := make([]string, len(bytes))
+	for i, b := range bytes {
+		hexStr[i] = fmt.Sprintf("%02X", b)
+	}
+	return strings.ToLower(strings.Join(hexStr, ":")), nil
 }
 
 func GetCertificatesFromDer(pemData []byte) ([]string, error) {
