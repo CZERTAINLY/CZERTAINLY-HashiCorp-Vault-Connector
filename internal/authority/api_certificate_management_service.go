@@ -8,7 +8,6 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/pem"
-	"errors"
 	vault2 "github.com/hashicorp/vault-client-go"
 	"github.com/hashicorp/vault-client-go/schema"
 	"go.uber.org/zap"
@@ -72,10 +71,10 @@ func (s *CertificateManagementAPIService) IdentifyCertificate(ctx context.Contex
 
 	}
 	response := model.CertificateIdentificationResponseDto{
-		Meta: nil,
+		Meta: []model.MetadataAttribute{},
 	}
 
-	return model.Response(http.StatusOK, response), errors.New("IdentifyCertificate method not implemented")
+	return model.Response(http.StatusOK, response), nil
 }
 
 // IssueCertificate - Issue Certificate
@@ -112,12 +111,6 @@ func (s *CertificateManagementAPIService) IssueCertificate(ctx context.Context, 
 
 	}
 
-	if err != nil {
-		return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{
-			Message: err.Error(),
-		}), nil
-	}
-	// Encode to PEM format
 	pemBlock := &pem.Block{
 		Type:  "CERTIFICATE REQUEST", // Or "CERTIFICATE", depending on what's in the DER file
 		Bytes: decoded,
