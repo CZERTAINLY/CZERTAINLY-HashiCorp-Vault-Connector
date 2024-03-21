@@ -17,6 +17,7 @@ type Config struct {
 		Password string
 		Props    string
 		Schema   string
+		SslMode  string
 	}
 }
 
@@ -33,6 +34,7 @@ func Get() Config {
 	config.Database.Props = os.Getenv("DATABASE_PROPS")
 	config.Database.Name = os.Getenv("DATABASE_NAME")
 	config.Database.Schema = os.Getenv("DATABASE_SCHEMA")
+	config.Database.SslMode = os.Getenv("DATABASE_SSL_MODE")
 
 	if config.Server.Port == "" {
 		config.Server.Port = "8080"
@@ -60,6 +62,10 @@ func Get() Config {
 
 	if config.Database.Name == "" {
 		l.Info("DATABASE_NAME is mandatory to set!")
+	}
+
+	if config.Database.SslMode == "" {
+		config.Database.SslMode = "require"
 	}
 
 	return config

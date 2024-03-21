@@ -13,6 +13,7 @@ import (
 	"bytes"
 	"io"
 	"net/http"
+	"os/exec"
 	"strings"
 
 	"github.com/gorilla/mux"
@@ -29,6 +30,20 @@ func main() {
 	routes = make(map[string][]model.EndpointDto)
 	c := config.Get()
 	log.Info("Starting CZERTAINLY-HashiCorp-Vault-Connector", zap.String("version", version))
+
+	exportCommand := "export PGPASSWORD=" + c.Database.Password
+	psqlCommand := "psql -h " + c.Database.Host +
+		" -p " + c.Database.Port + " -U " + c.Database.Username + " -d " + c.Database.Name +
+		" -c 'CREATE SCHEMA IF NOT EXISTS " + c.Database.Schema + ";'"
+
+	log.Info("Creating schema if not exists")
+	cmd := exec.Command("/bin/sh", "-c", exportCommand+" && "+psqlCommand)
+	stdout, cmdErr := cmd.Output()
+	if cmdErr != nil {
+		log.Error("Error creating schema", zap.String("error", cmdErr.Error()))
+	}
+	log.Info("Schema creation output", zap.String("output", string(stdout)))
+
 	db.MigrateDB(c)
 	conn, _ := db.ConnectDB(c)
 	discoveryRepo, _ := db.NewDiscoveryRepository(conn)
