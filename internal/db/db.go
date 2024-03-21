@@ -18,7 +18,7 @@ import (
 var log = logger.Get()
 
 func ConnectDB(config config.Config) (db *gorm.DB, err error) {
-	dsn := fmt.Sprintf("user=%s password=%s host=%s port=%s dbname=%s %s", config.Database.Username, config.Database.Password, config.Database.Host, config.Database.Port, config.Database.Name, config.Database.Props)
+	dsn := fmt.Sprintf("user=%s password=%s host=%s port=%s dbname=%s sslmode=%s search_path=%s %s", config.Database.Username, config.Database.Password, config.Database.Host, config.Database.Port, config.Database.Name, config.Database.SslMode, config.Database.Schema, config.Database.Props)
 	db, err = gorm.Open(postgres.New(postgres.Config{
 		DSN:                  dsn,
 		PreferSimpleProtocol: true,
@@ -33,7 +33,7 @@ func ConnectDB(config config.Config) (db *gorm.DB, err error) {
 func MigrateDB(config config.Config) {
 	log.Info("Migrating database")
 	// search_path=public&x-migrations-table=hvault_migrations migration table name and schema, migration table must be in public schema if we want to create schema automatically
-	connectionString := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s?search_path=%s&x-migrations-table=hvault_migrations&sslmode=%s", config.Database.Username, config.Database.Password, config.Database.Host, config.Database.Port, config.Database.Name, config.Database.Schema, config.Database.SslMode)
+	connectionString := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s?search_path=%s&x-migrations-table=%s_migrations&sslmode=%s", config.Database.Username, config.Database.Password, config.Database.Host, config.Database.Port, config.Database.Name, config.Database.Schema, config.Database.Schema, config.Database.SslMode)
 	// log.Info("Connection string: " + connectionString)
 	m, err := migrate.New(
 		"file://migrations",

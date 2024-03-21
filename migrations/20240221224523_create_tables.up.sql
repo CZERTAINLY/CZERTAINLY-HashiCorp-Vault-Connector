@@ -1,7 +1,4 @@
--- create schema hvault
-
-
-create table hvault.authority_instances
+create table authority_instances
 (
     id              serial,
     uuid            varchar(255) not null unique,
@@ -16,7 +13,7 @@ create table hvault.authority_instances
     primary key (id)
 );
 
-create table hvault.certificates
+create table certificates
 (
     id             serial,
     serial_number  varchar not null,
@@ -26,10 +23,10 @@ create table hvault.certificates
     primary key (id)
 );
 
-CREATE INDEX index_certificates_serial_number ON hvault.certificates (serial_number);
-CREATE INDEX index_certificates_uuid ON hvault.certificates (uuid);
+CREATE INDEX index_certificates_serial_number ON certificates (serial_number);
+CREATE INDEX index_certificates_uuid ON certificates (uuid);
 
-create table hvault.discoveries
+create table discoveries
 (
     id     serial,
     uuid   varchar not null unique,
@@ -39,11 +36,11 @@ create table hvault.discoveries
     primary key (id)
 );
 
-create table hvault.discovery_certificates
+create table discovery_certificates
 (
     certificate_id bigint not null,
     discovery_id   bigint not null,
     primary key (certificate_id, discovery_id),
-    foreign key (certificate_id) references hvault.certificates (id),
-    foreign key (discovery_id) references hvault.discoveries (id)
+    foreign key (certificate_id) references certificates (id),
+    foreign key (discovery_id) references discoveries (id)
 );
