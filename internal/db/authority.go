@@ -12,7 +12,8 @@ type AuthorityInstance struct {
 	CredentialType string `db:"credential_type"`
 	RoleId         string `db:"role_id"`
 	RoleSecret     string `db:"role_secret"`
-	Jwt            string `db:"jwt"`
+	VaultRole      string `db:"vault_role"`
+	MountPath      string `db:"login_mount_path"`
 	Attributes     string `db:"attributes"`
 }
 

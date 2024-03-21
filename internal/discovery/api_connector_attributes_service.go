@@ -30,7 +30,7 @@ func NewConnectorAttributesAPIService(authorityRepo *db.AuthorityRepository, log
 
 // ListAttributeDefinitions - List available Attributes
 func (s *ConnectorAttributesAPIService) ListAttributeDefinitions(ctx context.Context, kind string) (model.ImplResponse, error) {
-	if kind != "HVault" {
+	if !strings.EqualFold(kind, model.CONNECTOR_KIND) {
 		message := fmt.Sprintf("Unrecognized Authority Instance kind: %s", kind)
 		return model.Response(http.StatusUnprocessableEntity, message), nil
 	}
@@ -63,7 +63,7 @@ func (s *ConnectorAttributesAPIService) ListAttributeDefinitions(ctx context.Con
 
 // ValidateAttributes - Validate Attributes
 func (s *ConnectorAttributesAPIService) ValidateAttributes(ctx context.Context, kind string, requestAttributeDto []model.Attribute) (model.ImplResponse, error) {
-	if kind != "HVault" {
+	if !strings.EqualFold(kind, model.CONNECTOR_KIND) {
 		message := fmt.Sprintf("Unrecognized Authority Instance kind: %s", kind)
 		return model.Response(http.StatusUnprocessableEntity, message), nil
 	}
