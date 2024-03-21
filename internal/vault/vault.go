@@ -6,6 +6,7 @@ import (
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/model"
 	"context"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/hashicorp/vault-client-go"
@@ -51,9 +52,14 @@ type LoginWithToken struct{}
 
 func (l LoginWithToken) Login(client *vault.Client) (*vault.Client, error) {
 	ctx := context.Background()
-
+	token, err := os.ReadFile(DEFAULT_K8S_TOKEN_PATH) // Replace with your actual file path
+	if err != nil {
+		log.Error(err.Error())
+		return nil, err
+	}
+	jwt := string(token)
 	authInfo, err := client.Auth.JwtLogin(ctx, schema.JwtLoginRequest{
-		Jwt:  DEFAULT_K8S_TOKEN_PATH,
+		Jwt:  jwt,
 		Role: "czertainly-role",
 	}, vault.WithMountPath("jwt"))
 	if err != nil {
@@ -75,9 +81,14 @@ type LoginWithK8sToken struct {
 
 func (l LoginWithK8sToken) Login(client *vault.Client) (*vault.Client, error) {
 	ctx := context.Background()
-
+	token, err := os.ReadFile(DEFAULT_K8S_TOKEN_PATH) // Replace with your actual file path
+	if err != nil {
+		log.Error(err.Error())
+		return nil, err
+	}
+	jwt := string(token)
 	authInfo, err := client.Auth.KubernetesLogin(ctx, schema.KubernetesLoginRequest{
-		Jwt:  DEFAULT_K8S_TOKEN_PATH,
+		Jwt:  jwt,
 		Role: "czertainly-role",
 	}, vault.WithMountPath("kubernetes"))
 	if err != nil {
