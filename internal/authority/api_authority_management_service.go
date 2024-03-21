@@ -34,12 +34,18 @@ func (s *AuthorityManagementAPIService) CreateAuthorityInstance(ctx context.Cont
 	attributes := request.Attributes
 	URL := model.GetAttributeFromArrayByUUID(model.AUTHORITY_URL_ATTR, attributes).GetContent()[0].GetData().(string)
 	credentialType := model.GetAttributeFromArrayByUUID(model.AUTHORITY_CREDENTIAL_TYPE_ATTR, attributes).GetContent()[0].GetData().(string)
-	var roleId, secretId, token string
+	var roleId, secretId, mountPath, vaultRole string
+	if model.GetAttributeFromArrayByUUID(model.AUTHORITY_MOUNT_PATH_ATTR, attributes) != nil {
+		mountPath = model.GetAttributeFromArrayByUUID(model.AUTHORITY_MOUNT_PATH_ATTR, attributes).GetContent()[0].GetData().(string)
+	}
 	switch credentialType {
 	case model.APPROLE_CRED:
 		roleId = model.GetAttributeFromArrayByUUID(model.AUTHORITY_ROLE_ID_ATTR, attributes).GetContent()[0].(model.SecretAttributeContent).GetData().(model.SecretAttributeContentData).Secret
 		secretId = model.GetAttributeFromArrayByUUID(model.AUTHORITY_ROLE_SECRET_ATTR, attributes).GetContent()[0].(model.SecretAttributeContent).GetData().(model.SecretAttributeContentData).Secret
-		token = ""
+	case model.KUBERNETES_CRED, model.JWTOIDC_CRED:
+		if model.GetAttributeFromArrayByUUID(model.AUTHORITY_VAULT_ROLE_ATTR, attributes) != nil {
+			vaultRole = model.GetAttributeFromArrayByUUID(model.AUTHORITY_VAULT_ROLE_ATTR, attributes).GetContent()[0].GetData().(string)
+		}
 	}
 	authorityName := request.Name
 	marshaledAttrs, err := json.Marshal(attributes)
@@ -54,8 +60,9 @@ func (s *AuthorityManagementAPIService) CreateAuthorityInstance(ctx context.Cont
 		URL:            URL,
 		RoleId:         roleId,
 		RoleSecret:     secretId,
-		Jwt:            token,
 		Attributes:     string(marshaledAttrs),
+		MountPath:      mountPath,
+		VaultRole:      vaultRole,
 		CredentialType: credentialType,
 	}
 
@@ -328,12 +335,22 @@ func (s *AuthorityManagementAPIService) UpdateAuthorityInstance(ctx context.Cont
 	URL := model.GetAttributeFromArrayByUUID(model.AUTHORITY_URL_ATTR, attributes).GetContent()[0].GetData().(string)
 	credentialType := model.GetAttributeFromArrayByUUID(model.AUTHORITY_CREDENTIAL_TYPE_ATTR, attributes).GetContent()[0].GetData().(string)
 	authorityName := request.Name
-	var roleId, secretId, token string
+	var roleId, secretId, mountPath, vaultRole string
+	if model.GetAttributeFromArrayByUUID(model.AUTHORITY_MOUNT_PATH_ATTR, attributes) != nil {
+		mountPath = model.GetAttributeFromArrayByUUID(model.AUTHORITY_MOUNT_PATH_ATTR, attributes).GetContent()[0].GetData().(string)
+	}
+	if model.GetAttributeFromArrayByUUID(model.AUTHORITY_VAULT_ROLE_ATTR, attributes) != nil {
+		vaultRole = model.GetAttributeFromArrayByUUID(model.AUTHORITY_VAULT_ROLE_ATTR, attributes).GetContent()[0].GetData().(string)
+	}
 	switch credentialType {
 	case model.APPROLE_CRED:
 		roleId = model.GetAttributeFromArrayByUUID(model.AUTHORITY_ROLE_ID_ATTR, attributes).GetContent()[0].(model.SecretAttributeContent).GetData().(model.SecretAttributeContentData).Secret
 		secretId = model.GetAttributeFromArrayByUUID(model.AUTHORITY_ROLE_SECRET_ATTR, attributes).GetContent()[0].(model.SecretAttributeContent).GetData().(model.SecretAttributeContentData).Secret
-		token = ""
+	case model.KUBERNETES_CRED, model.JWTOIDC_CRED:
+		if model.GetAttributeFromArrayByUUID(model.AUTHORITY_VAULT_ROLE_ATTR, attributes) != nil {
+			vaultRole = model.GetAttributeFromArrayByUUID(model.AUTHORITY_VAULT_ROLE_ATTR, attributes).GetContent()[0].GetData().(string)
+		}
+
 	}
 	marshaledAttrs, err := json.Marshal(attributes)
 	if err != nil {
@@ -346,7 +363,8 @@ func (s *AuthorityManagementAPIService) UpdateAuthorityInstance(ctx context.Cont
 	authority.CredentialType = credentialType
 	authority.RoleId = roleId
 	authority.RoleSecret = secretId
-	authority.Jwt = token
+	authority.MountPath = mountPath
+	authority.VaultRole = vaultRole
 	authority.Attributes = string(marshaledAttrs)
 
 	err = s.authorityRepo.UpdateAuthorityInstance(authority)

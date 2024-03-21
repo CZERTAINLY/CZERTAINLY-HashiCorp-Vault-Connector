@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 
 	"net/http"
 
@@ -31,7 +32,7 @@ func NewConnectorAttributesAPIService(authorityRepo *db.AuthorityRepository, log
 
 // ListAttributeDefinitions - List available Attributes
 func (s *ConnectorAttributesAPIService) ListAttributeDefinitions(ctx context.Context, kind string) (model.ImplResponse, error) {
-	if kind != "HVault" {
+	if !strings.EqualFold(kind, model.CONNECTOR_KIND) {
 		message := fmt.Sprintf("Unrecognized Authority Instance kind: %s", kind)
 		return model.Response(http.StatusUnprocessableEntity, []string{message}), nil
 	}
@@ -59,21 +60,19 @@ func (s *ConnectorAttributesAPIService) ListAttributeDefinitions(ctx context.Con
 func (s *ConnectorAttributesAPIService) CredentialAttributesCallback(ctx context.Context, credentialType string) (model.ImplResponse, error) {
 	attributes := make([]model.Attribute, 0)
 	switch credentialType {
-	case model.KUBERNETES_CRED:
-		break
 	case model.APPROLE_CRED:
 		attributes = append(attributes, model.GetAttributeDefByUUID(model.AUTHORITY_ROLE_ID_ATTR))
 		attributes = append(attributes, model.GetAttributeDefByUUID(model.AUTHORITY_ROLE_SECRET_ATTR))
-	case model.JWTOIDC_CRED:
-		break
+	case model.KUBERNETES_CRED, model.JWTOIDC_CRED:
+		attributes = append(attributes, model.GetAttributeDefByUUID(model.AUTHORITY_VAULT_ROLE_ATTR))
 	}
-
+	attributes = append(attributes, model.GetAttributeDefByUUID(model.AUTHORITY_MOUNT_PATH_ATTR))
 	return model.Response(http.StatusOK, attributes), nil
 }
 
 // ValidateAttributes - Validate Attributes
 func (s *ConnectorAttributesAPIService) ValidateAttributes(ctx context.Context, kind string, requestAttributeDto []model.Attribute) (model.ImplResponse, error) {
-	if kind != "HVault" {
+	if !strings.EqualFold(kind, model.CONNECTOR_KIND) {
 		message := fmt.Sprintf("Unrecognized Authority Instance kind: %s", kind)
 		return model.Response(http.StatusUnprocessableEntity, []string{message}), nil
 	}

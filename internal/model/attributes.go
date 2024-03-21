@@ -10,6 +10,8 @@ import (
 var log = logger.Get()
 
 const (
+	CONNECTOR_KIND = "HVault"
+
 	// Authority Attributes
 	AUTHORITY_INFO_ATTR                  string = "34f9569d-eba1-423a-a0c2-995e9c15665d"
 	AUTHORITY_URL_ATTR                   string = "8a68156a-d1f5-4322-b2a5-26e872a6fc0e"
@@ -17,6 +19,8 @@ const (
 	AUTHORITY_GROUP_CREDENTIAL_TYPE_ATTR string = "335aede7-dd1f-4c87-9ff8-7dc93f18c5fe"
 	AUTHORITY_ROLE_ID_ATTR               string = "97a46e73-bf7d-421d-ae5a-2d0f453eb300"
 	AUTHORITY_ROLE_SECRET_ATTR           string = "60daa99e-5b08-4f36-8f51-d136ecba74e9"
+	AUTHORITY_VAULT_ROLE_ATTR            string = "7dea8a67-3313-40d9-9eb9-e4af0827c833"
+	AUTHORITY_MOUNT_PATH_ATTR            string = "3cb99b1d-b4b2-484e-bca9-c5a9a0f53e96"
 
 	// RA Profile Attributes
 	RA_PROFILE_ENGINE_ATTR    string = "e7817459-41cf-40d4-ad3d-9808ef14cad7"
@@ -563,6 +567,40 @@ Provide URL of your Vault and select one of the available authentication methods
 					Type:         REG_EXP,
 					Data:         "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
 				},
+			},
+		},
+		DataAttribute{
+			Uuid:        AUTHORITY_VAULT_ROLE_ATTR,
+			Name:        "vault_role",
+			Description: "Role used for accessing Vault",
+			Type:        DATA,
+			Content:     nil,
+			ContentType: STRING,
+			Properties: &DataAttributeProperties{
+				Label:       "Vault Role",
+				Visible:     true,
+				Group:       "",
+				Required:    false,
+				ReadOnly:    false,
+				List:        false,
+				MultiSelect: false,
+			},
+		},
+		DataAttribute{
+			Uuid:        AUTHORITY_MOUNT_PATH_ATTR,
+			Name:        "mount_path",
+			Description: "Mount path for the authentication method",
+			Type:        DATA,
+			Content:     nil,
+			ContentType: STRING,
+			Properties: &DataAttributeProperties{
+				Label:       "Mount Path",
+				Visible:     true,
+				Group:       "",
+				Required:    false,
+				ReadOnly:    false,
+				List:        false,
+				MultiSelect: false,
 			},
 		},
 	}

@@ -69,12 +69,12 @@ func main() {
 	info := []model.InfoResponse{
 		{
 			FunctionGroupCode: "discoveryProvider",
-			Kinds:             []string{"HVault"},
+			Kinds:             []string{model.CONNECTOR_KIND},
 			EndPoints:         routes["discoveryProvider"],
 		},
 		{
 			FunctionGroupCode: "authorityProvider",
-			Kinds:             []string{"HVault"},
+			Kinds:             []string{model.CONNECTOR_KIND},
 			EndPoints:         routes["authorityProvider"],
 		},
 	}
