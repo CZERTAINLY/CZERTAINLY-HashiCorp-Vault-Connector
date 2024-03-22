@@ -1,8 +1,6 @@
 name: Publish Docker image
 
 on:
-  release:
-    types: [published]
   push:
     branches: [develop]
   workflow_dispatch:
@@ -26,6 +24,9 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: czertainly/czertainly-hashicorp-vault-connector
+          tags:
+            type=raw,develop-latest
+            type=sha,prefix=develop-,format=long
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
