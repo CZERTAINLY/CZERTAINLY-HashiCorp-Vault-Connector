@@ -11,6 +11,7 @@ import (
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/model"
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/utils"
 	"bytes"
+	"github.com/lib/pq"
 	"io"
 	"net/http"
 	"strings"
@@ -29,9 +30,13 @@ func main() {
 	routes = make(map[string][]model.EndpointDto)
 	c := config.Get()
 	log.Info("Starting CZERTAINLY-HashiCorp-Vault-Connector", zap.String("version", version))
-
-	db.MigrateDB(c)
 	conn, _ := db.ConnectDB(c)
+	schema := config.Get().Database.Schema
+	err := conn.Exec("CREATE SCHEMA IF NOT EXISTS " + pq.QuoteIdentifier(schema)).Error
+	if err != nil {
+		log.Error("Error creating schema", zap.Error(err))
+	}
+	db.MigrateDB(c)
 	discoveryRepo, _ := db.NewDiscoveryRepository(conn)
 	authorityRepo, _ := db.NewAuthorityRepository(conn)
 
@@ -90,7 +95,7 @@ func main() {
 	topMux.Handle("/v2/authorityProvider/", logMiddleware(certificateRouter))
 	topMux.Handle("/v1/discoveryProvider/", logMiddleware(discoveryRouter))
 
-	err := http.ListenAndServe(":"+c.Server.Port, topMux)
+	err = http.ListenAndServe(":"+c.Server.Port, topMux)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
