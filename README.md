@@ -1,17 +1,44 @@
 # CZERTAINLY HashiCorp Vault Connector
 
+> This repository is part of the open-source project CZERTAINLY. You can find more information about the project at [CZERTAINLY](https://github.com/CZERTAINLY/CZERTAINLY) repository, including the contribution guide.
 
+HashiCorp Vault `Connector` is the implementation of the following `Function Groups` and `Kinds`:
+
+| Function Group       | Kind     |
+|----------------------|----------|
+| `Authority Provider` | `HVault` |
+| `Discovery Provider` | `HVault` |
+
+HashiCorp Vault `Connector` is the implementation of certificate management for HashiCorp Vault PKI secrets engine that is compatible with the v2 client operations interface.
+
+HashiCorp Vault `Connector` allows you to perform the following operations:
+
+`Authority Provider`
+- Issue certificate
+- Renew certificate
+- Revoke certificate
+- Identify certificate
+- Download CA certificate
+- Download CRL
+
+`Discovery Provider`
+- Discover certificates
+
+## Database requirements
+
+HashiCorp Vault `Connector` requires the PostgreSQL database version 12+.
 
 ## Docker container
 
 HashiCorp Vault `Connector` is provided as a Docker container. Use the `docker.io/3keycompany/czertainly-hashicorp-vaul-connector:tagname` to pull the required image from the repository. It can be configured using the following environment variables:
 
-| Variable      | Description                       | Required                                           | Default value |
-|---------------|-----------------------------------|----------------------------------------------------|---------------|
-| `SERVER_PORT` | Port where the service is exposed | ![](https://img.shields.io/badge/-NO-red.svg)      | `8080`        |
-| `DB_HOST`     | Database host                     | ![](https://img.shields.io/badge/-YES-success.svg) | `N/A`         |
-| `DB_PORT`     | Database port                     | ![](https://img.shields.io/badge/-NO-red.svg)      | `5432`        |
-| `DB_NAME`     | Database name                     | ![](https://img.shields.io/badge/-YES-success.svg) | `N/A`         |
-| `DB_USERNAME` | Database user                     | ![](https://img.shields.io/badge/-YES-success.svg) | `N/A`         |
-| `DB_PASSWORD` | Database password                 | ![](https://img.shields.io/badge/-YES-success.svg) | `N/A`         |
-| `LOG_LEVEL`   | Logging level for the service     | ![](https://img.shields.io/badge/-NO-red.svg)      | `INFO`        |
+| Variable            | Description                       | Required                                           | Default value |
+|---------------------|-----------------------------------|----------------------------------------------------|---------------|
+| `SERVER_PORT`       | Port where the service is exposed | ![](https://img.shields.io/badge/-NO-red.svg)      | `8080`        |
+| `DATABASE_HOST`     | Database host                     | ![](https://img.shields.io/badge/-YES-success.svg) | `N/A`         |
+| `DATABASE_PORT`     | Database port                     | ![](https://img.shields.io/badge/-NO-red.svg)      | `5432`        |
+| `DATABASE_NAME`     | Database name                     | ![](https://img.shields.io/badge/-YES-success.svg) | `N/A`         |
+| `DATABASE_USER`     | Database user                     | ![](https://img.shields.io/badge/-YES-success.svg) | `N/A`         |
+| `DATABASE_PASSWORD` | Database password                 | ![](https://img.shields.io/badge/-YES-success.svg) | `N/A`         |
+| `DATABASE_SCHEMA`   | Database schema                   | ![](https://img.shields.io/badge/-NO-red.svg)      | `hvault`      |
+| `LOG_LEVEL`         | Logging level for the service     | ![](https://img.shields.io/badge/-NO-red.svg)      | `INFO`        |
