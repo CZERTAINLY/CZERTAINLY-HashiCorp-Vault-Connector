@@ -24,7 +24,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: czertainly/czertainly-hashicorp-vault-connector
-          tags:
+          tags: |
             type=raw,value=develop-latest
             type=sha,prefix=develop-,format=long
 
