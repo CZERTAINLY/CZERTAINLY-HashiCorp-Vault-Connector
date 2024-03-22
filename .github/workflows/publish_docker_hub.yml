@@ -25,7 +25,7 @@ jobs:
         with:
           images: czertainly/czertainly-hashicorp-vault-connector
           tags:
-            type=raw,develop-latest
+            type=raw,value=develop-latest
             type=sha,prefix=develop-,format=long
 
       - name: Build and push Docker image
