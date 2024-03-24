@@ -110,7 +110,7 @@ func logMiddleware(next http.Handler) http.Handler {
 		rdr1 := io.NopCloser(bytes.NewBuffer(buf))
 		rdr2 := io.NopCloser(bytes.NewBuffer(buf))
 		body, _ := io.ReadAll(rdr1)
-		log.Info("Request received", zap.String("path", r.URL.Path), zap.String("body", string(body)))
+		log.Debug("Request received", zap.String("path", r.URL.Path), zap.String("body", string(body)))
 		r.Body = rdr2
 		next.ServeHTTP(w, r)
 	})

@@ -37,6 +37,8 @@ func (s *DiscoveryAPIService) DeleteDiscovery(ctx context.Context, uuid string) 
 	if err != nil {
 		return model.Response(http.StatusNotFound, model.ErrorMessageDto{Message: "Discovery " + uuid + " not found."}), nil
 	}
+
+	s.log.Info("Deleting discovery", zap.String("discovery_uuid", discovery.UUID))
 	err = s.discoveryRepo.DeleteDiscovery(discovery)
 	if err != nil {
 		return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{Message: "Unable to delete discover" + discovery.UUID}), nil
@@ -85,6 +87,8 @@ func (s *DiscoveryAPIService) DiscoverCertificate(ctx context.Context, discovery
 	if err != nil {
 		return model.Response(http.StatusNotFound, model.ErrorMessageDto{Message: "Authority not found  " + uuid}), nil
 	}
+
+	s.log.Info("Starting discovery of certificates", zap.String("discovery_uuid", discovery.UUID), zap.String("authority_uuid", authority.UUID))
 	go s.DiscoveryCertificates(authority, discovery, enginesList)
 
 	return model.Response(http.StatusOK, response), nil
@@ -231,4 +235,5 @@ func (s *DiscoveryAPIService) DiscoveryCertificates(authority *db.AuthorityInsta
 		return
 	}
 
+	s.log.Info("Discovery completed", zap.String("discovery_uuid", discovery.UUID), zap.String("authority_uuid", authority.UUID), zap.Int("total_certificates", len(discovery.Certificates)))
 }

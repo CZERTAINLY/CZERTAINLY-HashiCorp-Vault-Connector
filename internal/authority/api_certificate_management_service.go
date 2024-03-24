@@ -62,6 +62,7 @@ func (s *CertificateManagementAPIService) IdentifyCertificate(ctx context.Contex
 
 	}
 
+	s.log.Info("Identifying certificate with serial number: " + serialNumber)
 	_, err = client.Secrets.PkiReadCert(ctx, serialNumber, vault2.WithMountPath(engineName+"/"))
 	if err != nil {
 		s.log.Error(err.Error())
@@ -121,6 +122,8 @@ func (s *CertificateManagementAPIService) IssueCertificate(ctx context.Context, 
 		CommonName: commonName,
 		Csr:        string(pemBytes),
 	}
+
+	s.log.Info("Issuing certificate", zap.String("common_name", commonName), zap.String("role", role), zap.String("engine_name", engineName))
 	certificateSignResponse, err := client.Secrets.PkiSignWithRole(ctx, role, signRequest, vault2.WithMountPath(engineName+"/"))
 	if err != nil {
 		s.log.Error(err.Error())
@@ -205,6 +208,8 @@ func (s *CertificateManagementAPIService) RenewCertificate(ctx context.Context, 
 		CommonName: commonName,
 		Csr:        string(pemBytes),
 	}
+
+	s.log.Info("Renewing certificate", zap.String("common_name", commonName), zap.String("role", role), zap.String("engine_name", engineName))
 	certificateSignResponse, err := client.Secrets.PkiSignWithRole(ctx, role, signRequest, vault2.WithMountPath(engineName+"/"))
 	if err != nil {
 		s.log.Error(err.Error())
@@ -265,6 +270,16 @@ func (s *CertificateManagementAPIService) RevokeCertificate(ctx context.Context,
 	revokeRequest := schema.PkiRevokeRequest{
 		Certificate: string(pemBytes),
 	}
+
+	serialNumber, err := utils.ExtractSerialNumber(decoded)
+	if err != nil {
+		return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{
+			Message: err.Error(),
+		}), nil
+
+	}
+
+	s.log.Info("Revoking certificate", zap.String("serial_number", serialNumber), zap.String("reason", string(certRevocationDto.Reason)))
 	_, err = client.Secrets.PkiRevoke(ctx, revokeRequest)
 	if err != nil {
 		s.log.Error(err.Error())
@@ -279,10 +294,12 @@ func (s *CertificateManagementAPIService) RevokeCertificate(ctx context.Context,
 
 // ValidateIssueCertificateAttributes - Validate list of Attributes to issue Certificate
 func (s *CertificateManagementAPIService) ValidateIssueCertificateAttributes(ctx context.Context, uuid string, requestAttributeDto []model.RequestAttributeDto) (model.ImplResponse, error) {
+	s.log.Info("Validating issue certificate attributes", zap.String("uuid", uuid))
 	return model.Response(http.StatusOK, nil), nil
 }
 
 // ValidateRevokeCertificateAttributes - Validate list of Attributes to revoke certificate
 func (s *CertificateManagementAPIService) ValidateRevokeCertificateAttributes(ctx context.Context, uuid string, requestAttributeDto []model.RequestAttributeDto) (model.ImplResponse, error) {
+	s.log.Info("Validating revoke certificate attributes", zap.String("uuid", uuid))
 	return model.Response(http.StatusOK, nil), nil
 }
