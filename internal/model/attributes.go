@@ -36,7 +36,7 @@ type AttributeName string
 
 const (
 	KUBERNETES_CRED string = "kubernetes"
-	APPROLE_CRED    string = "role"
+	APPROLE_CRED    string = "approle"
 	JWTOIDC_CRED    string = "jwt"
 )
 
@@ -301,12 +301,12 @@ func getRAProfilesAttributes() []Attribute {
 		DataAttribute{
 			Uuid:        RA_PROFILE_ENGINE_ATTR,
 			Name:        "ra_profile_engine",
-			Description: "Selection of RA Profile engine",
+			Description: "Select PKI secret engine to be used for certificate management",
 			Type:        DATA,
 			Content:     nil,
 			ContentType: OBJECT,
 			Properties: &DataAttributeProperties{
-				Label:       "RA Profile PKI engine selection",
+				Label:       "PKI secret engine",
 				Visible:     true,
 				Group:       "",
 				Required:    true,
@@ -318,12 +318,12 @@ func getRAProfilesAttributes() []Attribute {
 		DataAttribute{
 			Uuid:        RA_PROFILE_AUTHORITY_ATTR,
 			Name:        "ra_profile_authority",
-			Description: "",
+			Description: "Helper attribute to pass authority UUID to the callback function",
 			Type:        DATA,
 			Content:     nil,
 			ContentType: STRING,
 			Properties: &DataAttributeProperties{
-				Label:       "Authority used for PKI engine query",
+				Label:       "Authority UUID",
 				Visible:     false,
 				Group:       "",
 				Required:    true,
@@ -335,12 +335,12 @@ func getRAProfilesAttributes() []Attribute {
 		DataAttribute{
 			Uuid:        RA_PROFILE_ROLE_ATTR,
 			Name:        "ra_profile_role",
-			Description: "Select RA Profile Role",
+			Description: "Select role that defines procedure for generating a certificate",
 			Type:        DATA,
 			Content:     nil,
 			ContentType: STRING,
 			Properties: &DataAttributeProperties{
-				Label:       "RA profile role",
+				Label:       "Role",
 				Visible:     true,
 				Group:       "",
 				Required:    true,
@@ -381,12 +381,12 @@ func getDiscoveryAttributes() []Attribute {
 		DataAttribute{
 			Uuid:        DISCOVERY_AUTHORITY_ATTR,
 			Name:        "authority_to_discover",
-			Description: "Authority definition for discovery",
+			Description: "Select Vault to run discovery against",
 			Type:        DATA,
 			Content:     nil,
 			ContentType: OBJECT,
 			Properties: &DataAttributeProperties{
-				Label:       "Authority to discover",
+				Label:       "Vault",
 				Visible:     true,
 				Group:       "",
 				Required:    true,
@@ -398,12 +398,12 @@ func getDiscoveryAttributes() []Attribute {
 		DataAttribute{
 			Uuid:        DISCOVERY_PKI_ENGINE_ATTR,
 			Name:        "pki_engines_to_discover",
-			Description: "Set of PKI engines to discover",
+			Description: "Select authorized PKI secret engines to be used for discovery. If none selected, all authorized PKI secret engines will be used",
 			Type:        DATA,
 			Content:     nil,
 			ContentType: OBJECT,
 			Properties: &DataAttributeProperties{
-				Label:       "Set of PKI engines to discover",
+				Label:       "PKI secrets engines",
 				Visible:     true,
 				Group:       "",
 				Required:    false,
@@ -436,7 +436,7 @@ func getAuthorityManagementAttributes() []Attribute {
 		InfoAttribute{
 			Uuid:        AUTHORITY_INFO_ATTR,
 			Name:        "authority_info",
-			Description: "Authority definition for discovery",
+			Description: "Create a new HashiCorp Vault instance configuration",
 			Type:        INFO,
 			ContentType: TEXT,
 			Content: []AttributeContent{
@@ -451,7 +451,7 @@ Provide URL of your Vault and select one of the available authentication methods
 				},
 			},
 			Properties: InfoAttributeProperties{
-				Label:   "Authority Info",
+				Label:   "Authority instance configuration",
 				Visible: true,
 				Group:   "",
 			},
@@ -459,7 +459,7 @@ Provide URL of your Vault and select one of the available authentication methods
 		DataAttribute{
 			Uuid:        AUTHORITY_URL_ATTR,
 			Name:        "authority_url",
-			Description: "Vault URL for authority",
+			Description: "Vault URL should be in the format http(s)://<vault-url>:<port>",
 			Type:        DATA,
 			Content:     []AttributeContent{},
 			ContentType: STRING,
@@ -484,7 +484,7 @@ Provide URL of your Vault and select one of the available authentication methods
 		DataAttribute{
 			Uuid:        AUTHORITY_CREDENTIAL_TYPE_ATTR,
 			Name:        "credentials_type",
-			Description: "Authentication method for Vault connection",
+			Description: "Select one of the available authentication methods",
 			Type:        DATA,
 			Content:     nil,
 			ContentType: STRING,
@@ -572,7 +572,7 @@ Provide URL of your Vault and select one of the available authentication methods
 		DataAttribute{
 			Uuid:        AUTHORITY_VAULT_ROLE_ATTR,
 			Name:        "vault_role",
-			Description: "Role used for accessing Vault",
+			Description: "Name of the role against which the login is being attempted. If not provided, the default role will be used",
 			Type:        DATA,
 			Content:     nil,
 			ContentType: STRING,
@@ -589,7 +589,7 @@ Provide URL of your Vault and select one of the available authentication methods
 		DataAttribute{
 			Uuid:        AUTHORITY_MOUNT_PATH_ATTR,
 			Name:        "mount_path",
-			Description: "Mount path for the authentication method",
+			Description: "Mount path for the authentication method. If not provided, the default mount path will be used",
 			Type:        DATA,
 			Content:     nil,
 			ContentType: STRING,
