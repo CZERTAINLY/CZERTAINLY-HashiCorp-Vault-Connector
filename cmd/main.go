@@ -129,7 +129,7 @@ func populateRoutes(router *mux.Router, routeKey string) {
 			Context:  tpl,
 			Required: true,
 		}
-		log.Info(strings.Join(met, ", ") + " " + tpl)
+		log.Debug(strings.Join(met, ", ") + " " + tpl)
 		routes[routeKey] = append(routes[routeKey], endpoint)
 		return nil
 	})

@@ -49,19 +49,20 @@ func Get() Config {
 	}
 
 	if config.Database.Schema == "" {
-		l.Info("DATABASE_SCHEMA is mandatory to set!")
+		config.Database.Schema = "hvault"
 	}
 
 	if config.Database.Username == "" {
-		l.Info("DATABASE_USER is mandatory to set!")
+		l.Fatal("DATABASE_USER is mandatory to set!")
+
 	}
 
 	if config.Database.Password == "" {
-		l.Info("DATABASE_PASSWORD is mandatory to set!")
+		l.Fatal("DATABASE_PASSWORD is mandatory to set!")
 	}
 
 	if config.Database.Name == "" {
-		l.Info("DATABASE_NAME is mandatory to set!")
+		l.Fatal("DATABASE_NAME is mandatory to set!")
 	}
 
 	if config.Database.SslMode == "" {
