@@ -8,9 +8,9 @@ import (
 	"context"
 	"encoding/base64"
 	vault2 "github.com/hashicorp/vault-client-go"
-	"net/http"
-
 	"go.uber.org/zap"
+	"net/http"
+	"strings"
 )
 
 // DiscoveryAPIService is a service that implements the logic for the DiscoveryAPIServicer
@@ -64,16 +64,38 @@ func (s *DiscoveryAPIService) DiscoverCertificate(ctx context.Context, discovery
 		Meta:         nil,
 		Certificates: nil,
 	}
-	err := s.discoveryRepo.CreateDiscovery(discovery)
-	if err != nil {
-		return model.Response(http.StatusNotFound, model.ErrorMessageDto{Message: "Unable to create discovery " + discovery.UUID}), nil
-	}
+
 	uuid := model.GetAttributeFromArrayByUUID(model.DISCOVERY_AUTHORITY_ATTR, discoveryRequestDto.Attributes).GetContent()[0].GetData().(map[string]interface{})["uuid"].(string)
+
+	authority, err := s.authorityRepo.FindAuthorityInstanceByUUID(uuid)
+	if err != nil {
+		return model.Response(http.StatusNotFound, model.ErrorMessageDto{Message: "Authority not found " + uuid}), nil
+	}
+
 	enginesAttr := model.GetAttributeFromArrayByUUID(model.DISCOVERY_PKI_ENGINE_ATTR, discoveryRequestDto.Attributes)
 	var enginesList []string
 	if enginesAttr == nil {
-		enginesList = nil
-
+		s.log.Info("No PKI engines specified for discovery, trying to get all available engines")
+		// get the vault client
+		client, err := vault.GetClient(*authority)
+		if err != nil {
+			discovery.Status = "FAILED"
+			err := s.discoveryRepo.UpdateDiscovery(discovery)
+			if err != nil {
+				s.log.Error(err.Error())
+			}
+			s.log.Error(err.Error())
+			return model.Response(http.StatusBadRequest, model.ErrorMessageDto{Message: "Unable to create vault client"}), nil
+		}
+		ctx := context.Background()
+		//Due to the nature of its intended usage, there is no guarantee on backwards compatibility for this endpoint.
+		mounts, _ := client.System.InternalUiListEnabledVisibleMounts(ctx)
+		for engineName, engineData := range mounts.Data.Secret {
+			engineName = strings.TrimSuffix(engineName, "/")
+			if engineData.(map[string]any)["type"] == "pki" {
+				enginesList = append(enginesList, engineName)
+			}
+		}
 	} else {
 		enginesList = make([]string, 0)
 		for _, engine := range enginesAttr.GetContent() {
@@ -83,9 +105,9 @@ func (s *DiscoveryAPIService) DiscoverCertificate(ctx context.Context, discovery
 		}
 	}
 
-	authority, err := s.authorityRepo.FindAuthorityInstanceByUUID(uuid)
+	err = s.discoveryRepo.CreateDiscovery(discovery)
 	if err != nil {
-		return model.Response(http.StatusNotFound, model.ErrorMessageDto{Message: "Authority not found  " + uuid}), nil
+		return model.Response(http.StatusNotFound, model.ErrorMessageDto{Message: "Unable to create discovery " + discovery.UUID}), nil
 	}
 
 	s.log.Info("Starting discovery of certificates", zap.String("discovery_uuid", discovery.UUID), zap.String("authority_uuid", authority.UUID))
@@ -138,48 +160,8 @@ func (s *DiscoveryAPIService) DiscoveryCertificates(authority *db.AuthorityInsta
 	// get the certificates
 	ctx := context.Background()
 
-	if list == nil {
-		s.log.Info("Discovering certificates from all available engines")
-		certificates, err := client.Secrets.PkiListCerts(ctx)
-		if err != nil {
-			discovery.Status = "FAILED"
-			err := s.discoveryRepo.UpdateDiscovery(discovery)
-			if err != nil {
-				s.log.Error(err.Error())
-			}
-			return
-		}
-		var certificateKeys []*db.Certificate
-		for _, certificateKey := range certificates.Data.Keys {
-			s.log.Debug("Reading certificate", zap.String("certificate_key", certificateKey))
-			certificateData, err := client.Secrets.PkiReadCert(ctx, certificateKey)
-			if err != nil {
-				discovery.Status = "FAILED"
-				s.log.Error("Error reading certificate", zap.String("certificate_key", certificateKey), zap.Error(err))
-				err := s.discoveryRepo.UpdateDiscovery(discovery)
-				if err != nil {
-					s.log.Error(err.Error())
-				}
-
-				return
-			}
-			certificate := db.Certificate{
-				SerialNumber:  certificateKey,
-				UUID:          utils.DeterministicGUID(certificateKey),
-				Base64Content: base64.StdEncoding.EncodeToString([]byte(certificateData.Data.Certificate)),
-			}
-			certificateKeys = append(certificateKeys, &certificate)
-		}
-		err = s.discoveryRepo.AssociateCertificatesToDiscovery(discovery, certificateKeys...)
-		if err != nil {
-			discovery.Status = "FAILED"
-			s.log.Error(err.Error())
-			err := s.discoveryRepo.UpdateDiscovery(discovery)
-			if err != nil {
-				s.log.Error(err.Error())
-			}
-			return
-		}
+	if list == nil || len(list) == 0 {
+		s.log.Info("No PKI engines available for discovery")
 	} else {
 		for _, engine := range list {
 			s.log.Info("Discovering certificates", zap.String("engine", engine))
