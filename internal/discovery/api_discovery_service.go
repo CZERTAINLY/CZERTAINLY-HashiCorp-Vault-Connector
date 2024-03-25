@@ -139,6 +139,7 @@ func (s *DiscoveryAPIService) DiscoveryCertificates(authority *db.AuthorityInsta
 	ctx := context.Background()
 
 	if list == nil {
+		s.log.Info("Discovering certificates from all available engines")
 		certificates, err := client.Secrets.PkiListCerts(ctx)
 		if err != nil {
 			discovery.Status = "FAILED"
@@ -150,10 +151,11 @@ func (s *DiscoveryAPIService) DiscoveryCertificates(authority *db.AuthorityInsta
 		}
 		var certificateKeys []*db.Certificate
 		for _, certificateKey := range certificates.Data.Keys {
+			s.log.Debug("Reading certificate", zap.String("certificate_key", certificateKey))
 			certificateData, err := client.Secrets.PkiReadCert(ctx, certificateKey)
 			if err != nil {
 				discovery.Status = "FAILED"
-				s.log.Error(err.Error())
+				s.log.Error("Error reading certificate", zap.String("certificate_key", certificateKey), zap.Error(err))
 				err := s.discoveryRepo.UpdateDiscovery(discovery)
 				if err != nil {
 					s.log.Error(err.Error())
@@ -179,8 +181,8 @@ func (s *DiscoveryAPIService) DiscoveryCertificates(authority *db.AuthorityInsta
 			return
 		}
 	} else {
-
 		for _, engine := range list {
+			s.log.Info("Discovering certificates", zap.String("engine", engine))
 			certificates, err := client.Secrets.PkiListCerts(ctx, vault2.WithMountPath(engine))
 			if err != nil {
 				discovery.Status = "FAILED"
@@ -192,10 +194,11 @@ func (s *DiscoveryAPIService) DiscoveryCertificates(authority *db.AuthorityInsta
 			}
 			var certificateKeys []*db.Certificate
 			for _, certificateKey := range certificates.Data.Keys {
-				certificateData, err := client.Secrets.PkiReadCert(ctx, certificateKey)
+				s.log.Debug("Reading certificate", zap.String("certificate_key", certificateKey), zap.String("engine", engine))
+				certificateData, err := client.Secrets.PkiReadCert(ctx, certificateKey, vault2.WithMountPath(engine))
 				if err != nil {
 					discovery.Status = "FAILED"
-					s.log.Error(err.Error())
+					s.log.Error("Error reading certificate", zap.String("certificate_key", certificateKey), zap.String("engine", engine), zap.Error(err))
 					err := s.discoveryRepo.UpdateDiscovery(discovery)
 					if err != nil {
 						s.log.Error(err.Error())
