@@ -8,7 +8,7 @@ require (
 	github.com/gorilla/mux v1.8.1
 	github.com/hashicorp/vault-client-go v0.4.3
 	github.com/tidwall/gjson v1.17.1
-	go.uber.org/zap v1.26.0
+	go.uber.org/zap v1.27.0
 	gorm.io/datatypes v1.2.0
 	gorm.io/driver/postgres v1.5.6
 	gorm.io/gorm v1.25.7
@@ -37,8 +37,9 @@ require (
 	github.com/stretchr/testify v1.8.4 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
+	github.com/yuseferi/zax/v2 v2.3.1 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
-	go.uber.org/multierr v1.10.0 // indirect
+	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/crypto v0.21.0 // indirect
 	golang.org/x/net v0.21.0 // indirect
 	golang.org/x/sync v0.5.0 // indirect

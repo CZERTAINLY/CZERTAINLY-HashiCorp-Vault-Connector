@@ -14,6 +14,14 @@ import (
 
 var log = logger.Get()
 
+func GenerateRandomUUID() string {
+	uuid, err := uuid.NewRandom()
+	if err != nil {
+		log.Error(err.Error())
+	}
+	return uuid.String()
+}
+
 func DeterministicGUID(parts ...string) string {
 	// concatenate all strings
 	var combined string

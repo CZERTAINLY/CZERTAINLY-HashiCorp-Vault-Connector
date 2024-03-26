@@ -11,7 +11,9 @@ import (
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/model"
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/utils"
 	"bytes"
+	"context"
 	"github.com/lib/pq"
+	"github.com/yuseferi/zax/v2"
 	"io"
 	"net/http"
 	"strings"
@@ -105,6 +107,21 @@ func main() {
 func logMiddleware(next http.Handler) http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// retrieve the standard logger instance
+		l := logger.Get()
+
+		// create a correlation ID for the request
+		correlationID := utils.GenerateRandomUUID()
+
+		ctx := context.Background()
+		ctx = zax.Set(ctx, []zap.Field{zap.String("correlation_id", correlationID)})
+
+		r = r.WithContext(ctx)
+
+		w.Header().Add("X-Correlation-ID", correlationID)
+
+		r = r.WithContext(logger.WithCtx(ctx, l))
+
 		//TODO: remove body logging
 		buf, _ := io.ReadAll(r.Body)
 		rdr1 := io.NopCloser(bytes.NewBuffer(buf))
@@ -112,6 +129,7 @@ func logMiddleware(next http.Handler) http.Handler {
 		body, _ := io.ReadAll(rdr1)
 		log.Debug("Request received", zap.String("path", r.URL.Path), zap.String("body", string(body)))
 		r.Body = rdr2
+
 		next.ServeHTTP(w, r)
 	})
 }
