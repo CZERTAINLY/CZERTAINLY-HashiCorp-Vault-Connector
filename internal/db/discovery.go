@@ -82,12 +82,21 @@ func (d *DiscoveryRepository) UpdateDiscovery(discovery *Discovery) error {
 	return nil
 }
 
-func (d *DiscoveryRepository) List(pagination Pagination) (*Pagination, error) {
+func (d *DiscoveryRepository) List(pagination Pagination, discovery *Discovery) (*Pagination, error) {
 	var certificates []*Certificate
+	page := pagination.Page
+	pageSize := pagination.Limit
+	var count int
+	offset := (page - 1) * pageSize
+	d.db.Table("certificates").Select("certificates.*").
+		Joins("JOIN discovery_certificates ON discovery_certificates.certificate_id = certificates.id").
+		Where("discovery_certificates.discovery_id = ?", discovery.Id).
+		Offset(offset).Limit(pageSize).Find(&certificates)
 
-	d.db.Scopes(paginate(certificates, &pagination, d.db)).Find(&certificates)
 	pagination.Rows = certificates
-
+	pagination.TotalRows = int64(len(discovery.Certificates))
+	totalPages := int(math.Ceil(float64(count) / float64(pagination.Limit)))
+	pagination.TotalPages = totalPages
 	return &pagination, nil
 }
 
@@ -97,19 +106,6 @@ func (d *DiscoveryRepository) DeleteDiscovery(discovery *Discovery) error {
 		return result.Error
 	}
 	return nil
-}
-
-func paginate(value interface{}, pagination *Pagination, db *gorm.DB) func(db *gorm.DB) *gorm.DB {
-	var totalRows int64
-	db.Model(value).Count(&totalRows)
-
-	pagination.TotalRows = totalRows
-	totalPages := int(math.Ceil(float64(totalRows) / float64(pagination.Limit)))
-	pagination.TotalPages = totalPages
-
-	return func(db *gorm.DB) *gorm.DB {
-		return db.Offset(pagination.GetOffset()).Limit(pagination.GetLimit())
-	}
 }
 
 type Pagination struct {
