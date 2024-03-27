@@ -130,7 +130,7 @@ func (s *DiscoveryAPIService) GetDiscovery(ctx context.Context, uuid string, dis
 			Page:  int(discoveryDataRequestDto.PageNumber),
 			Limit: int(discoveryDataRequestDto.ItemsPerPage),
 		}
-		result, _ := s.discoveryRepo.List(pagination)
+		result, _ := s.discoveryRepo.List(pagination, discovery)
 		var certificateDtos []model.DiscoveryProviderCertificateDataDto
 		rows, _ := result.Rows.([]*db.Certificate)
 		for _, certificateData := range rows {
@@ -159,7 +159,7 @@ func (s *DiscoveryAPIService) DiscoveryCertificates(ctx context.Context, authori
 		return
 	}
 
-	if list == nil || len(list) == 0 {
+	if len(list) == 0 {
 		s.log.With(zax.Get(ctx)...).Info("No PKI engines available for discovery")
 	} else {
 		for _, engine := range list {
