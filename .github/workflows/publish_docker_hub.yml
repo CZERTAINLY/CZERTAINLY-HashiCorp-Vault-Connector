@@ -3,6 +3,8 @@ name: Publish Docker image
 on:
   push:
     branches: [develop]
+    tags:
+      - '*'
   workflow_dispatch:
 
 jobs:
@@ -34,6 +36,7 @@ jobs:
             czertainly/czertainly-hashicorp-vault-connector
             harbor.3key.company/czertainly/czertainly-hashicorp-vault-connector
           tags: |
+            type=ref,event=tag
             type=raw,value=develop-latest
             type=sha,prefix=develop-,format=long
 
