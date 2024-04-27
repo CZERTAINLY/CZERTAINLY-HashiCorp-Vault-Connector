@@ -101,4 +101,41 @@ const (
     }
 ]
 `
+
+	CERTIFICATE_SIGN_REQUEST_DTO = `
+{
+	"request": "test",
+	"format": "pkcs10",
+	"raProfileAttributes": [
+		{
+        	"name": "authority_url",
+        	"content": [
+            	{
+                	"reference": "string",
+                	"data": "test"
+            	}
+        	]
+    	},
+	],
+}
+`
 )
+
+func TestUnmarshalAndCompareCertificateRequestForamt(t *testing.T) {
+	certificateSignRequestDto := CertificateSignRequestDto{}
+
+	certificateSignRequestDto.Unmarshal([]byte(CERTIFICATE_SIGN_REQUEST_DTO))
+
+	if err := AssertCertificateSignRequestDtoRequired(certificateSignRequestDto); err != nil {
+		t.Fatalf("Error asserting required fields")
+	}
+
+	if err := AssertCertificateSignRequestDtoConstraints(certificateSignRequestDto); err != nil {
+		t.Fatalf("Error asserting constraints")
+	}
+
+	if certificateSignRequestDto.CertificateRequestFormat != CERTIFICATEREQUESTFORMAT_PKCS10 {
+		t.Fatalf("Error asserting CertificateRequestFormat")
+	}
+
+}

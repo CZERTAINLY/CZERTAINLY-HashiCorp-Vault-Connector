@@ -4,8 +4,11 @@ import "github.com/tidwall/gjson"
 
 type CertificateRenewRequestDto struct {
 
-	// Certificate sign request (PKCS#10) encoded as Base64 string
-	Pkcs10 string `json:"pkcs10"`
+	// Certificate signing request encoded as Base64 string
+	Request string `json:"request"`
+
+	// Certificate signing request format
+	CertificateRequestFormat CertificateRequestFormat `json:"format"`
 
 	// List of RA Profiles attributes
 	RaProfileAttributes []Attribute `json:"raProfileAttributes"`
@@ -18,7 +21,8 @@ type CertificateRenewRequestDto struct {
 }
 
 func (a *CertificateRenewRequestDto) Unmarshal(json []byte) {
-	a.Pkcs10 = gjson.GetBytes(json, "pkcs10").String()
+	a.Request = gjson.GetBytes(json, "request").String()
+	a.CertificateRequestFormat = CertificateRequestFormat(gjson.GetBytes(json, "format").String())
 	a.Certificate = gjson.GetBytes(json, "certificate").String()
 	a.RaProfileAttributes = UnmarshalAttributesValues([]byte(gjson.GetBytes(json, "raProfileAttributes").Raw))
 }
@@ -26,7 +30,8 @@ func (a *CertificateRenewRequestDto) Unmarshal(json []byte) {
 // AssertCertificateRenewRequestDtoRequired checks if the required fields are not zero-ed
 func AssertCertificateRenewRequestDtoRequired(obj CertificateRenewRequestDto) error {
 	elements := map[string]interface{}{
-		"pkcs10":              obj.Pkcs10,
+		"request":             obj.Request,
+		"format":              obj.CertificateRequestFormat,
 		"raProfileAttributes": obj.RaProfileAttributes,
 		"certificate":         obj.Certificate,
 	}
