@@ -85,7 +85,7 @@ func (s *CertificateManagementAPIService) IssueCertificate(ctx context.Context, 
 
 	if certificateSignRequestDto.CertificateRequestFormat != model.CERTIFICATEREQUESTFORMAT_PKCS10 {
 		return model.Response(http.StatusBadRequest, model.ErrorMessageDto{
-			Message: "Invalid certificate request format",
+			Message: "Invalid certificate request format, PKCS#10 format expected.",
 		}), nil
 	}
 
@@ -178,7 +178,7 @@ func (s *CertificateManagementAPIService) ListRevokeCertificateAttributes(ctx co
 func (s *CertificateManagementAPIService) RenewCertificate(ctx context.Context, uuid string, certificateRenewRequestDto model.CertificateRenewRequestDto) (model.ImplResponse, error) {
 	if certificateRenewRequestDto.CertificateRequestFormat != model.CERTIFICATEREQUESTFORMAT_PKCS10 {
 		return model.Response(http.StatusBadRequest, model.ErrorMessageDto{
-			Message: "Invalid certificate request format",
+			Message: "Invalid certificate request format, PKCS#10 format expected.",
 		}), nil
 	}
 
