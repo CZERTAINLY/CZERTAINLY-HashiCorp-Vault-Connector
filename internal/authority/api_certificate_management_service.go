@@ -82,13 +82,12 @@ func (s *CertificateManagementAPIService) IdentifyCertificate(ctx context.Contex
 // IssueCertificate - Issue Certificate
 func (s *CertificateManagementAPIService) IssueCertificate(ctx context.Context, uuid string, certificateSignRequestDto model.CertificateSignRequestDto) (model.ImplResponse, error) {
 	//TODO: refactor and merge code with renew certificate
-
 	if certificateSignRequestDto.CertificateRequestFormat != model.CERTIFICATEREQUESTFORMAT_PKCS10 {
 		return model.Response(http.StatusBadRequest, model.ErrorMessageDto{
 			Message: "Invalid certificate request format, PKCS#10 format expected.",
 		}), nil
 	}
-
+  
 	raAttributes := certificateSignRequestDto.RaProfileAttributes
 	engineData := model.GetAttributeFromArrayByUUID(model.RA_PROFILE_ENGINE_ATTR, raAttributes).GetContent()[0].GetData().(map[string]interface{})
 	engineName := engineData["engineName"].(string)

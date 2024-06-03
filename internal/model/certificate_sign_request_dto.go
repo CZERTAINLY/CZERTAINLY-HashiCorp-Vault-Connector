@@ -3,7 +3,6 @@ package model
 import "github.com/tidwall/gjson"
 
 type CertificateSignRequestDto struct {
-
 	// Certificate signing request encoded as Base64 string
 	Request string `json:"request"`
 
