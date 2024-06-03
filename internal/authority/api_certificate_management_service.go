@@ -82,6 +82,12 @@ func (s *CertificateManagementAPIService) IdentifyCertificate(ctx context.Contex
 // IssueCertificate - Issue Certificate
 func (s *CertificateManagementAPIService) IssueCertificate(ctx context.Context, uuid string, certificateSignRequestDto model.CertificateSignRequestDto) (model.ImplResponse, error) {
 	//TODO: refactor and merge code with renew certificate
+	if certificateSignRequestDto.CertificateRequestFormat != model.CERTIFICATEREQUESTFORMAT_PKCS10 {
+		return model.Response(http.StatusBadRequest, model.ErrorMessageDto{
+			Message: "Invalid certificate request format, PKCS#10 format expected.",
+		}), nil
+	}
+  
 	raAttributes := certificateSignRequestDto.RaProfileAttributes
 	engineData := model.GetAttributeFromArrayByUUID(model.RA_PROFILE_ENGINE_ATTR, raAttributes).GetContent()[0].GetData().(map[string]interface{})
 	engineName := engineData["engineName"].(string)
@@ -98,7 +104,7 @@ func (s *CertificateManagementAPIService) IssueCertificate(ctx context.Context, 
 			Message: err.Error(),
 		}), nil
 	}
-	decoded, err := base64.StdEncoding.DecodeString(certificateSignRequestDto.Pkcs10)
+	decoded, err := base64.StdEncoding.DecodeString(certificateSignRequestDto.Request)
 	if err != nil {
 		return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{
 			Message: err.Error(),
@@ -169,6 +175,12 @@ func (s *CertificateManagementAPIService) ListRevokeCertificateAttributes(ctx co
 
 // RenewCertificate - Renew Certificate
 func (s *CertificateManagementAPIService) RenewCertificate(ctx context.Context, uuid string, certificateRenewRequestDto model.CertificateRenewRequestDto) (model.ImplResponse, error) {
+	if certificateRenewRequestDto.CertificateRequestFormat != model.CERTIFICATEREQUESTFORMAT_PKCS10 {
+		return model.Response(http.StatusBadRequest, model.ErrorMessageDto{
+			Message: "Invalid certificate request format, PKCS#10 format expected.",
+		}), nil
+	}
+
 	raAttributes := certificateRenewRequestDto.RaProfileAttributes
 	engineData := model.GetAttributeFromArrayByUUID(model.RA_PROFILE_ENGINE_ATTR, raAttributes).GetContent()[0].GetData().(map[string]interface{})
 	engineName := engineData["engineName"].(string)
@@ -186,7 +198,7 @@ func (s *CertificateManagementAPIService) RenewCertificate(ctx context.Context, 
 			Message: err.Error(),
 		}), nil
 	}
-	decoded, err := base64.StdEncoding.DecodeString(certificateRenewRequestDto.Pkcs10)
+	decoded, err := base64.StdEncoding.DecodeString(certificateRenewRequestDto.Request)
 	if err != nil {
 		return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{
 			Message: err.Error(),
