@@ -91,7 +91,9 @@ func (d *DiscoveryRepository) List(pagination Pagination, discovery *Discovery) 
 	d.db.Table("certificates").Select("certificates.*").
 		Joins("JOIN discovery_certificates ON discovery_certificates.certificate_id = certificates.id").
 		Where("discovery_certificates.discovery_id = ?", discovery.Id).
-		Offset(offset).Limit(pageSize).Find(&certificates)
+		Offset(offset).Limit(pageSize).
+		Order("certificates.id ASC").
+		Find(&certificates).
 
 	pagination.Rows = certificates
 	pagination.TotalRows = int64(len(discovery.Certificates))
