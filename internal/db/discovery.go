@@ -93,7 +93,7 @@ func (d *DiscoveryRepository) List(pagination Pagination, discovery *Discovery) 
 		Where("discovery_certificates.discovery_id = ?", discovery.Id).
 		Offset(offset).Limit(pageSize).
 		Order("certificates.id ASC").
-		Find(&certificates).
+		Find(&certificates)
 
 	pagination.Rows = certificates
 	pagination.TotalRows = int64(len(discovery.Certificates))
