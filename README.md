@@ -30,7 +30,7 @@ HashiCorp Vault `Connector` requires the PostgreSQL database version 12+.
 
 ## Docker container
 
-HashiCorp Vault `Connector` is provided as a Docker container. Use the `docker.io/3keycompany/czertainly-hashicorp-vaul-connector:tagname` to pull the required image from the repository. It can be configured using the following environment variables:
+HashiCorp Vault `Connector` is provided as a Docker container. Use the `docker.io/czertainly/czertainly-hashicorp-vaul-connector:tagname` to pull the required image from the repository. It can be configured using the following environment variables:
 
 | Variable            | Description                       | Required                                           | Default value |
 |---------------------|-----------------------------------|----------------------------------------------------|---------------|
