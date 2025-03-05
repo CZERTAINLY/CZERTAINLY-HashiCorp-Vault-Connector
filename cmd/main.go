@@ -22,7 +22,7 @@ import (
 	"go.uber.org/zap"
 )
 
-var version = "1.1.1"
+var version = "1.1.2"
 
 var routes map[string][]model.EndpointDto
 
