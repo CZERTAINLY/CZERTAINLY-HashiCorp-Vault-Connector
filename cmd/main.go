@@ -22,7 +22,7 @@ import (
 	"go.uber.org/zap"
 )
 
-var version = "1.1.1"
+var version = "1.1.2"
 
 var routes map[string][]model.EndpointDto
 
@@ -34,11 +34,18 @@ func main() {
 	log.Info("Starting CZERTAINLY-HashiCorp-Vault-Connector", zap.String("version", version))
 	conn, _ := db.ConnectDB(c)
 	schema := config.Get().Database.Schema
+
 	err := conn.Exec("CREATE SCHEMA IF NOT EXISTS " + pq.QuoteIdentifier(schema)).Error
 	if err != nil {
 		log.Error("Error creating schema", zap.Error(err))
 	}
-	db.MigrateDB(c)
+
+	err = conn.Exec("SET search_path TO " + pq.QuoteIdentifier(schema)).Error
+	if err != nil {
+		log.Error("Error setting search_path", zap.Error(err))
+	}
+
+	db.MigrateDB(c, conn)
 	discoveryRepo, _ := db.NewDiscoveryRepository(conn)
 	authorityRepo, _ := db.NewAuthorityRepository(conn)
 
