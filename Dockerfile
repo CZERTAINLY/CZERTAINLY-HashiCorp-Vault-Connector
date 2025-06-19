@@ -2,7 +2,7 @@
 # Install golang
 
 # Build Stage
-FROM golang:1.23-alpine3.22 AS builder
+FROM golang:1.24-alpine3.22 AS builder
 
 ENV WRK_DIR /app
 
