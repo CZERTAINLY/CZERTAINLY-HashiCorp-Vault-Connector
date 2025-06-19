@@ -1,6 +1,6 @@
 module CZERTAINLY-HashiCorp-Vault-Connector
 
-go 1.24
+go 1.23.10
 
 require (
 	github.com/golang-migrate/migrate/v4 v4.17.0
