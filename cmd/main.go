@@ -12,17 +12,18 @@ import (
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/utils"
 	"bytes"
 	"context"
-	"github.com/lib/pq"
-	"github.com/yuseferi/zax/v2"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/lib/pq"
+	"github.com/yuseferi/zax/v2"
 
 	"github.com/gorilla/mux"
 	"go.uber.org/zap"
 )
 
-var version = "1.1.3"
+var version = "1.1.4"
 
 var routes map[string][]model.EndpointDto
 
