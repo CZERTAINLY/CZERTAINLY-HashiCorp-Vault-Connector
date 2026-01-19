@@ -3,6 +3,7 @@ package model
 import (
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/logger"
 	"encoding/json"
+
 	"github.com/tidwall/gjson"
 	"go.uber.org/zap"
 )
@@ -535,14 +536,6 @@ Provide URL of your Vault and select one of the available authentication methods
 				List:        false,
 				MultiSelect: false,
 			},
-			Constraints: []AttributeConstraint{
-				RegexpAttributeConstraint{
-					Description:  "Unique UUID as the Role ID",
-					ErrorMessage: "Role ID must be a valid UUID",
-					Type:         REG_EXP,
-					Data:         "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-				},
-			},
 		},
 		DataAttribute{
 			Uuid:        AUTHORITY_ROLE_SECRET_ATTR,
@@ -559,14 +552,6 @@ Provide URL of your Vault and select one of the available authentication methods
 				ReadOnly:    false,
 				List:        false,
 				MultiSelect: false,
-			},
-			Constraints: []AttributeConstraint{
-				RegexpAttributeConstraint{
-					Description:  "Generated UUID as the Role Secret",
-					ErrorMessage: "Role Secret must be a valid UUID",
-					Type:         REG_EXP,
-					Data:         "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-				},
 			},
 		},
 		DataAttribute{
