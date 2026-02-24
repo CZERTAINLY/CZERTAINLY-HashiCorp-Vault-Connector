@@ -8,6 +8,9 @@ require (
 	github.com/gorilla/mux v1.8.1
 	github.com/hashicorp/vault-client-go v0.4.3
 	github.com/lib/pq v1.10.9
+	github.com/moby/locker/v2 v2.0.0-20250523144334-4817df9fb2f2
+	github.com/oapi-codegen/runtime v1.1.2
+	github.com/stretchr/objx v0.1.0
 	github.com/tidwall/gjson v1.17.1
 	github.com/yuseferi/zax/v2 v2.3.1
 	go.uber.org/zap v1.27.0
@@ -17,6 +20,7 @@ require (
 )
 
 require (
+	github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect
 	github.com/go-sql-driver/mysql v1.7.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect

@@ -9,10 +9,13 @@ import (
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/health"
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/logger"
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/model"
+	"CZERTAINLY-HashiCorp-Vault-Connector/internal/secret"
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/utils"
+
 	"bytes"
 	"context"
 	"io"
+	"log/slog"
 	"net/http"
 	"strings"
 
@@ -30,6 +33,7 @@ var routes map[string][]model.EndpointDto
 var log = logger.Get()
 
 func main() {
+	slog.SetLogLoggerLevel(slog.LevelDebug)
 	routes = make(map[string][]model.EndpointDto)
 	c := config.Get()
 	log.Info("Starting CZERTAINLY-HashiCorp-Vault-Connector", zap.String("version", version))
@@ -99,11 +103,14 @@ func main() {
 	ConnectorInfoAPIController := connectorInfo.NewConnectorInfoAPIController(ConnectorInfoAPIService)
 	connectorInfoRouter := model.NewRouter(ConnectorInfoAPIController)
 
+	secretsRouter := secret.New()
+
 	topMux.Handle("/v1", logMiddleware(connectorInfoRouter))
 	topMux.Handle("/v1/", logMiddleware(healthRouter))
 	topMux.Handle("/v1/authorityProvider/", logMiddleware(authorityRouter))
 	topMux.Handle("/v2/authorityProvider/", logMiddleware(certificateRouter))
 	topMux.Handle("/v1/discoveryProvider/", logMiddleware(discoveryRouter))
+	topMux.Handle("/v1/secretProvider/", logMiddleware(secretsRouter.MuxRouter()))
 
 	err = http.ListenAndServe(":"+c.Server.Port, topMux)
 	if err != nil {
