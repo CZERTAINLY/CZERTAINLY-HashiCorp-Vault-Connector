@@ -1,7 +1,6 @@
 # CZERTAINLY HashiCorp Vault Connector
 
 > This repository is part of the open-source project CZERTAINLY. You can find more information about the project at [CZERTAINLY](https://github.com/CZERTAINLY/CZERTAINLY) repository, including the contribution guide.
-   
 
 HashiCorp Vault `Connector` is the implementation of the following `Function Groups` and `Kinds`:
 
