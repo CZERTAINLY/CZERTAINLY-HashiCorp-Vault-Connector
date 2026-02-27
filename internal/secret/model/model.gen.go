@@ -104,6 +104,7 @@ const (
 
 // Defines values for FeatureFlag.
 const (
+	OpenMetrics      FeatureFlag = "openMetrics"
 	SecretRotation   FeatureFlag = "secretRotation"
 	SecretVersioning FeatureFlag = "secretVersioning"
 	Stateless        FeatureFlag = "stateless"
@@ -415,6 +416,9 @@ type CredentialAttributeContentV2 struct {
 
 // CustomAttributeProperties defines model for CustomAttributeProperties.
 type CustomAttributeProperties struct {
+	// ExtensibleList Boolean determining if a list Attribute can have values other than predefined options
+	ExtensibleList bool `json:"extensibleList"`
+
 	// Group Group of the Attribute, used for the logical grouping of the Attribute
 	Group *string `json:"group,omitempty"`
 
@@ -483,6 +487,9 @@ type CustomAttributeV3 struct {
 
 // DataAttributeProperties defines model for DataAttributeProperties.
 type DataAttributeProperties struct {
+	// ExtensibleList Boolean determining if a list Attribute can have values other than predefined options
+	ExtensibleList bool `json:"extensibleList"`
+
 	// Group Group of the Attribute, used for the logical grouping of the Attribute
 	Group *string `json:"group,omitempty"`
 
@@ -963,7 +970,7 @@ type ProblemDetailExtended struct {
 	RetryAfterSeconds *int32 `json:"retryAfterSeconds,omitempty"`
 
 	// Retryable Indicates if the operation that caused the error can be retried safely
-	Retryable *bool `json:"retryable,omitempty"`
+	Retryable bool `json:"retryable"`
 
 	// Status HTTP status code (MUST match the actual response code)
 	Status int32 `json:"status"`
@@ -1250,13 +1257,16 @@ type UpdateSecretRequestDto struct {
 	VaultAttributes *[]RequestAttribute `json:"vaultAttributes,omitempty"`
 }
 
-// GetSecretValueParams defines parameters for GetSecretValue.
-type GetSecretValueParams struct {
+// GetSecretContentParams defines parameters for GetSecretContent.
+type GetSecretContentParams struct {
 	Version *int32 `form:"version,omitempty" json:"version,omitempty"`
 }
 
 // CheckVaultConnectionJSONBody defines parameters for CheckVaultConnection.
 type CheckVaultConnectionJSONBody = []RequestAttribute
+
+// DeleteSecretJSONRequestBody defines body for DeleteSecret for application/json ContentType.
+type DeleteSecretJSONRequestBody = SecretRequestDto
 
 // CreateSecretJSONRequestBody defines body for CreateSecret for application/json ContentType.
 type CreateSecretJSONRequestBody = CreateSecretRequestDto
@@ -1264,11 +1274,8 @@ type CreateSecretJSONRequestBody = CreateSecretRequestDto
 // UpdateSecretJSONRequestBody defines body for UpdateSecret for application/json ContentType.
 type UpdateSecretJSONRequestBody = UpdateSecretRequestDto
 
-// GetSecretValueJSONRequestBody defines body for GetSecretValue for application/json ContentType.
-type GetSecretValueJSONRequestBody = SecretRequestDto
-
-// DeleteSecretJSONRequestBody defines body for DeleteSecret for application/json ContentType.
-type DeleteSecretJSONRequestBody = SecretRequestDto
+// GetSecretContentJSONRequestBody defines body for GetSecretContent for application/json ContentType.
+type GetSecretContentJSONRequestBody = SecretRequestDto
 
 // RotateSecretJSONRequestBody defines body for RotateSecret for application/json ContentType.
 type RotateSecretJSONRequestBody = SecretRequestDto

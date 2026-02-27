@@ -38,51 +38,51 @@ func ProcessAttrs(ctx context.Context, vaultAttrs, secretAttrs []sm.RequestAttri
 		}
 
 		switch attr.Uuid.String() {
-		case SecretManagementVaultAddressUUID:
-			if attr.ContentType != SecretManagementVaultAddressContentType {
+		case VaultManagementUriUUID:
+			if attr.ContentType != VaultManagementUriContentType {
 				return n, fmt.Errorf("attribute %q has declared content type %q but received %q",
-					SecretManagementVaultAddressUUID, SecretManagementVaultAddressContentType, attr.ContentType)
+					VaultManagementUriUUID, VaultManagementUriContentType, attr.ContentType)
 			}
 			if len(*attr.Content) != 1 {
 				return n, fmt.Errorf("attribute %q expects one content item, received: %d",
-					SecretManagementVaultAddressUUID, len(*attr.Content))
+					VaultManagementUriUUID, len(*attr.Content))
 			}
 			strAttr, err := (*attr.Content)[0].AsStringAttributeContentV3()
 			if err != nil {
 				return n, fmt.Errorf("unmarshalling BaseAttributeContentDtoV3 into StringAttributeContentV3 failed for attribute %q: %w",
-					SecretManagementVaultAddressUUID, err)
+					VaultManagementUriUUID, err)
 			}
 			n.address = strAttr.Data
 
-		case SecretManagementVaultRequestTimeoutSecondsUUID:
-			if attr.ContentType != SecretManagementVaultRequestTimeoutSecondsContentType {
+		case VaultManagementRequestTimeoutUUID:
+			if attr.ContentType != VaultManagementRequestTimeoutContentType {
 				return n, fmt.Errorf("attribute %q has declared content type %q but received %q",
-					SecretManagementVaultRequestTimeoutSecondsUUID, SecretManagementVaultRequestTimeoutSecondsContentType, attr.ContentType)
+					VaultManagementRequestTimeoutUUID, VaultManagementRequestTimeoutContentType, attr.ContentType)
 			}
 			if len(*attr.Content) != 1 {
 				return n, fmt.Errorf("attribute %q expects one content item, received: %d",
-					SecretManagementVaultRequestTimeoutSecondsUUID, len(*attr.Content))
+					VaultManagementRequestTimeoutUUID, len(*attr.Content))
 			}
 			intAttr, err := (*attr.Content)[0].AsIntegerAttributeContentV3()
 			if err != nil {
 				return n, fmt.Errorf("unmarshalling BaseAttributeContentDtoV3 into IntegerAttributeContentV3 failed for attribute %q: %w",
-					SecretManagementVaultRequestTimeoutSecondsUUID, err)
+					VaultManagementRequestTimeoutUUID, err)
 			}
 			n.reqTimeout = time.Duration(intAttr.Data) * time.Second
 
-		case SecretManagementVaultMountUUID:
-			if attr.ContentType != SecretManagementVaultMountContentType {
+		case VaultManagementMountUUID:
+			if attr.ContentType != VaultManagementMountContentType {
 				return n, fmt.Errorf("attribute %q has declared content type %q but received %q",
-					SecretManagementVaultMountUUID, SecretManagementVaultMountContentType, attr.ContentType)
+					VaultManagementMountUUID, VaultManagementMountContentType, attr.ContentType)
 			}
 			if len(*attr.Content) != 1 {
 				return n, fmt.Errorf("attribute %q expects one content item, received: %d",
-					SecretManagementVaultMountUUID, len(*attr.Content))
+					VaultManagementMountUUID, len(*attr.Content))
 			}
 			strAttr, err := (*attr.Content)[0].AsStringAttributeContentV3()
 			if err != nil {
 				return n, fmt.Errorf("unmarshalling BaseAttributeContentDtoV3 into StringAttributeContentV3 failed for attribute %q: %w",
-					SecretManagementVaultMountUUID, err)
+					VaultManagementMountUUID, err)
 			}
 			n.mount = strAttr.Data
 
@@ -102,19 +102,19 @@ func ProcessAttrs(ctx context.Context, vaultAttrs, secretAttrs []sm.RequestAttri
 			}
 			n.path = strAttr.Data
 
-		case SecretManagementVaultTokenUUID:
-			if attr.ContentType != SecretManagementVaultTokenContentType {
+		case VaultManagementTokenUUID:
+			if attr.ContentType != VaultManagementTokenContentType {
 				return n, fmt.Errorf("attribute %q has declared content type %q but received %q",
-					SecretManagementVaultTokenUUID, SecretManagementVaultTokenContentType, attr.ContentType)
+					VaultManagementTokenUUID, VaultManagementTokenContentType, attr.ContentType)
 			}
 			if len(*attr.Content) != 1 {
 				return n, fmt.Errorf("attribute %q expects one content item, received: %d",
-					SecretManagementVaultTokenUUID, len(*attr.Content))
+					VaultManagementTokenUUID, len(*attr.Content))
 			}
 			strAttr, err := (*attr.Content)[0].AsStringAttributeContentV3()
 			if err != nil {
 				return n, fmt.Errorf("unmarshalling BaseAttributeContentDtoV3 into StringAttributeContentV3 failed for attribute %q: %w",
-					SecretManagementVaultTokenUUID, err)
+					VaultManagementTokenUUID, err)
 			}
 			n.token = strAttr.Data
 
