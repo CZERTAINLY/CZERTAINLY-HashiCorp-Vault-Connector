@@ -1,0 +1,153 @@
+package secret
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"log/slog"
+	"net/http"
+	"time"
+
+	sm "CZERTAINLY-HashiCorp-Vault-Connector/internal/secret/model"
+)
+
+func ptrStr(v string) *string {
+	return &v
+}
+
+func vaultPath(path, name string) string {
+	return fmt.Sprintf("%s/%s", path, name)
+}
+
+func badrequest(w http.ResponseWriter, detail string, ec sm.ErrorCode) {
+	t := time.Now()
+	p := problem{
+		Type:      "https://docs.czertainly.com/problems/common/bad-request",
+		Title:     "Bad request",
+		Status:    http.StatusBadRequest,
+		Detail:    detail,
+		ErrorCode: ec,
+		Timestamp: t.Format(time.RFC3339),
+		Retryable: true,
+	}
+
+	p.Json(w)
+}
+
+func internal(w http.ResponseWriter, detail string) {
+	t := time.Now()
+	p := problem{
+		Type:      "https://docs.czertainly.com/problems/common/internal-server-error",
+		Title:     "Internal server error",
+		Status:    http.StatusInternalServerError,
+		Detail:    detail,
+		ErrorCode: sm.SERVICEUNAVAILABLE,
+		Timestamp: t.Format(time.RFC3339),
+		Retryable: false,
+	}
+
+	p.Json(w)
+}
+
+func unauthorized(w http.ResponseWriter, detail string) {
+	t := time.Now()
+	p := problem{
+		Type:      "https://docs.czertainly.com/problems/common/unauthorized",
+		Title:     "Unauthorized",
+		Status:    http.StatusUnauthorized,
+		Detail:    detail,
+		ErrorCode: sm.ATTRIBUTESERROR,
+		Timestamp: t.Format(time.RFC3339),
+		Retryable: false,
+	}
+
+	p.Json(w)
+}
+
+func forbidden(w http.ResponseWriter, detail string) {
+	t := time.Now()
+	p := problem{
+		Type:      "https://docs.czertainly.com/problems/common/forbidden",
+		Title:     "Forbidden",
+		Status:    http.StatusForbidden,
+		Detail:    detail,
+		ErrorCode: sm.ATTRIBUTESERROR,
+		Timestamp: t.Format(time.RFC3339),
+		Retryable: false,
+	}
+
+	p.Json(w)
+}
+
+func precondition(w http.ResponseWriter, detail string, ec sm.ErrorCode) {
+	t := time.Now()
+	p := problem{
+		Type:      "https://docs.czertainly.com/problems/common/precondition-failed",
+		Title:     "Precondition failed",
+		Status:    http.StatusPreconditionFailed,
+		Detail:    detail,
+		ErrorCode: ec,
+		Timestamp: t.Format(time.RFC3339),
+		Retryable: false,
+	}
+
+	p.Json(w)
+}
+
+func notfound(w http.ResponseWriter, detail string) {
+	t := time.Now()
+	p := problem{
+		Type:      "https://docs.czertainly.com/problems/common/not-found",
+		Title:     "Precondition failed",
+		Status:    http.StatusNotFound,
+		Detail:    detail,
+		ErrorCode: sm.RESOURCENOTFOUND,
+		Timestamp: t.Format(time.RFC3339),
+		Retryable: false,
+	}
+
+	p.Json(w)
+}
+
+type problem struct {
+	Type      string       `json:"type,omitempty"`
+	Title     string       `json:"title,omitempty"`
+	Status    int          `json:"status,omitempty"`
+	Detail    string       `json:"detail,omitempty"`
+	Instance  string       `json:"instance,omitempty"`
+	ErrorCode sm.ErrorCode `json:"errorCode,omitempty"`
+	Timestamp string       `json:"timestamp,omitempty"`
+	Retryable bool         `json:"retryable,omitempty"`
+}
+
+func (p problem) Json(w http.ResponseWriter) {
+	var err error
+	var b []byte
+	if b, err = json.Marshal(p); err != nil {
+		// this shouldn't happen as we control the annotation of problem struct
+		slog.Error("Failed to marshal problem struct to json",
+			slog.String("error", err.Error()), slog.Any("struct", p))
+		http.Error(w, "Internal server error.", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	if p.Status > 0 {
+		w.WriteHeader(p.Status)
+	}
+	_, _ = w.Write(b)
+}
+
+func toJson(_ context.Context, w http.ResponseWriter, resp any) {
+	b, err := json.Marshal(resp)
+	if err != nil {
+		slog.Error("Failed to marshal structure to json.",
+			slog.String("error", err.Error()),
+			slog.Any("structure", resp))
+		internal(w, "Failed to marshal structure to json.")
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(b)
+}
