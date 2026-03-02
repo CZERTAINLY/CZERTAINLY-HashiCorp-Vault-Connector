@@ -10,15 +10,7 @@ import (
 )
 
 func getSecretAttributes(w http.ResponseWriter, r *http.Request) {
-	var resp []sm.BaseAttributeDtoV3
-
-	var secretPath sm.BaseAttributeDtoV3
-	if err := secretPath.FromDataAttributeV3(secretManagementPath); err != nil {
-		slog.Error("Error marshaling DataAttributeV3 into BaseAttributeDtoV3", slog.String("error", err.Error()))
-		internal(w, "Marshaling data structure failed.")
-		return
-	}
-	resp = append(resp, secretPath)
+	resp := []sm.BaseAttributeDtoV3{}
 
 	toJson(r.Context(), w, resp)
 }
@@ -121,6 +113,14 @@ func (s *Server) listVaultAttributes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	resp = append(resp, credentialGroup)
+
+	var vaultPath sm.BaseAttributeDtoV3
+	if err := vaultPath.FromDataAttributeV3(vaultManagementPath); err != nil {
+		slog.Error("Error marshaling DataAttributeV3 into BaseAttributeDtoV3", slog.String("error", err.Error()))
+		internal(w, "Marshaling data structure failed.")
+		return
+	}
+	resp = append(resp, vaultPath)
 
 	toJson(r.Context(), w, resp)
 }

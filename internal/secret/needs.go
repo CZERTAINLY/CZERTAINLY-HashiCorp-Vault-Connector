@@ -96,8 +96,8 @@ func (n *Needs) Process(ctx context.Context, vaultAttrs, secretAttrs []sm.Reques
 				return err
 			}
 
-		case secretManagementPath.Uuid:
-			if n.path, err = strContentTypeDataAttrSingle(secretManagementPath, attr); err != nil {
+		case vaultManagementPath.Uuid:
+			if n.path, err = strContentTypeDataAttrSingle(vaultManagementPath, attr); err != nil {
 				return err
 			}
 
@@ -181,7 +181,7 @@ func (n *Needs) CommonCheck() error {
 	case strings.TrimSpace(n.mount) == "":
 		return fmt.Errorf("missing attribute uuid %q, name %q", vaultManagementMount.Uuid, vaultManagementMount.Name)
 	case strings.TrimSpace(n.path) == "":
-		return fmt.Errorf("missing attribute uuid %q, name %q", secretManagementPath.Uuid, secretManagementPath.Name)
+		return fmt.Errorf("missing attribute uuid %q, name %q", vaultManagementPath.Uuid, vaultManagementPath.Name)
 	case strings.TrimSpace(n.credType) == "":
 		return fmt.Errorf("missing attribute uuid %q, name %q", vaultManagementCredentialType.Uuid, vaultManagementCredentialType.Name)
 	}

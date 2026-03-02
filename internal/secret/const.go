@@ -61,6 +61,20 @@ var (
 			MultiSelect: false,
 		},
 	}
+	vaultManagementPath = sm.DataAttributeV3{
+		Uuid:          "19c0493b-1eb3-4d20-9394-610f63078109",
+		Version:       3,
+		SchemaVersion: sm.V3,
+		Name:          "data_vault_management_secret_path",
+		Type:          sm.Data,
+		ContentType:   sm.AttributeContentTypeString,
+		Description:   ptrStr("Path of secret in Vault without trailing slash."),
+		Properties: sm.DataAttributeProperties{
+			Label:    "Secret Path",
+			Visible:  true,
+			Required: true,
+		},
+	}
 )
 
 // credential type specific attribute definitions
@@ -125,24 +139,6 @@ var (
 		Description:   ptrStr("Vault JWT."),
 		Properties: sm.DataAttributeProperties{
 			Label:    "JWT/OIDC",
-			Visible:  true,
-			Required: true,
-		},
-	}
-)
-
-// secret specific attribute definitions
-var (
-	secretManagementPath = sm.DataAttributeV3{
-		Uuid:          "19c0493b-1eb3-4d20-9394-610f63078109",
-		Version:       3,
-		SchemaVersion: sm.V3,
-		Name:          "data_secret_management_secret_path",
-		Type:          sm.Data,
-		ContentType:   sm.AttributeContentTypeString,
-		Description:   ptrStr("Path of secret in Vault without trailing slash."),
-		Properties: sm.DataAttributeProperties{
-			Label:    "Secret Path",
 			Visible:  true,
 			Required: true,
 		},
