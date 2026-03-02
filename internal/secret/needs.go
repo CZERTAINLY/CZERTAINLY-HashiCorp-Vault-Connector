@@ -307,7 +307,14 @@ func (n Needs) Client(ctx context.Context) (*vcg.Client, error) {
 		if n.k8sToken == nil {
 			return nil, fmt.Errorf("unknown credential type %q", credentialTypeK8s.Data)
 		}
-		if err := client.SetToken(*n.k8sToken); err != nil {
+		resp, err := client.Auth.KubernetesLogin(ctx, vcgSchema.KubernetesLoginRequest{
+			Jwt:  *n.k8sToken,
+			Role: n.role,
+		})
+		if err != nil {
+			return nil, err
+		}
+		if err := client.SetToken(resp.Auth.ClientToken); err != nil {
 			return nil, err
 		}
 	}

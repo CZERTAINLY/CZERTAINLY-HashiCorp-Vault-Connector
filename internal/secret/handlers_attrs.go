@@ -168,6 +168,19 @@ func (s *Server) credentialsType(w http.ResponseWriter, r *http.Request) {
 		}
 		resp = append(resp, jwt)
 
+	case credentialTypeK8s.Data:
+		if s.k8sToken == nil {
+			badrequest(w, fmt.Sprintf("Credential type unknown: %s.", credType), sm.VALIDATIONFAILED)
+			return
+		}
+		var role sm.BaseAttributeDtoV3
+		if err := role.FromDataAttributeV3(vaultManagementRole); err != nil {
+			slog.Error("Error marshaling DataAttributeV3 into BaseAttributeDtoV3", slog.String("error", err.Error()))
+			internal(w, "Marshaling data structure failed.")
+			return
+		}
+		resp = append(resp, role)
+
 	default:
 		badrequest(w, fmt.Sprintf("Credential type unknown: %s.", credType), sm.VALIDATIONFAILED)
 		return
