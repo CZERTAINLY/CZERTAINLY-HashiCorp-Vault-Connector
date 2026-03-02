@@ -36,7 +36,7 @@ func DetectKVVersion(ctx context.Context, client *vcg.Client, mount string) (KVV
 	//   "something/else/" -> map[ ... options:map[version:2] type:kv ... ]
 	//
 	// Meaning that when KV engine is kv-v2 then options is non-nil and contains
-	// key version and when KV enginve is kv-v1 then options is nil.
+	// key version and when KV engine is kv-v1 then options is nil.
 	for k, v := range engines.Data {
 		if !strings.HasPrefix(mount, k) {
 			continue
