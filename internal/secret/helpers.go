@@ -98,7 +98,7 @@ func notfound(w http.ResponseWriter, detail string) {
 	t := time.Now()
 	p := problem{
 		Type:      "https://docs.czertainly.com/problems/common/not-found",
-		Title:     "Precondition failed",
+		Title:     "Not found",
 		Status:    http.StatusNotFound,
 		Detail:    detail,
 		ErrorCode: sm.RESOURCENOTFOUND,
