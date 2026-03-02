@@ -72,7 +72,7 @@ func (s *Server) listVaultAttributes(w http.ResponseWriter, r *http.Request) {
 
 	if s.k8sToken != nil {
 		var kubernetes sm.BaseAttributeContentDtoV3
-		if err := jwtToken.FromStringAttributeContentV3(credentialTypeK8s); err != nil {
+		if err := kubernetes.FromStringAttributeContentV3(credentialTypeK8s); err != nil {
 			slog.Error("Error marshaling StringAttributeContentV3 into BaseAttributeContentDtoV3", slog.String("error", err.Error()))
 			internal(w, "Marshaling data structure failed.")
 			return

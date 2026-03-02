@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"log/slog"
 	"strings"
 	"time"
 
@@ -101,7 +102,7 @@ func (n *Needs) Process(ctx context.Context, vaultAttrs, secretAttrs []sm.Reques
 			}
 
 		default:
-			return fmt.Errorf("unknown attribute uuid %q, name %q", attr.Uuid, attr.Name)
+			slog.Debug("Unknown RequestAttributeV3 encountered.", slog.String("uuid", attr.Uuid.String()), slog.String("name", attr.Name))
 		}
 	}
 
