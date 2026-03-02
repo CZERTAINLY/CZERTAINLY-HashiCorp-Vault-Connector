@@ -54,10 +54,7 @@ func (m *Manager) Update(
 		if err != nil {
 			return toPkgErr(err)
 		}
-
-	default:
-		return errors.New("unknown kv engine version")
+		return nil
 	}
-
-	return nil
+	return errors.New("unknown kv engine version")
 }
