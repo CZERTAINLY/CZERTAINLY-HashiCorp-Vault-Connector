@@ -72,7 +72,7 @@ var (
 		Properties: sm.DataAttributeProperties{
 			Label:    "Secret Path",
 			Visible:  true,
-			Required: true,
+			Required: false,
 		},
 	}
 )

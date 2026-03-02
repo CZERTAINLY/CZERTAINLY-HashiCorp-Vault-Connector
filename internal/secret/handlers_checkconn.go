@@ -32,7 +32,7 @@ func (s *Server) checkVaultConnection(w http.ResponseWriter, r *http.Request) {
 	}
 
 	n := NewNeeds(s.k8sToken)
-	if err = n.Process(ctx, req, []sm.RequestAttribute{}); err != nil {
+	if err = n.Process(ctx, &req, nil); err != nil {
 		slog.Debug("Processing request attributes failed.",
 			slog.String("error", err.Error()),
 			slog.String("http-path", r.URL.Path),

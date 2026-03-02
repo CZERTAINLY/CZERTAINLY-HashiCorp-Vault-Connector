@@ -32,7 +32,7 @@ func (s *Server) createSecret(w http.ResponseWriter, r *http.Request) {
 	}
 
 	n := NewNeeds(s.k8sToken)
-	if err := n.Process(ctx, *req.VaultAttributes, *req.SecretAttributes); err != nil {
+	if err := n.Process(ctx, req.VaultAttributes, req.SecretAttributes); err != nil {
 		slog.Debug("Processing request attributes failed.",
 			slog.String("error", err.Error()),
 			slog.String("http-path", r.URL.Path),
@@ -97,7 +97,7 @@ func (s *Server) updateSecret(w http.ResponseWriter, r *http.Request) {
 	}
 
 	n := NewNeeds(s.k8sToken)
-	if err := n.Process(ctx, *req.VaultAttributes, *req.SecretAttributes); err != nil {
+	if err := n.Process(ctx, req.VaultAttributes, req.SecretAttributes); err != nil {
 		slog.Debug("Processing request attributes failed.",
 			slog.String("error", err.Error()),
 			slog.String("http-path", r.URL.Path),
@@ -166,7 +166,7 @@ func (s *Server) getSecretValue(w http.ResponseWriter, r *http.Request) {
 	}
 
 	n := NewNeeds(s.k8sToken)
-	if err := n.Process(ctx, *req.VaultAttributes, *req.SecretAttributes); err != nil {
+	if err := n.Process(ctx, req.VaultAttributes, req.SecretAttributes); err != nil {
 		slog.Debug("Processing request attributes failed.",
 			slog.String("error", err.Error()),
 			slog.String("http-path", r.URL.Path),
@@ -237,7 +237,7 @@ func (s *Server) deleteSecret(w http.ResponseWriter, r *http.Request) {
 	}
 
 	n := NewNeeds(s.k8sToken)
-	if err := n.Process(ctx, *req.VaultAttributes, *req.SecretAttributes); err != nil {
+	if err := n.Process(ctx, req.VaultAttributes, req.SecretAttributes); err != nil {
 		slog.Debug("Processing request attributes failed.",
 			slog.String("error", err.Error()),
 			slog.String("http-path", r.URL.Path),

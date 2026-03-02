@@ -41,8 +41,14 @@ type Needs struct {
 	role, jwt          string
 }
 
-func (n *Needs) Process(ctx context.Context, vaultAttrs, secretAttrs []sm.RequestAttribute) error {
-	attrs := append(vaultAttrs, secretAttrs...)
+func (n *Needs) Process(ctx context.Context, vaultAttrs, secretAttrs *[]sm.RequestAttribute) error {
+	attrs := []sm.RequestAttribute{}
+	if vaultAttrs != nil {
+		attrs = append(attrs, *vaultAttrs...)
+	}
+	if secretAttrs != nil {
+		attrs = append(attrs, *secretAttrs...)
+	}
 
 	for _, cpy := range attrs {
 		// Invariant: Decision was made that we'll only accept v3 attributes
@@ -180,8 +186,10 @@ func (n *Needs) CommonCheck() error {
 		return fmt.Errorf("missing attribute uuid %q, name %q", vaultManagementURI.Uuid, vaultManagementURI.Name)
 	case strings.TrimSpace(n.mount) == "":
 		return fmt.Errorf("missing attribute uuid %q, name %q", vaultManagementMount.Uuid, vaultManagementMount.Name)
-	case strings.TrimSpace(n.path) == "":
-		return fmt.Errorf("missing attribute uuid %q, name %q", vaultManagementPath.Uuid, vaultManagementPath.Name)
+
+	// not required anymore
+	//	case strings.TrimSpace(n.path) == "":
+	//		return fmt.Errorf("missing attribute uuid %q, name %q", vaultManagementPath.Uuid, vaultManagementPath.Name)
 	case strings.TrimSpace(n.credType) == "":
 		return fmt.Errorf("missing attribute uuid %q, name %q", vaultManagementCredentialType.Uuid, vaultManagementCredentialType.Name)
 	}
@@ -212,14 +220,6 @@ func (n *Needs) CommonCheck() error {
 	default:
 		return fmt.Errorf("unknown credential type %q", n.credType)
 	}
-
-	// Invariants:
-	// * mount MUST end with slash
-	// * path MUST NOT end with slash
-	if n.mount[len(n.mount)-1] != '/' {
-		n.mount += "/"
-	}
-	n.path = strings.TrimSuffix(n.path, "/")
 
 	return nil
 }
