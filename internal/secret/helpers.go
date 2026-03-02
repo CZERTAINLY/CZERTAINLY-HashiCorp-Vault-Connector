@@ -11,6 +11,10 @@ import (
 	sm "CZERTAINLY-HashiCorp-Vault-Connector/internal/secret/model"
 )
 
+const (
+	problemJsonAboutBlankType = "about:blank"
+)
+
 func ptrStr(v string) *string {
 	return &v
 }
@@ -22,7 +26,7 @@ func vaultPath(path, name string) string {
 func badrequest(w http.ResponseWriter, detail string, ec sm.ErrorCode) {
 	t := time.Now()
 	p := problem{
-		Type:      "https://docs.czertainly.com/problems/common/bad-request",
+		Type:      problemJsonAboutBlankType,
 		Title:     "Bad request",
 		Status:    http.StatusBadRequest,
 		Detail:    detail,
@@ -37,7 +41,7 @@ func badrequest(w http.ResponseWriter, detail string, ec sm.ErrorCode) {
 func internal(w http.ResponseWriter, detail string) {
 	t := time.Now()
 	p := problem{
-		Type:      "https://docs.czertainly.com/problems/common/internal-server-error",
+		Type:      problemJsonAboutBlankType,
 		Title:     "Internal server error",
 		Status:    http.StatusInternalServerError,
 		Detail:    detail,
@@ -52,7 +56,7 @@ func internal(w http.ResponseWriter, detail string) {
 func unauthorized(w http.ResponseWriter, detail string) {
 	t := time.Now()
 	p := problem{
-		Type:      "https://docs.czertainly.com/problems/common/unauthorized",
+		Type:      problemJsonAboutBlankType,
 		Title:     "Unauthorized",
 		Status:    http.StatusUnauthorized,
 		Detail:    detail,
@@ -67,7 +71,7 @@ func unauthorized(w http.ResponseWriter, detail string) {
 func forbidden(w http.ResponseWriter, detail string) {
 	t := time.Now()
 	p := problem{
-		Type:      "https://docs.czertainly.com/problems/common/forbidden",
+		Type:      problemJsonAboutBlankType,
 		Title:     "Forbidden",
 		Status:    http.StatusForbidden,
 		Detail:    detail,
@@ -82,7 +86,7 @@ func forbidden(w http.ResponseWriter, detail string) {
 func precondition(w http.ResponseWriter, detail string, ec sm.ErrorCode) {
 	t := time.Now()
 	p := problem{
-		Type:      "https://docs.czertainly.com/problems/common/precondition-failed",
+		Type:      problemJsonAboutBlankType,
 		Title:     "Precondition failed",
 		Status:    http.StatusPreconditionFailed,
 		Detail:    detail,
@@ -97,7 +101,7 @@ func precondition(w http.ResponseWriter, detail string, ec sm.ErrorCode) {
 func notfound(w http.ResponseWriter, detail string) {
 	t := time.Now()
 	p := problem{
-		Type:      "https://docs.czertainly.com/problems/common/not-found",
+		Type:      problemJsonAboutBlankType,
 		Title:     "Not found",
 		Status:    http.StatusNotFound,
 		Detail:    detail,
