@@ -94,7 +94,7 @@ func (s *Server) listVaultAttributes(w http.ResponseWriter, r *http.Request) {
 		Name:          VaultManagementCredentialGroupName,
 		AttributeCallback: &sm.AttributeCallback{
 			CallbackContext: ptrStr("v1/secretProvider/credentialType/{credentialsType}/callback"),
-			CallbackMethod:  "GET",
+			CallbackMethod:  ptrStr("GET"),
 			Mappings: []sm.AttributeCallbackMapping{
 				{
 					From:                 ptrStr(fmt.Sprintf("%s.data", vaultManagementCredentialType.Name)),

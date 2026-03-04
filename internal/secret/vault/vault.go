@@ -2,7 +2,6 @@ package vault
 
 import (
 	"context"
-	"encoding/base64"
 	"encoding/pem"
 	"fmt"
 
@@ -36,87 +35,64 @@ func ToPayload(ctx context.Context, secret sm.SecretContent) (map[string]any, er
 
 	switch sm.SecretType(secretType) {
 	case sm.ApiKey:
-		content, err := secret.AsApiKeySecretContent()
+		decoded, err := sm.GetApiKeySecretContent(secret)
 		if err != nil {
-			return nil, fmt.Errorf("unmarshalling SecretContent into ApiKeySecret failed: %w", err)
-		}
-		decoded, err := base64.StdEncoding.DecodeString(content.Content)
-		if err != nil {
-			return nil, fmt.Errorf("base64 decoding ApiKeySecret content failed: %w", err)
+			return nil, err
 		}
 		return map[string]any{
 			ContentKey: string(decoded),
 		}, nil
 
 	case sm.BasicAuth:
-		content, err := secret.AsBasicAuthSecretContent()
+		username, password, err := sm.GetBasicAuthSecretContent(secret)
 		if err != nil {
-			return nil, fmt.Errorf("unmarshalling SecretContent into BasicAuthSecret failed: %w", err)
+			return nil, err
 		}
 		return map[string]any{
-			UsernameKey: content.Username,
-			PasswordKey: content.Password,
+			UsernameKey: username,
+			PasswordKey: password,
 		}, nil
 
 	case sm.Generic:
-		content, err := secret.AsGenericSecretContent()
+		content, err := sm.GetGenericSecretContent(secret)
 		if err != nil {
-			return nil, fmt.Errorf("unmarshalling SecretContent into GenericSecret failed: %w", err)
-		}
-		decoded, err := base64.StdEncoding.DecodeString(content.Content)
-		if err != nil {
-			return nil, fmt.Errorf("base64 decoding GenericSecret content failed: %w", err)
+			return nil, err
 		}
 		return map[string]any{
-			ContentKey: string(decoded),
+			ContentKey: string(content),
 		}, nil
 
 	case sm.JwtToken:
-		content, err := secret.AsJwtTokenSecretContent()
+		content, err := sm.GetJwtTokenSecretContent(secret)
 		if err != nil {
-			return nil, fmt.Errorf("unmarshalling SecretContent into JwtTokenSecret failed: %w", err)
-		}
-		decoded, err := base64.StdEncoding.DecodeString(content.Content)
-		if err != nil {
-			return nil, fmt.Errorf("base64 decoding JwtTokenSecret content failed: %w", err)
+			return nil, err
 		}
 		return map[string]any{
-			ContentKey: string(decoded),
+			ContentKey: string(content),
 		}, nil
 
 	case sm.KeyStore:
-		content, err := secret.AsKeyStoreSecretContent()
+		keyStoreType, content, password, err := sm.GetKeyStoreSecretContent(secret)
 		if err != nil {
-			return nil, fmt.Errorf("unmarshalling SecretContent into KeyStoreSecret failed: %w", err)
-		}
-		decodedContent, err := base64.StdEncoding.DecodeString(content.Content)
-		if err != nil {
-			return nil, fmt.Errorf("base64 decoding KeyStoreSecret content failed: %w", err)
+			return nil, err
 		}
 		return map[string]any{
-			KeyStoreTypeKey: content.KeyStoreType,
-			ContentKey:      string(decodedContent),
-			PasswordKey:     content.Password,
+			KeyStoreTypeKey: keyStoreType,
+			ContentKey:      string(content),
+			PasswordKey:     password,
 		}, nil
 
 	case sm.KeyValue:
-		content, err := secret.AsKeyValueSecretContent()
+		content, err := sm.GetKeyValueSecretContent(secret)
 		if err != nil {
-			return nil, fmt.Errorf("unmarshalling SecretContent into KeyValueSecret failed: %w", err)
+			return nil, err
 		}
-		if len(content.Content) == 0 {
-			return nil, fmt.Errorf("content of KeyValueSecret is empty")
-		}
-		return content.Content, nil
+		return content, nil
 
 	case sm.PrivateKey:
-		content, err := secret.AsPrivateKeySecretContent()
+		decoded, err := sm.GetPrivateKeySecretContent(secret)
 		if err != nil {
-			return nil, fmt.Errorf("unmarshalling SecretContent into PrivateKeySecret failed: %w", err)
-		}
-		decoded, err := base64.StdEncoding.DecodeString(content.Content)
-		if err != nil {
-			return nil, fmt.Errorf("base64 decoding PrivateKeySecret content failed: %w", err)
+			return nil, err
 		}
 		if !isPemFormat(decoded) {
 			return nil, fmt.Errorf("%w: not PEM format", ErrNotDeclaredType)
@@ -126,13 +102,9 @@ func ToPayload(ctx context.Context, secret sm.SecretContent) (map[string]any, er
 		}, nil
 
 	case sm.SecretKey:
-		content, err := secret.AsSecretKeySecretContent()
+		decoded, err := sm.GetSecretKeySecretContent(secret)
 		if err != nil {
-			return nil, fmt.Errorf("unmarshalling SecretContent into SecretKeySecret failed: %w", err)
-		}
-		decoded, err := base64.StdEncoding.DecodeString(content.Content)
-		if err != nil {
-			return nil, fmt.Errorf("base64 decoding SecretKeySecret content failed: %w", err)
+			return nil, err
 		}
 		return map[string]any{
 			ContentKey: string(decoded),

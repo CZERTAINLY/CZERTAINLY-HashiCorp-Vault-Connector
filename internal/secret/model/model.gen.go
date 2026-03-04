@@ -52,6 +52,7 @@ const (
 	Credentials  AttributeResource = "credentials"
 	Entities     AttributeResource = "entities"
 	Locations    AttributeResource = "locations"
+	Secrets      AttributeResource = "secrets"
 )
 
 // Defines values for AttributeType.
@@ -75,6 +76,12 @@ const (
 const (
 	V2 AttributeVersion = "v2"
 	V3 AttributeVersion = "v3"
+)
+
+// Defines values for CertificateType.
+const (
+	SSH  CertificateType = "SSH"
+	X509 CertificateType = "X.509"
 )
 
 // Defines values for ConnectorInterface.
@@ -200,8 +207,8 @@ type AttributeCallback struct {
 	// CallbackContext Context part of callback URL
 	CallbackContext *string `json:"callbackContext,omitempty"`
 
-	// CallbackMethod HTTP method of the callback
-	CallbackMethod string `json:"callbackMethod"`
+	// CallbackMethod HTTP method of the callback. This value is required for connector callbacks and optional only for callbacks defined on resource objects.
+	CallbackMethod *string `json:"callbackMethod,omitempty"`
 
 	// Mappings Mappings for the callback method
 	Mappings []AttributeCallbackMapping `json:"mappings"`
@@ -319,6 +326,9 @@ type BooleanAttributeContentV3 struct {
 	// Reference Content Reference
 	Reference *string `json:"reference,omitempty"`
 }
+
+// CertificateType defines model for CertificateType.
+type CertificateType string
 
 // CodeBlockAttributeContentData defines model for CodeBlockAttributeContentData.
 type CodeBlockAttributeContentData struct {
@@ -1056,6 +1066,21 @@ type RequestAttributeV3 struct {
 	Version AttributeVersion   `json:"version"`
 }
 
+// ResourceCertificateContentData Content data for resource object attribute containing certificate content
+type ResourceCertificateContentData struct {
+	CertificateType *CertificateType `json:"certificateType,omitempty"`
+
+	// Content Base64 encoded content of the certificate
+	Content *string `json:"content,omitempty"`
+
+	// Name Resource name
+	Name     string            `json:"name"`
+	Resource AttributeResource `json:"resource"`
+
+	// Uuid Resource identifier
+	Uuid string `json:"uuid"`
+}
+
 // ResourceObjectContent Resource object attribute content carrying resource object data
 type ResourceObjectContent struct {
 	ContentType AttributeContentType      `json:"contentType"`
@@ -1067,17 +1092,32 @@ type ResourceObjectContent struct {
 
 // ResourceObjectContentData defines model for ResourceObjectContentData.
 type ResourceObjectContentData struct {
-	// Attributes Attributes of the resource object
-	Attributes *[]ResponseAttribute `json:"attributes,omitempty"`
+	union json.RawMessage
+}
 
-	// Content Base64 encoded content of the resource object
-	Content *string `json:"content,omitempty"`
+// ResourceSecretContentData Content data for resource object attribute containing secret content
+type ResourceSecretContentData struct {
+	// Content Secret content dependent on secret type
+	Content *SecretContent `json:"content,omitempty"`
 
-	// Name Object Name
+	// Name Resource name
 	Name     string            `json:"name"`
 	Resource AttributeResource `json:"resource"`
 
-	// Uuid Object identifier
+	// Uuid Resource identifier
+	Uuid string `json:"uuid"`
+}
+
+// ResourceSimpleContentData Content data for resource object attribute containing secret content
+type ResourceSimpleContentData struct {
+	// Attributes Attributes of the resource object
+	Attributes *[]ResponseAttribute `json:"attributes,omitempty"`
+
+	// Name Resource name
+	Name     string            `json:"name"`
+	Resource AttributeResource `json:"resource"`
+
+	// Uuid Resource identifier
 	Uuid string `json:"uuid"`
 }
 
@@ -2887,6 +2927,125 @@ func (t RequestAttribute) MarshalJSON() ([]byte, error) {
 }
 
 func (t *RequestAttribute) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsResourceSimpleContentData returns the union data inside the ResourceObjectContentData as a ResourceSimpleContentData
+func (t ResourceObjectContentData) AsResourceSimpleContentData() (ResourceSimpleContentData, error) {
+	var body ResourceSimpleContentData
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromResourceSimpleContentData overwrites any union data inside the ResourceObjectContentData as the provided ResourceSimpleContentData
+func (t *ResourceObjectContentData) FromResourceSimpleContentData(v ResourceSimpleContentData) error {
+	v.Resource = "authorities"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeResourceSimpleContentData performs a merge with any union data inside the ResourceObjectContentData, using the provided ResourceSimpleContentData
+func (t *ResourceObjectContentData) MergeResourceSimpleContentData(v ResourceSimpleContentData) error {
+	v.Resource = "authorities"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsResourceCertificateContentData returns the union data inside the ResourceObjectContentData as a ResourceCertificateContentData
+func (t ResourceObjectContentData) AsResourceCertificateContentData() (ResourceCertificateContentData, error) {
+	var body ResourceCertificateContentData
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromResourceCertificateContentData overwrites any union data inside the ResourceObjectContentData as the provided ResourceCertificateContentData
+func (t *ResourceObjectContentData) FromResourceCertificateContentData(v ResourceCertificateContentData) error {
+	v.Resource = "certificates"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeResourceCertificateContentData performs a merge with any union data inside the ResourceObjectContentData, using the provided ResourceCertificateContentData
+func (t *ResourceObjectContentData) MergeResourceCertificateContentData(v ResourceCertificateContentData) error {
+	v.Resource = "certificates"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsResourceSecretContentData returns the union data inside the ResourceObjectContentData as a ResourceSecretContentData
+func (t ResourceObjectContentData) AsResourceSecretContentData() (ResourceSecretContentData, error) {
+	var body ResourceSecretContentData
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromResourceSecretContentData overwrites any union data inside the ResourceObjectContentData as the provided ResourceSecretContentData
+func (t *ResourceObjectContentData) FromResourceSecretContentData(v ResourceSecretContentData) error {
+	v.Resource = "secrets"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeResourceSecretContentData performs a merge with any union data inside the ResourceObjectContentData, using the provided ResourceSecretContentData
+func (t *ResourceObjectContentData) MergeResourceSecretContentData(v ResourceSecretContentData) error {
+	v.Resource = "secrets"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ResourceObjectContentData) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"resource"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t ResourceObjectContentData) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "authorities":
+		return t.AsResourceSimpleContentData()
+	case "certificates":
+		return t.AsResourceCertificateContentData()
+	case "secrets":
+		return t.AsResourceSecretContentData()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
+}
+
+func (t ResourceObjectContentData) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ResourceObjectContentData) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }

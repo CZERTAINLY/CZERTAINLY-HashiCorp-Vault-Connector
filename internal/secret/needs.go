@@ -2,7 +2,6 @@ package secret
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
 	"log/slog"
 	"strings"
@@ -66,7 +65,7 @@ func (n *Needs) Process(ctx context.Context, vaultAttrs, secretAttrs *[]sm.Reque
 			}
 
 		case vaultManagementJwt.Uuid:
-			if n.jwt, err = secretContentTypeDataAttrSingle(vaultManagementJwt, attr); err != nil {
+			if n.jwt, err = resourceSecretContentTypeDataAttrSingle(vaultManagementJwt, attr); err != nil {
 				return err
 			}
 
@@ -76,12 +75,12 @@ func (n *Needs) Process(ctx context.Context, vaultAttrs, secretAttrs *[]sm.Reque
 			}
 
 		case vaultManagementRoleID.Uuid:
-			if n.roleID, err = secretContentTypeDataAttrSingle(vaultManagementRoleID, attr); err != nil {
+			if n.roleID, err = resourceSecretContentTypeDataAttrSingle(vaultManagementRoleID, attr); err != nil {
 				return err
 			}
 
 		case vaultManagementRoleSecret.Uuid:
-			if n.roleSecret, err = secretContentTypeDataAttrSingle(vaultManagementRoleSecret, attr); err != nil {
+			if n.roleSecret, err = resourceSecretContentTypeDataAttrSingle(vaultManagementRoleSecret, attr); err != nil {
 				return err
 			}
 
@@ -149,7 +148,7 @@ func intContentTypeDataAttrSingle(ptrn sm.DataAttributeV3, recv sm.RequestAttrib
 	return int(intAttr.Data), nil
 }
 
-func secretContentTypeDataAttrSingle(ptrn sm.DataAttributeV3, recv sm.RequestAttributeV3) (string, error) {
+func resourceSecretContentTypeDataAttrSingle(ptrn sm.DataAttributeV3, recv sm.RequestAttributeV3) (string, error) {
 	if recv.ContentType != ptrn.ContentType {
 		return "", fmt.Errorf("attribute %q has declared content type %q but received %q", ptrn.Uuid, ptrn.ContentType, recv.ContentType)
 	}
@@ -166,18 +165,77 @@ func secretContentTypeDataAttrSingle(ptrn sm.DataAttributeV3, recv sm.RequestAtt
 	if resourceAttr.ContentType != sm.AttributeContentTypeResource {
 		return "", fmt.Errorf("content item has wrong content type %q, expected %q, attribute %q", resourceAttr.ContentType, sm.AttributeContentTypeResource, recv.Uuid)
 	}
-	if resourceAttr.Data.Content == nil {
-		return "", fmt.Errorf("content of ResourceObjectContentData is empty (nil), attribute %q", recv.Uuid)
-	}
-	if resourceAttr.Data.Resource != sm.Credentials {
-		return "", fmt.Errorf("expected resource type %q, received %q, attribute %q", sm.Credentials, resourceAttr.Data.Resource, recv.Uuid)
-	}
-	decoded, err := base64.StdEncoding.DecodeString(*resourceAttr.Data.Content)
+
+	secret, err := resourceAttr.Data.AsResourceSecretContentData()
 	if err != nil {
-		return "", fmt.Errorf("base64 decoding ResourceObjectContentData content failed, attribute %q: %w", recv.Uuid, err)
+		return "", fmt.Errorf("unmarshalling data of ResourceObjectContent failed for attribute %q: %w", recv.Uuid, err)
+	}
+	if secret.Resource != sm.Secrets {
+		return "", fmt.Errorf("resource field has wrong value for attribute %q, expected %q, got %q", recv.Uuid, sm.Secrets, secret.Resource)
+	}
+	if secret.Content == nil {
+		return "", fmt.Errorf("content field is nil, attribute %q", recv.Uuid)
 	}
 
-	return string(decoded), nil
+	secretType, err := secret.Content.Discriminator()
+	if err != nil {
+		return "", fmt.Errorf("unmarshalling discriminator field for SecretContent failed, attribute %q: %w", recv.Uuid, err)
+	}
+	switch sm.SecretType(secretType) {
+	case sm.ApiKey:
+		decoded, err := sm.GetApiKeySecretContent(*secret.Content)
+		if err != nil {
+			return "", fmt.Errorf("attribute %q: %w", recv.Uuid, err)
+		}
+		return string(decoded), nil
+
+	case sm.BasicAuth:
+		_, password, err := sm.GetBasicAuthSecretContent(*secret.Content)
+		if err != nil {
+			return "", fmt.Errorf("attribute %q: %w", recv.Uuid, err)
+		}
+		return password, nil
+
+	case sm.Generic:
+		content, err := sm.GetGenericSecretContent(*secret.Content)
+		if err != nil {
+			return "", fmt.Errorf("attribute %q: %w", recv.Uuid, err)
+		}
+		return string(content), nil
+
+	case sm.JwtToken:
+		content, err := sm.GetJwtTokenSecretContent(*secret.Content)
+		if err != nil {
+			return "", fmt.Errorf("attribute %q: %w", recv.Uuid, err)
+		}
+		return string(content), nil
+
+	case sm.KeyValue:
+		content, err := sm.GetKeyValueSecretContent(*secret.Content)
+		if err != nil {
+			return "", fmt.Errorf("attribute %q: %w", recv.Uuid, err)
+		}
+		var value any
+		for _, value = range content {
+			break
+		}
+		s, ok := value.(string)
+		if !ok {
+			return "", fmt.Errorf("attribute %q, value in %q is not a string", recv.Uuid, secretType)
+		}
+
+		return s, nil
+
+	case sm.SecretKey:
+		decoded, err := sm.GetSecretKeySecretContent(*secret.Content)
+		if err != nil {
+			return "", fmt.Errorf("attribute %q: %w", recv.Uuid, err)
+		}
+		return string(decoded), nil
+
+	}
+
+	return "", fmt.Errorf("attribute %q, unexpected secret type %q", recv.Uuid, secretType)
 }
 
 func (n *Needs) CommonCheck() error {
