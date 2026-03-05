@@ -92,26 +92,26 @@ var (
 		Data:      "kubernetes",
 	}
 	vaultManagementRoleID = sm.DataAttributeV3{
-		Uuid:          "302af8ad-0c4d-4eb2-9add-2d4a894c6b32",
-		Version:       3,
-		SchemaVersion: sm.V3,
-		Name:          "data_vault_management_role_id",
-		ContentType:   sm.AttributeContentTypeResource,
-		Description:   ptrStr("Vault AppRole ID."),
+		Version:     3,
+		Uuid:        "302af8ad-0c4d-4eb2-9add-2d4a894c6b32",
+		Name:        "data_vault_management_role_id",
+		Description: ptrStr("Vault AppRole ID."),
+		ContentType: sm.AttributeContentTypeResource,
 		Properties: sm.DataAttributeProperties{
-			Label:    "AppRole ID",
 			Visible:  true,
+			Label:    "AppRole ID",
 			Required: true,
 		},
 		AttributeCallback: &sm.AttributeCallback{
 			Mappings: []sm.AttributeCallbackMapping{
 				{
 					To:      "SECRET_TYPE.EQUALS",
-					Value:   []sm.SecretType{sm.ApiKey, sm.Generic},
 					Targets: []sm.AttributeValueTarget{sm.Filter},
+					Value:   []sm.SecretType{sm.Generic, sm.ApiKey},
 				},
 			},
 		},
+		SchemaVersion: sm.V3,
 	}
 	vaultManagementRoleSecret = sm.DataAttributeV3{
 		Uuid:          "f8ee975c-aad5-4b48-bac9-46daa1a9a689",
