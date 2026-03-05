@@ -12,12 +12,7 @@ import (
 	vcgSchema "github.com/hashicorp/vault-client-go/schema"
 )
 
-func (m *Manager) Read(
-	ctx context.Context,
-	client *vcg.Client,
-	mount, path string,
-	secretType sm.SecretType,
-) (sm.SecretContent, error) {
+func (m *Manager) Read(ctx context.Context, client *vcg.Client, mount, path string, secretType sm.SecretType) (sm.SecretContent, error) {
 	u := lockRef(mount, path)
 	m.locks.RLock(u)
 	defer m.locks.RUnlock(u)

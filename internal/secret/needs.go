@@ -14,7 +14,10 @@ import (
 )
 
 const (
-	defaultRequestTimeout = 30 * time.Second
+	defaultRequestTimeout     = 30 * time.Second
+	errstrDeclaredContentType = "attribute %q has declared content type %q but received %q"
+	errstrContentNil          = "attribute %q has empty (nil) content"
+	errstrContentLenNotOne    = "attribute %q expects one content item, received: %d"
 )
 
 func NewNeeds(k8sToken *string) Needs {
@@ -116,13 +119,13 @@ func (n *Needs) Process(ctx context.Context, vaultAttrs, secretAttrs *[]sm.Reque
 
 func strContentTypeDataAttrSingle(ptrn sm.DataAttributeV3, recv sm.RequestAttributeV3) (string, error) {
 	if recv.ContentType != ptrn.ContentType {
-		return "", fmt.Errorf("attribute %q has declared content type %q but received %q", ptrn.Uuid, ptrn.ContentType, recv.ContentType)
+		return "", fmt.Errorf(errstrDeclaredContentType, ptrn.Uuid, ptrn.ContentType, recv.ContentType)
 	}
 	if recv.Content == nil {
-		return "", fmt.Errorf("attribute %q has empty (nil) content", ptrn.Uuid)
+		return "", fmt.Errorf(errstrContentNil, ptrn.Uuid)
 	}
 	if len(*recv.Content) != 1 {
-		return "", fmt.Errorf("attribute %q expects one content item, received: %d", ptrn.Uuid, len(*recv.Content))
+		return "", fmt.Errorf(errstrContentLenNotOne, ptrn.Uuid, len(*recv.Content))
 	}
 	strAttr, err := (*recv.Content)[0].AsStringAttributeContentV3()
 	if err != nil {
@@ -133,13 +136,13 @@ func strContentTypeDataAttrSingle(ptrn sm.DataAttributeV3, recv sm.RequestAttrib
 
 func intContentTypeDataAttrSingle(ptrn sm.DataAttributeV3, recv sm.RequestAttributeV3) (int, error) {
 	if recv.ContentType != ptrn.ContentType {
-		return 0, fmt.Errorf("attribute %q has declared content type %q but received %q", ptrn.Uuid, ptrn.ContentType, recv.ContentType)
+		return 0, fmt.Errorf(errstrDeclaredContentType, ptrn.Uuid, ptrn.ContentType, recv.ContentType)
 	}
 	if recv.Content == nil {
-		return 0, fmt.Errorf("attribute %q has empty (nil) content", ptrn.Uuid)
+		return 0, fmt.Errorf(errstrContentNil, ptrn.Uuid)
 	}
 	if len(*recv.Content) != 1 {
-		return 0, fmt.Errorf("attribute %q expects one content item, received: %d", ptrn.Uuid, len(*recv.Content))
+		return 0, fmt.Errorf(errstrContentLenNotOne, ptrn.Uuid, len(*recv.Content))
 	}
 	intAttr, err := (*recv.Content)[0].AsIntegerAttributeContentV3()
 	if err != nil {
@@ -150,13 +153,13 @@ func intContentTypeDataAttrSingle(ptrn sm.DataAttributeV3, recv sm.RequestAttrib
 
 func resourceSecretContentTypeDataAttrSingle(ptrn sm.DataAttributeV3, recv sm.RequestAttributeV3) (string, error) {
 	if recv.ContentType != ptrn.ContentType {
-		return "", fmt.Errorf("attribute %q has declared content type %q but received %q", ptrn.Uuid, ptrn.ContentType, recv.ContentType)
+		return "", fmt.Errorf(errstrDeclaredContentType, ptrn.Uuid, ptrn.ContentType, recv.ContentType)
 	}
 	if recv.Content == nil {
-		return "", fmt.Errorf("attribute %q has empty (nil) content", ptrn.Uuid)
+		return "", fmt.Errorf(errstrContentNil, ptrn.Uuid)
 	}
 	if len(*recv.Content) != 1 {
-		return "", fmt.Errorf("attribute %q expects one content item, received: %d", ptrn.Uuid, len(*recv.Content))
+		return "", fmt.Errorf(errstrContentLenNotOne, ptrn.Uuid, len(*recv.Content))
 	}
 	resourceAttr, err := (*recv.Content)[0].AsResourceObjectContent()
 	if err != nil {
@@ -245,13 +248,18 @@ func (n *Needs) CommonCheck() error {
 	case strings.TrimSpace(n.mount) == "":
 		return fmt.Errorf("missing attribute uuid %q, name %q", vaultManagementMount.Uuid, vaultManagementMount.Name)
 
-	// not required anymore
-	//	case strings.TrimSpace(n.path) == "":
-	//		return fmt.Errorf("missing attribute uuid %q, name %q", vaultManagementPath.Uuid, vaultManagementPath.Name)
 	case strings.TrimSpace(n.credType) == "":
 		return fmt.Errorf("missing attribute uuid %q, name %q", vaultManagementCredentialType.Uuid, vaultManagementCredentialType.Name)
 	}
 
+	if err := n.credTypeCheck(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (n Needs) credTypeCheck() error {
 	switch n.credType {
 	case credentialTypeAppRole.Data:
 		if n.roleID == "" || n.roleSecret == "" {
@@ -278,7 +286,6 @@ func (n *Needs) CommonCheck() error {
 	default:
 		return fmt.Errorf("unknown credential type %q", n.credType)
 	}
-
 	return nil
 }
 
@@ -290,31 +297,8 @@ func (n Needs) ConnectionCheck() error {
 		return fmt.Errorf("missing attribute uuid %q, name %q", vaultManagementCredentialType.Uuid, vaultManagementCredentialType.Name)
 	}
 
-	switch n.credType {
-	case credentialTypeAppRole.Data:
-		if n.roleID == "" || n.roleSecret == "" {
-			return fmt.Errorf("required attributes for credential type %q missing %s(%s), %s(%s)",
-				n.credType, vaultManagementRoleID.Uuid, vaultManagementRoleID.Name,
-				vaultManagementRoleSecret.Uuid, vaultManagementRoleSecret.Name)
-		}
-	case credentialTypeJwt.Data:
-		if n.role == "" || n.jwt == "" {
-			return fmt.Errorf("required attributes for credential type %q missing %s(%s), %s(%s)",
-				n.credType, vaultManagementRole.Uuid, vaultManagementRole.Name,
-				vaultManagementJwt.Uuid, vaultManagementJwt.Name)
-		}
-	case credentialTypeK8s.Data:
-		if n.k8sToken != nil {
-			if n.role == "" {
-				return fmt.Errorf("required attributes for credential type %q missing %q(%s)",
-					n.credType, vaultManagementRole.Uuid, vaultManagementRole.Name)
-			}
-		} else {
-			return fmt.Errorf("unknown credential type %q", n.credType)
-		}
-
-	default:
-		return fmt.Errorf("unknown credential type %q", n.credType)
+	if err := n.credTypeCheck(); err != nil {
+		return err
 	}
 
 	return nil

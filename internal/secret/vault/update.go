@@ -10,12 +10,7 @@ import (
 	vcgSchema "github.com/hashicorp/vault-client-go/schema"
 )
 
-func (m *Manager) Update(
-	ctx context.Context,
-	client *vcg.Client,
-	mount, path string,
-	secret sm.SecretContent,
-) error {
+func (m *Manager) Update(ctx context.Context, client *vcg.Client, mount, path string, secret sm.SecretContent) error {
 	u := lockRef(mount, path)
 	m.locks.Lock(u)
 	defer m.locks.Unlock(u)

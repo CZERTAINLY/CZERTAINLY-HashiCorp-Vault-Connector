@@ -1,43 +1,28 @@
 package secret
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"log/slog"
 	"net/http"
 
 	sm "CZERTAINLY-HashiCorp-Vault-Connector/internal/secret/model"
 	internalVault "CZERTAINLY-HashiCorp-Vault-Connector/internal/secret/vault"
-
-	vcg "github.com/hashicorp/vault-client-go"
 )
 
 func (s *Server) createSecret(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	b, err := io.ReadAll(r.Body)
-	if err != nil {
-		slog.Error("Calling `io.ReadAll()` failed.", slog.String("error", err.Error()))
-		internal(w, "Reading request body failed.")
+	b, ok := readRBody(w, r)
+	if !ok {
 		return
 	}
 
 	var req sm.CreateSecretRequestDto
-	if err := json.Unmarshal(b, &req); err != nil {
-		slog.Debug("Calling `json.Unmarshal()` failed.", slog.String("error", err.Error()))
-		badrequest(w, "Failed to unmarshal request.", sm.ATTRIBUTESERROR)
+	if ok := unmrshl(w, b, &req); !ok {
 		return
 	}
 
-	n := NewNeeds(s.k8sToken)
-	if err := n.Process(ctx, req.VaultAttributes, req.SecretAttributes); err != nil {
-		slog.Debug("Processing request attributes failed.",
-			slog.String("error", err.Error()),
-			slog.String("http-path", r.URL.Path),
-			slog.String("request-body", string(b)))
-		badrequest(w, fmt.Sprintf("Processing request attributes failed: %s.", err), sm.ATTRIBUTESERROR)
+	n := obtainNeeds(r.Context(), w, r, s.k8sToken, req.VaultAttributes, req.SecretAttributes, b)
+	if n == nil {
 		return
 	}
 
@@ -46,21 +31,12 @@ func (s *Server) createSecret(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c, err := n.Client(ctx)
-	switch {
-	case vcg.IsErrorStatus(err, http.StatusUnauthorized):
-		unauthorized(w, fmt.Sprintf("Authentication failed: %s.", err))
-		return
-	case err != nil:
-		slog.Debug("Could not connect to Vault.",
-			slog.String("error", err.Error()),
-			slog.String("http-path", r.URL.Path),
-			slog.String("request-body", string(b)))
-		badrequest(w, fmt.Sprintf("Could not connect to Vault: %s", err), sm.ATTRIBUTESERROR)
+	c := obtainVClient(r.Context(), w, r, *n, b)
+	if c == nil {
 		return
 	}
 
-	err = s.m.Create(ctx, c, n.mount, vaultPath(n.path, req.Name), req.Secret)
+	err := s.m.Create(r.Context(), c, n.mount, vaultPath(n.path, req.Name), req.Secret)
 	switch {
 	case errors.Is(err, internalVault.ErrForbidden):
 		forbidden(w, fmt.Sprintf("Authorization failed: %s.", err))
@@ -80,29 +56,18 @@ func (s *Server) createSecret(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) updateSecret(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	b, err := io.ReadAll(r.Body)
-	if err != nil {
-		slog.Error("Calling `io.ReadAll()` failed.", slog.String("error", err.Error()))
-		internal(w, "Reading request body failed.")
+	b, ok := readRBody(w, r)
+	if !ok {
 		return
 	}
 
 	var req sm.UpdateSecretRequestDto
-	if err := json.Unmarshal(b, &req); err != nil {
-		slog.Debug("Calling `json.Unmarshal()` failed.", slog.String("error", err.Error()))
-		badrequest(w, "Failed to unmarshal request.", sm.ATTRIBUTESERROR)
+	if ok := unmrshl(w, b, &req); !ok {
 		return
 	}
 
-	n := NewNeeds(s.k8sToken)
-	if err := n.Process(ctx, req.VaultAttributes, req.SecretAttributes); err != nil {
-		slog.Debug("Processing request attributes failed.",
-			slog.String("error", err.Error()),
-			slog.String("http-path", r.URL.Path),
-			slog.String("request-body", string(b)))
-		badrequest(w, fmt.Sprintf("Processing request attributes failed: %s.", err), sm.ATTRIBUTESERROR)
+	n := obtainNeeds(r.Context(), w, r, s.k8sToken, req.VaultAttributes, req.SecretAttributes, b)
+	if n == nil {
 		return
 	}
 
@@ -111,21 +76,12 @@ func (s *Server) updateSecret(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c, err := n.Client(ctx)
-	switch {
-	case vcg.IsErrorStatus(err, http.StatusUnauthorized):
-		unauthorized(w, fmt.Sprintf("Authentication failed: %s.", err))
-		return
-	case err != nil:
-		slog.Debug("Could not connect to Vault.",
-			slog.String("error", err.Error()),
-			slog.String("http-path", r.URL.Path),
-			slog.String("request-body", string(b)))
-		badrequest(w, fmt.Sprintf("Could not connect to Vault: %s", err), sm.ATTRIBUTESERROR)
+	c := obtainVClient(r.Context(), w, r, *n, b)
+	if c == nil {
 		return
 	}
 
-	err = s.m.Update(ctx, c, n.mount, vaultPath(n.path, req.Name), req.Secret)
+	err := s.m.Update(r.Context(), c, n.mount, vaultPath(n.path, req.Name), req.Secret)
 	switch {
 	case errors.Is(err, internalVault.ErrForbidden):
 		forbidden(w, fmt.Sprintf("Authorization failed: %s.", err))
@@ -146,32 +102,18 @@ func (s *Server) updateSecret(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) getSecretValue(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	var err error
-	var b []byte
-
-	b, err = io.ReadAll(r.Body)
-	if err != nil {
-		slog.Error("Calling `io.ReadAll()` failed.", slog.String("error", err.Error()))
-		internal(w, "Reading request body failed.")
+	b, ok := readRBody(w, r)
+	if !ok {
 		return
 	}
 
 	var req sm.SecretRequestDto
-	if err := json.Unmarshal(b, &req); err != nil {
-		slog.Debug("Calling `json.Unmarshal()` failed.", slog.String("error", err.Error()))
-		badrequest(w, "Failed to unmarshal request.", sm.ATTRIBUTESERROR)
+	if ok := unmrshl(w, b, &req); !ok {
 		return
 	}
 
-	n := NewNeeds(s.k8sToken)
-	if err := n.Process(ctx, req.VaultAttributes, req.SecretAttributes); err != nil {
-		slog.Debug("Processing request attributes failed.",
-			slog.String("error", err.Error()),
-			slog.String("http-path", r.URL.Path),
-			slog.String("request-body", string(b)))
-		badrequest(w, fmt.Sprintf("Processing request attributes failed: %s.", err), sm.ATTRIBUTESERROR)
+	n := obtainNeeds(r.Context(), w, r, s.k8sToken, req.VaultAttributes, req.SecretAttributes, b)
+	if n == nil {
 		return
 	}
 
@@ -180,21 +122,12 @@ func (s *Server) getSecretValue(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c, err := n.Client(ctx)
-	switch {
-	case vcg.IsErrorStatus(err, http.StatusUnauthorized):
-		unauthorized(w, fmt.Sprintf("Authentication failed: %s.", err))
-		return
-	case err != nil:
-		slog.Debug("Could not connect to Vault.",
-			slog.String("error", err.Error()),
-			slog.String("http-path", r.URL.Path),
-			slog.String("request-body", string(b)))
-		badrequest(w, fmt.Sprintf("Could not connect to Vault: %s", err), sm.ATTRIBUTESERROR)
+	c := obtainVClient(r.Context(), w, r, *n, b)
+	if c == nil {
 		return
 	}
 
-	sc, err := s.m.Read(ctx, c, n.mount, vaultPath(n.path, req.Name), req.Type)
+	sc, err := s.m.Read(r.Context(), c, n.mount, vaultPath(n.path, req.Name), req.Type)
 	switch {
 	case errors.Is(err, internalVault.ErrForbidden):
 		forbidden(w, fmt.Sprintf("Authorization failed: %s.", err))
@@ -213,36 +146,22 @@ func (s *Server) getSecretValue(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	toJson(ctx, w, sc)
+	toJson(r.Context(), w, sc)
 }
 
 func (s *Server) deleteSecret(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	var err error
-	var b []byte
-
-	b, err = io.ReadAll(r.Body)
-	if err != nil {
-		slog.Error("Calling `io.ReadAll()` failed.", slog.String("error", err.Error()))
-		internal(w, "Reading request body failed.")
+	b, ok := readRBody(w, r)
+	if !ok {
 		return
 	}
 
 	var req sm.SecretRequestDto
-	if err := json.Unmarshal(b, &req); err != nil {
-		slog.Debug("Calling `json.Unmarshal()` failed.", slog.String("error", err.Error()))
-		badrequest(w, "Failed to unmarshal request.", sm.ATTRIBUTESERROR)
+	if ok := unmrshl(w, b, &req); !ok {
 		return
 	}
 
-	n := NewNeeds(s.k8sToken)
-	if err := n.Process(ctx, req.VaultAttributes, req.SecretAttributes); err != nil {
-		slog.Debug("Processing request attributes failed.",
-			slog.String("error", err.Error()),
-			slog.String("http-path", r.URL.Path),
-			slog.String("request-body", string(b)))
-		badrequest(w, fmt.Sprintf("Processing request attributes failed: %s.", err), sm.ATTRIBUTESERROR)
+	n := obtainNeeds(r.Context(), w, r, s.k8sToken, req.VaultAttributes, req.SecretAttributes, b)
+	if n == nil {
 		return
 	}
 
@@ -250,21 +169,13 @@ func (s *Server) deleteSecret(w http.ResponseWriter, r *http.Request) {
 		badrequest(w, fmt.Sprintf("Missing request attribute or validation failed: %s.", err), sm.VALIDATIONFAILED)
 		return
 	}
-	c, err := n.Client(ctx)
-	switch {
-	case vcg.IsErrorStatus(err, http.StatusUnauthorized):
-		unauthorized(w, fmt.Sprintf("Authentication failed: %s.", err))
-		return
-	case err != nil:
-		slog.Debug("Could not connect to Vault.",
-			slog.String("error", err.Error()),
-			slog.String("http-path", r.URL.Path),
-			slog.String("request-body", string(b)))
-		badrequest(w, fmt.Sprintf("Could not connect to Vault: %s", err), sm.ATTRIBUTESERROR)
+
+	c := obtainVClient(r.Context(), w, r, *n, b)
+	if c == nil {
 		return
 	}
 
-	err = s.m.Delete(ctx, c, n.mount, vaultPath(n.path, req.Name))
+	err := s.m.Delete(r.Context(), c, n.mount, vaultPath(n.path, req.Name))
 	switch {
 	case errors.Is(err, internalVault.ErrForbidden):
 		forbidden(w, fmt.Sprintf("Authorization failed: %s.", err))

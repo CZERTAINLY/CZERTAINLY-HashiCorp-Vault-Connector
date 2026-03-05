@@ -7,11 +7,7 @@ import (
 	vcg "github.com/hashicorp/vault-client-go"
 )
 
-func (m *Manager) Delete(
-	ctx context.Context,
-	client *vcg.Client,
-	mount, path string,
-) error {
+func (m *Manager) Delete(ctx context.Context, client *vcg.Client, mount, path string) error {
 	u := lockRef(mount, path)
 	m.locks.Lock(u)
 	defer m.locks.Unlock(u)

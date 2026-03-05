@@ -10,8 +10,6 @@ import (
 
 	sm "CZERTAINLY-HashiCorp-Vault-Connector/internal/secret/model"
 	internalVault "CZERTAINLY-HashiCorp-Vault-Connector/internal/secret/vault"
-
-	vcg "github.com/hashicorp/vault-client-go"
 )
 
 func (s *Server) checkVaultConnection(w http.ResponseWriter, r *http.Request) {
@@ -46,17 +44,8 @@ func (s *Server) checkVaultConnection(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c, err := n.Client(ctx)
-	switch {
-	case vcg.IsErrorStatus(err, http.StatusUnauthorized):
-		unauthorized(w, fmt.Sprintf("Authentication failed: %s.", err))
-		return
-	case err != nil:
-		slog.Debug("Could not connect to Vault.",
-			slog.String("error", err.Error()),
-			slog.String("http-path", r.URL.Path),
-			slog.String("request-body", string(b)))
-		badrequest(w, fmt.Sprintf("Could not connect to Vault: %s", err), sm.ATTRIBUTESERROR)
+	c := obtainVClient(ctx, w, r, n, b)
+	if c == nil {
 		return
 	}
 
