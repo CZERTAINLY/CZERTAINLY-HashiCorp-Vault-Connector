@@ -97,6 +97,9 @@ func handleOpError(w http.ResponseWriter, r *http.Request, err error) (doReturn 
 		notfound(w, "Secret not found.")
 		return true
 
+	case errors.Is(err, internalVault.ErrAlreadyExists):
+		precondition(w, "Secret already exists.", sm.RESOURCEALREADYEXISTS)
+
 	case err != nil:
 		slog.Error("Operation failed.", slog.String("error", err.Error()), slog.String("http-path", r.URL.Path))
 		internal(w, fmt.Sprintf("Operation failed: %s", err))

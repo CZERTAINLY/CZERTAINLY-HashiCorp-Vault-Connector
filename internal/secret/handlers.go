@@ -128,9 +128,7 @@ func (s *Server) deleteSecret(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err := s.m.Delete(r.Context(), c, n.mount, vaultPath(n.path, req.Name))
-	if ok := handleOpError(w, r, err); ok {
-		return
-	}
+	handleOpError(w, r, err)
 }
 
 func (s *Server) rotateSecretValue(w http.ResponseWriter, _ *http.Request) {
