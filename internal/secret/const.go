@@ -103,6 +103,15 @@ var (
 			Visible:  true,
 			Required: true,
 		},
+		AttributeCallback: &sm.AttributeCallback{
+			Mappings: []sm.AttributeCallbackMapping{
+				{
+					To:      "SECRET_TYPE.EQUALS",
+					Value:   []sm.SecretType{sm.ApiKey, sm.Generic},
+					Targets: []sm.AttributeValueTarget{sm.Filter},
+				},
+			},
+		},
 	}
 	vaultManagementRoleSecret = sm.DataAttributeV3{
 		Uuid:          "f8ee975c-aad5-4b48-bac9-46daa1a9a689",
@@ -115,6 +124,15 @@ var (
 			Label:    "AppRole Secret",
 			Visible:  true,
 			Required: true,
+		},
+		AttributeCallback: &sm.AttributeCallback{
+			Mappings: []sm.AttributeCallbackMapping{
+				{
+					To:      "SECRET_TYPE.EQUALS",
+					Value:   []sm.SecretType{sm.ApiKey, sm.Generic},
+					Targets: []sm.AttributeValueTarget{sm.Filter},
+				},
+			},
 		},
 	}
 	vaultManagementRole = sm.DataAttributeV3{
@@ -141,6 +159,15 @@ var (
 			Label:    "JWT/OIDC",
 			Visible:  true,
 			Required: true,
+		},
+		AttributeCallback: &sm.AttributeCallback{
+			Mappings: []sm.AttributeCallbackMapping{
+				{
+					To:      "SECRET_TYPE.EQUALS",
+					Value:   []sm.SecretType{sm.JwtToken, sm.Generic},
+					Targets: []sm.AttributeValueTarget{sm.Filter},
+				},
+			},
 		},
 	}
 )
