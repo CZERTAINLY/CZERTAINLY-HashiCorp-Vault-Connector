@@ -3,12 +3,14 @@ package secret
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
 
 	sm "CZERTAINLY-HashiCorp-Vault-Connector/internal/secret/model"
+	internalVault "CZERTAINLY-HashiCorp-Vault-Connector/internal/secret/vault"
 
 	vcg "github.com/hashicorp/vault-client-go"
 )
@@ -83,4 +85,23 @@ func obtainNeeds(ctx context.Context, w http.ResponseWriter, r *http.Request, k8
 		return nil
 	}
 	return &n
+}
+
+func handleOpError(w http.ResponseWriter, r *http.Request, err error) (doReturn bool) {
+	switch {
+	case errors.Is(err, internalVault.ErrForbidden):
+		forbidden(w, fmt.Sprintf("Authorization failed: %s.", err))
+		return true
+
+	case errors.Is(err, internalVault.ErrNotFound):
+		notfound(w, "Secret not found.")
+		return true
+
+	case err != nil:
+		slog.Error("Operation failed.", slog.String("error", err.Error()), slog.String("http-path", r.URL.Path))
+		internal(w, fmt.Sprintf("Operation failed: %s", err))
+		return true
+	}
+
+	return false
 }
