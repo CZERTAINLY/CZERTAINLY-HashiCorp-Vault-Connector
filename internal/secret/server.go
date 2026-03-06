@@ -55,7 +55,7 @@ func (s *Server) MuxRouter() *mux.Router {
 
 	r.Methods(http.MethodPost).Path("/v1/secretProvider/secrets").Handler(metrics.Middleware()(http.HandlerFunc(s.createSecret)))
 	r.Methods(http.MethodPut).Path("/v1/secretProvider/secrets").Handler(metrics.Middleware()(http.HandlerFunc(s.updateSecret)))
-	r.Methods(http.MethodGet).Path("/v1/secretProvider/secrets/content").Handler(metrics.Middleware()(http.HandlerFunc(s.getSecretValue)))
+	r.Methods(http.MethodPost).Path("/v1/secretProvider/secrets/content").Handler(metrics.Middleware()(http.HandlerFunc(s.getSecretValue)))
 	r.Methods(http.MethodDelete).Path("/v1/secretProvider/secrets").Handler(metrics.Middleware()(http.HandlerFunc(s.deleteSecret)))
 
 	r.Methods(http.MethodGet).Path("/v1/secretProvider/vaults/attributes").Handler(metrics.Middleware()(http.HandlerFunc(s.listVaultAttributes)))
