@@ -18,12 +18,11 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.24.4'
+          go-version: '1.25'
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v4
+        uses: golangci/golangci-lint-action@1e7e51e771db61008b38414a730f564565cf7c20 #v9.2.0
         with:
-          # Require: The version of golangci-lint to use.
-          version: v1.64.8
+          version: latest
       - name: Verify dependencies
         run: go mod verify
       - name: Build
