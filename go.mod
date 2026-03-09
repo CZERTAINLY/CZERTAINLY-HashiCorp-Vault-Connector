@@ -14,7 +14,7 @@ require (
 	github.com/stretchr/objx v0.1.0
 	github.com/tidwall/gjson v1.17.1
 	github.com/yuseferi/zax/v2 v2.3.1
-	go.uber.org/zap v1.27.0
+	go.uber.org/zap v1.27.1
 	gorm.io/datatypes v1.2.0
 	gorm.io/driver/postgres v1.5.6
 	gorm.io/gorm v1.25.7
