@@ -9,18 +9,25 @@ import (
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/health"
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/logger"
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/model"
+	"CZERTAINLY-HashiCorp-Vault-Connector/internal/secret"
+	sm "CZERTAINLY-HashiCorp-Vault-Connector/internal/secret/model"
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/utils"
+
 	"bytes"
 	"context"
+	"encoding/json"
 	"io"
+	"log/slog"
 	"net/http"
 	"strings"
 
 	"github.com/lib/pq"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/yuseferi/zax/v2"
 
 	"github.com/gorilla/mux"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 var version = "1.1.4"
@@ -30,6 +37,24 @@ var routes map[string][]model.EndpointDto
 var log = logger.Get()
 
 func main() {
+	// At the moment we think we'll be splitting the secret provider code into a separate repo,
+	// therefore we don't want to reuse the zap logger. Should the secret provider code stay
+	// in this repo, we'll rework to log/slog into zap to stay consistent
+	llevel := log.Level()
+
+	switch llevel {
+	case zapcore.DebugLevel:
+		slog.SetLogLoggerLevel(slog.LevelDebug)
+	case zapcore.InfoLevel:
+		slog.SetLogLoggerLevel(slog.LevelInfo)
+	case zapcore.WarnLevel:
+		slog.SetLogLoggerLevel(slog.LevelWarn)
+	case zapcore.ErrorLevel:
+		slog.SetLogLoggerLevel(slog.LevelError)
+	default:
+		slog.SetLogLoggerLevel(slog.LevelError)
+	}
+
 	routes = make(map[string][]model.EndpointDto)
 	c := config.Get()
 	log.Info("Starting CZERTAINLY-HashiCorp-Vault-Connector", zap.String("version", version))
@@ -99,11 +124,23 @@ func main() {
 	ConnectorInfoAPIController := connectorInfo.NewConnectorInfoAPIController(ConnectorInfoAPIService)
 	connectorInfoRouter := model.NewRouter(ConnectorInfoAPIController)
 
+	secretsRouter := secret.New()
+
 	topMux.Handle("/v1", logMiddleware(connectorInfoRouter))
 	topMux.Handle("/v1/", logMiddleware(healthRouter))
 	topMux.Handle("/v1/authorityProvider/", logMiddleware(authorityRouter))
 	topMux.Handle("/v2/authorityProvider/", logMiddleware(certificateRouter))
 	topMux.Handle("/v1/discoveryProvider/", logMiddleware(discoveryRouter))
+	topMux.Handle("/v1/secretProvider/", logMiddleware(secretsRouter.MuxRouter()))
+	topMux.Handle("/v1/metrics", logMiddleware(promhttp.Handler()))
+
+	var v2InfoHandler http.Handler = http.HandlerFunc(v2Info)
+	topMux.Handle("/v2/", logMiddleware(v2InfoHandler))
+
+	var v2commonHealthHandler http.Handler = http.HandlerFunc(v2commonHealth)
+	topMux.Handle("/v2/health", logMiddleware(v2commonHealthHandler))
+	topMux.Handle("/v2/health/readiness", logMiddleware(v2commonHealthHandler))
+	topMux.Handle("/v2/health/liveness", logMiddleware(v2commonHealthHandler))
 
 	err = http.ListenAndServe(":"+c.Server.Port, topMux)
 	if err != nil {
@@ -162,4 +199,57 @@ func populateRoutes(router *mux.Router, routeKey string) {
 	if err != nil {
 		log.Error("Unable to walk routers:" + err.Error())
 	}
+}
+
+func v2commonHealth(w http.ResponseWriter, r *http.Request) {
+	resp := sm.HealthInfo{
+		Status: sm.UP,
+	}
+	b, err := json.Marshal(resp)
+	if err != nil {
+		log.Error("Failed to marshal v2 info endpoint response structure to json", zap.Error(err))
+		http.Error(w, "Internal error.", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(b)
+}
+
+func v2Info(w http.ResponseWriter, r *http.Request) {
+	resp := sm.InfoResponse{
+		Connector: sm.ConnectorInfo{
+			Id:      "ilm.hashicorp.vault.secret.provider",
+			Name:    "CZERTAINLY-HashiCorp-Vault-Connector",
+			Version: version,
+		},
+		Interfaces: []sm.ConnectorInterfaceInfo{
+			{
+				Code:    sm.ConnectorInterfaceInfoConst,
+				Version: "v2",
+			},
+			{
+				Code:    sm.ConnectorInterfaceHealthConst,
+				Version: "v2",
+			},
+			{
+				Code:    sm.ConnectorInterfaceMetricsConst,
+				Version: "v1",
+			},
+			{
+				Code:    sm.ConnectorInterfaceSecretConst,
+				Version: "v1",
+			},
+		},
+	}
+
+	b, err := json.Marshal(resp)
+	if err != nil {
+		log.Error("Failed to marshal v2 info endpoint response structure to json", zap.Error(err))
+		http.Error(w, "Internal error.", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(b)
 }
