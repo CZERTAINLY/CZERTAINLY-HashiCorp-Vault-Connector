@@ -12,7 +12,7 @@ require (
 	github.com/oapi-codegen/runtime v1.1.2
 	github.com/prometheus/client_golang v1.23.2
 	github.com/stretchr/objx v0.1.0
-	github.com/tidwall/gjson v1.17.1
+	github.com/tidwall/gjson v1.18.0
 	github.com/yuseferi/zax/v2 v2.3.1
 	go.uber.org/zap v1.27.0
 	gorm.io/datatypes v1.2.0
