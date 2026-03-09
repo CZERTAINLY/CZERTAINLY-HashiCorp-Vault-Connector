@@ -1,6 +1,6 @@
 module CZERTAINLY-HashiCorp-Vault-Connector
 
-go 1.24.4
+go 1.25
 
 require (
 	github.com/golang-migrate/migrate/v4 v4.17.0
@@ -13,8 +13,8 @@ require (
 	github.com/prometheus/client_golang v1.23.2
 	github.com/stretchr/objx v0.1.0
 	github.com/tidwall/gjson v1.17.1
-	github.com/yuseferi/zax/v2 v2.3.1
-	go.uber.org/zap v1.27.0
+	github.com/yuseferi/zax/v2 v2.3.6
+	go.uber.org/zap v1.27.1
 	gorm.io/datatypes v1.2.0
 	gorm.io/driver/postgres v1.5.6
 	gorm.io/gorm v1.25.7
