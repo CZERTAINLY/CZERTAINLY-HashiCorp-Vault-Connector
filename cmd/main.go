@@ -41,6 +41,7 @@ func main() {
 	// therefore we don't want to reuse the zap logger. Should the secret provider code stay
 	// in this repo, we'll rework to log/slog into zap to stay consistent
 	llevel := log.Level()
+
 	switch llevel {
 	case zapcore.DebugLevel:
 		slog.SetLogLoggerLevel(slog.LevelDebug)
