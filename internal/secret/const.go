@@ -98,7 +98,7 @@ var (
 		Description: ptrStr("Vault AppRole ID."),
 		ContentType: sm.AttributeContentTypeResource,
 		Properties: sm.DataAttributeProperties{
-			Resource: attributeResourcePtr(sm.Secrets),
+			Resource: ptrAttributeResource(sm.Secrets),
 			Visible:  true,
 			Label:    "AppRole ID",
 			Required: true,
@@ -122,7 +122,7 @@ var (
 		ContentType:   sm.AttributeContentTypeResource,
 		Description:   ptrStr("Vault AppRole Secret."),
 		Properties: sm.DataAttributeProperties{
-			Resource: attributeResourcePtr(sm.Secrets),
+			Resource: ptrAttributeResource(sm.Secrets),
 			Label:    "AppRole Secret",
 			Visible:  true,
 			Required: true,
@@ -158,7 +158,7 @@ var (
 		ContentType:   sm.AttributeContentTypeResource,
 		Description:   ptrStr("Vault JWT."),
 		Properties: sm.DataAttributeProperties{
-			Resource: attributeResourcePtr(sm.Secrets),
+			Resource: ptrAttributeResource(sm.Secrets),
 			Label:    "JWT/OIDC",
 			Visible:  true,
 			Required: true,

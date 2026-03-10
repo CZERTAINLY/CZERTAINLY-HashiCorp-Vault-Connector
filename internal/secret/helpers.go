@@ -19,7 +19,7 @@ func ptrStr(v string) *string {
 	return &v
 }
 
-func attributeResourcePtr(r sm.AttributeResource) *sm.AttributeResource {
+func ptrAttributeResource(r sm.AttributeResource) *sm.AttributeResource {
 	return &r
 }
 
