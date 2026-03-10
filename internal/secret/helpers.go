@@ -19,6 +19,10 @@ func ptrStr(v string) *string {
 	return &v
 }
 
+func ptrAttributeResource(r sm.AttributeResource) *sm.AttributeResource {
+	return &r
+}
+
 func vaultPath(path, name string) string {
 	return fmt.Sprintf("%s/%s", path, name)
 }
