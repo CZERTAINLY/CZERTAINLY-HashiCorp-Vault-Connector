@@ -101,12 +101,12 @@ func FromPayload(payload any, secretType sm.SecretType) (sm.SecretContent, error
 		return sc, nil
 
 	case sm.JwtToken:
-		jwtTokenEncoded, err := fromCommonContentPayloadBase64(data, secretType)
+		jwtToken, err := fromCommonContentPayload(data, secretType)
 		if err != nil {
 			return sc, err
 		}
 		if err := sc.FromJwtTokenSecretContent(sm.JwtTokenSecretContent{
-			Content: jwtTokenEncoded,
+			Content: jwtToken,
 		}); err != nil {
 			return sc, fmt.Errorf("marshaling JwtTokenSecret into SecretContent union failed: %w", err)
 		}

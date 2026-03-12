@@ -31,16 +31,12 @@ func GetGenericSecretContent(secret SecretContent) (string, error) {
 	return content.Content, nil
 }
 
-func GetJwtTokenSecretContent(secret SecretContent) ([]byte, error) {
+func GetJwtTokenSecretContent(secret SecretContent) (string, error) {
 	content, err := secret.AsJwtTokenSecretContent()
 	if err != nil {
-		return nil, fmt.Errorf("unmarshalling SecretContent into JwtTokenSecret failed: %w", err)
+		return "", fmt.Errorf("unmarshalling SecretContent into JwtTokenSecret failed: %w", err)
 	}
-	decoded, err := base64.StdEncoding.DecodeString(content.Content)
-	if err != nil {
-		return nil, fmt.Errorf("base64 decoding JwtTokenSecret content failed: %w", err)
-	}
-	return decoded, nil
+	return content.Content, nil
 }
 
 func GetKeyStoreSecretContent(secret SecretContent) (keyStoreType KeyStoreType, content string, password string, err error) {
