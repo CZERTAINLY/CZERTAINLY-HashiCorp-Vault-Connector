@@ -5,16 +5,12 @@ import (
 	"fmt"
 )
 
-func GetApiKeySecretContent(secret SecretContent) ([]byte, error) {
+func GetApiKeySecretContent(secret SecretContent) (string, error) {
 	content, err := secret.AsApiKeySecretContent()
 	if err != nil {
-		return nil, fmt.Errorf("unmarshalling SecretContent into ApiKeySecret failed: %w", err)
+		return "", fmt.Errorf("unmarshalling SecretContent into ApiKeySecret failed: %w", err)
 	}
-	decoded, err := base64.StdEncoding.DecodeString(content.Content)
-	if err != nil {
-		return nil, fmt.Errorf("base64 decoding ApiKeySecret content failed: %w", err)
-	}
-	return decoded, nil
+	return content.Content, nil
 }
 
 func GetBasicAuthSecretContent(secret SecretContent) (username, password string, err error) {
@@ -27,41 +23,29 @@ func GetBasicAuthSecretContent(secret SecretContent) (username, password string,
 	return
 }
 
-func GetGenericSecretContent(secret SecretContent) ([]byte, error) {
+func GetGenericSecretContent(secret SecretContent) (string, error) {
 	content, err := secret.AsGenericSecretContent()
 	if err != nil {
-		return nil, fmt.Errorf("unmarshalling SecretContent into GenericSecret failed: %w", err)
+		return "", fmt.Errorf("unmarshalling SecretContent into GenericSecret failed: %w", err)
 	}
-	decoded, err := base64.StdEncoding.DecodeString(content.Content)
-	if err != nil {
-		return nil, fmt.Errorf("base64 decoding GenericSecret content failed: %w", err)
-	}
-	return decoded, nil
+	return content.Content, nil
 }
 
-func GetJwtTokenSecretContent(secret SecretContent) ([]byte, error) {
+func GetJwtTokenSecretContent(secret SecretContent) (string, error) {
 	content, err := secret.AsJwtTokenSecretContent()
 	if err != nil {
-		return nil, fmt.Errorf("unmarshalling SecretContent into JwtTokenSecret failed: %w", err)
+		return "", fmt.Errorf("unmarshalling SecretContent into JwtTokenSecret failed: %w", err)
 	}
-	decoded, err := base64.StdEncoding.DecodeString(content.Content)
-	if err != nil {
-		return nil, fmt.Errorf("base64 decoding JwtTokenSecret content failed: %w", err)
-	}
-	return decoded, nil
+	return content.Content, nil
 }
 
-func GetKeyStoreSecretContent(secret SecretContent) (keyStoreType KeyStoreType, content []byte, password string, err error) {
+func GetKeyStoreSecretContent(secret SecretContent) (keyStoreType KeyStoreType, content string, password string, err error) {
 	ks, err := secret.AsKeyStoreSecretContent()
 	if err != nil {
 		err = fmt.Errorf("unmarshalling SecretContent into KeyStoreSecret failed: %w", err)
 		return
 	}
-	content, err = base64.StdEncoding.DecodeString(ks.Content)
-	if err != nil {
-		err = fmt.Errorf("base64 decoding KeyStoreSecret content failed: %w", err)
-		return
-	}
+	content = ks.Content
 	keyStoreType = ks.KeyStoreType
 	password = ks.Password
 	return
@@ -90,14 +74,10 @@ func GetPrivateKeySecretContent(secret SecretContent) ([]byte, error) {
 	return decoded, nil
 }
 
-func GetSecretKeySecretContent(secret SecretContent) ([]byte, error) {
+func GetSecretKeySecretContent(secret SecretContent) (string, error) {
 	content, err := secret.AsSecretKeySecretContent()
 	if err != nil {
-		return nil, fmt.Errorf("unmarshalling SecretContent into SecretKeySecret failed: %w", err)
+		return "", fmt.Errorf("unmarshalling SecretContent into SecretKeySecret failed: %w", err)
 	}
-	decoded, err := base64.StdEncoding.DecodeString(content.Content)
-	if err != nil {
-		return nil, fmt.Errorf("base64 decoding SecretKeySecret content failed: %w", err)
-	}
-	return decoded, nil
+	return content.Content, nil
 }

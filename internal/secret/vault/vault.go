@@ -35,12 +35,12 @@ func ToPayload(ctx context.Context, secret sm.SecretContent) (map[string]any, er
 
 	switch sm.SecretType(secretType) {
 	case sm.ApiKey:
-		decoded, err := sm.GetApiKeySecretContent(secret)
+		apiKeyContent, err := sm.GetApiKeySecretContent(secret)
 		if err != nil {
 			return nil, err
 		}
 		return map[string]any{
-			ContentKey: string(decoded),
+			ContentKey: apiKeyContent,
 		}, nil
 
 	case sm.BasicAuth:
@@ -59,7 +59,7 @@ func ToPayload(ctx context.Context, secret sm.SecretContent) (map[string]any, er
 			return nil, err
 		}
 		return map[string]any{
-			ContentKey: string(content),
+			ContentKey: content,
 		}, nil
 
 	case sm.JwtToken:
@@ -68,7 +68,7 @@ func ToPayload(ctx context.Context, secret sm.SecretContent) (map[string]any, er
 			return nil, err
 		}
 		return map[string]any{
-			ContentKey: string(content),
+			ContentKey: content,
 		}, nil
 
 	case sm.KeyStore:
@@ -78,7 +78,7 @@ func ToPayload(ctx context.Context, secret sm.SecretContent) (map[string]any, er
 		}
 		return map[string]any{
 			KeyStoreTypeKey: keyStoreType,
-			ContentKey:      string(content),
+			ContentKey:      content,
 			PasswordKey:     password,
 		}, nil
 
@@ -102,12 +102,12 @@ func ToPayload(ctx context.Context, secret sm.SecretContent) (map[string]any, er
 		}, nil
 
 	case sm.SecretKey:
-		decoded, err := sm.GetSecretKeySecretContent(secret)
+		secretKeyContent, err := sm.GetSecretKeySecretContent(secret)
 		if err != nil {
 			return nil, err
 		}
 		return map[string]any{
-			ContentKey: string(decoded),
+			ContentKey: secretKeyContent,
 		}, nil
 	}
 	return nil, fmt.Errorf("unknown secret type %q", secretType)

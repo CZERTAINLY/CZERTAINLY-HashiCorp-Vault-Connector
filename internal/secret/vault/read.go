@@ -64,7 +64,7 @@ func FromPayload(payload any, secretType sm.SecretType) (sm.SecretContent, error
 	sc := sm.SecretContent{}
 	switch secretType {
 	case sm.ApiKey:
-		apiKeyEncoded, err := fromCommonContentPayloadBase64(data, secretType)
+		apiKeyEncoded, err := fromCommonContentPayload(data, secretType)
 		if err != nil {
 			return sc, err
 		}
@@ -101,12 +101,12 @@ func FromPayload(payload any, secretType sm.SecretType) (sm.SecretContent, error
 		return sc, nil
 
 	case sm.JwtToken:
-		jwtTokenEncoded, err := fromCommonContentPayloadBase64(data, secretType)
+		jwtToken, err := fromCommonContentPayload(data, secretType)
 		if err != nil {
 			return sc, err
 		}
 		if err := sc.FromJwtTokenSecretContent(sm.JwtTokenSecretContent{
-			Content: jwtTokenEncoded,
+			Content: jwtToken,
 		}); err != nil {
 			return sc, fmt.Errorf("marshaling JwtTokenSecret into SecretContent union failed: %w", err)
 		}
@@ -150,12 +150,12 @@ func FromPayload(payload any, secretType sm.SecretType) (sm.SecretContent, error
 		return sc, nil
 
 	case sm.SecretKey:
-		secretKeyEncoded, err := fromCommonContentPayloadBase64(data, secretType)
+		secretKey, err := fromCommonContentPayload(data, secretType)
 		if err != nil {
 			return sc, err
 		}
 		if err := sc.FromSecretKeySecretContent(sm.SecretKeySecretContent{
-			Content: secretKeyEncoded,
+			Content: secretKey,
 		}); err != nil {
 			return sc, fmt.Errorf("marshaling SecretKeySecret into SecretContent union failed: %w", err)
 		}
@@ -205,7 +205,7 @@ func fromKeyStorePayload(payload map[string]any) (string, string, sm.KeyStoreTyp
 		return "", "", keyStoreType, fmt.Errorf("%w: %q expects value of the key %q to be one of [\"JKS\", \"PKCS12\"]", ErrNotDeclaredType, sm.KeyStore, KeyStoreTypeKey)
 	}
 
-	return base64.StdEncoding.EncodeToString([]byte(content)), password, keyStoreType, nil
+	return content, password, keyStoreType, nil
 }
 
 func fromCommonContentPayload(payload map[string]any, secretType sm.SecretType) (string, error) {
@@ -223,14 +223,6 @@ func fromCommonContentPayload(payload map[string]any, secretType sm.SecretType) 
 	return content, nil
 }
 
-func fromCommonContentPayloadBase64(payload map[string]any, secretType sm.SecretType) (string, error) {
-	content, err := fromCommonContentPayload(payload, secretType)
-	if err != nil {
-		return "", err
-	}
-	return base64.StdEncoding.EncodeToString([]byte(content)), nil
-}
-
 func fromGenericPayload(payload map[string]any) (string, error) {
 	var ok bool
 	var value string
@@ -240,7 +232,7 @@ func fromGenericPayload(payload map[string]any) (string, error) {
 	}
 	for k, v := range payload {
 		if value, ok = v.(string); ok {
-			return base64.StdEncoding.EncodeToString([]byte(value)), nil
+			return value, nil
 		} else {
 			return "", fmt.Errorf("%w: %q expects value of the key %q to be a string", ErrNotDeclaredType, sm.Generic, k)
 		}
