@@ -186,11 +186,11 @@ func resourceSecretContentTypeDataAttrSingle(ptrn sm.DataAttributeV3, recv sm.Re
 	}
 	switch sm.SecretType(secretType) {
 	case sm.ApiKey:
-		decoded, err := sm.GetApiKeySecretContent(*secret.Content)
+		apiKeyContent, err := sm.GetApiKeySecretContent(*secret.Content)
 		if err != nil {
 			return "", fmt.Errorf("attribute %q: %w", recv.Uuid, err)
 		}
-		return string(decoded), nil
+		return apiKeyContent, nil
 
 	case sm.BasicAuth:
 		_, password, err := sm.GetBasicAuthSecretContent(*secret.Content)

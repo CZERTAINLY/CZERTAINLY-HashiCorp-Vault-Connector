@@ -35,12 +35,12 @@ func ToPayload(ctx context.Context, secret sm.SecretContent) (map[string]any, er
 
 	switch sm.SecretType(secretType) {
 	case sm.ApiKey:
-		decoded, err := sm.GetApiKeySecretContent(secret)
+		apiKeyContent, err := sm.GetApiKeySecretContent(secret)
 		if err != nil {
 			return nil, err
 		}
 		return map[string]any{
-			ContentKey: string(decoded),
+			ContentKey: apiKeyContent,
 		}, nil
 
 	case sm.BasicAuth:

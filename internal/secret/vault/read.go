@@ -64,7 +64,7 @@ func FromPayload(payload any, secretType sm.SecretType) (sm.SecretContent, error
 	sc := sm.SecretContent{}
 	switch secretType {
 	case sm.ApiKey:
-		apiKeyEncoded, err := fromCommonContentPayloadBase64(data, secretType)
+		apiKeyEncoded, err := fromCommonContentPayload(data, secretType)
 		if err != nil {
 			return sc, err
 		}

@@ -5,16 +5,12 @@ import (
 	"fmt"
 )
 
-func GetApiKeySecretContent(secret SecretContent) ([]byte, error) {
+func GetApiKeySecretContent(secret SecretContent) (string, error) {
 	content, err := secret.AsApiKeySecretContent()
 	if err != nil {
-		return nil, fmt.Errorf("unmarshalling SecretContent into ApiKeySecret failed: %w", err)
+		return "", fmt.Errorf("unmarshalling SecretContent into ApiKeySecret failed: %w", err)
 	}
-	decoded, err := base64.StdEncoding.DecodeString(content.Content)
-	if err != nil {
-		return nil, fmt.Errorf("base64 decoding ApiKeySecret content failed: %w", err)
-	}
-	return decoded, nil
+	return content.Content, nil
 }
 
 func GetBasicAuthSecretContent(secret SecretContent) (username, password string, err error) {
