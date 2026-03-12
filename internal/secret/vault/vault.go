@@ -102,12 +102,12 @@ func ToPayload(ctx context.Context, secret sm.SecretContent) (map[string]any, er
 		}, nil
 
 	case sm.SecretKey:
-		decoded, err := sm.GetSecretKeySecretContent(secret)
+		secretKeyContent, err := sm.GetSecretKeySecretContent(secret)
 		if err != nil {
 			return nil, err
 		}
 		return map[string]any{
-			ContentKey: string(decoded),
+			ContentKey: secretKeyContent,
 		}, nil
 	}
 	return nil, fmt.Errorf("unknown secret type %q", secretType)

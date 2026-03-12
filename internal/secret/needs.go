@@ -230,11 +230,11 @@ func resourceSecretContentTypeDataAttrSingle(ptrn sm.DataAttributeV3, recv sm.Re
 		return s, nil
 
 	case sm.SecretKey:
-		decoded, err := sm.GetSecretKeySecretContent(*secret.Content)
+		secretKeyContent, err := sm.GetSecretKeySecretContent(*secret.Content)
 		if err != nil {
 			return "", fmt.Errorf("attribute %q: %w", recv.Uuid, err)
 		}
-		return string(decoded), nil
+		return secretKeyContent, nil
 
 	}
 

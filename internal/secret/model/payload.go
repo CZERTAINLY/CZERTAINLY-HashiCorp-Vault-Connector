@@ -82,14 +82,10 @@ func GetPrivateKeySecretContent(secret SecretContent) ([]byte, error) {
 	return decoded, nil
 }
 
-func GetSecretKeySecretContent(secret SecretContent) ([]byte, error) {
+func GetSecretKeySecretContent(secret SecretContent) (string, error) {
 	content, err := secret.AsSecretKeySecretContent()
 	if err != nil {
-		return nil, fmt.Errorf("unmarshalling SecretContent into SecretKeySecret failed: %w", err)
+		return "", fmt.Errorf("unmarshalling SecretContent into SecretKeySecret failed: %w", err)
 	}
-	decoded, err := base64.StdEncoding.DecodeString(content.Content)
-	if err != nil {
-		return nil, fmt.Errorf("base64 decoding SecretKeySecret content failed: %w", err)
-	}
-	return decoded, nil
+	return content.Content, nil
 }

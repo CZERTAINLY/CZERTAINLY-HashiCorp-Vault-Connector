@@ -150,12 +150,12 @@ func FromPayload(payload any, secretType sm.SecretType) (sm.SecretContent, error
 		return sc, nil
 
 	case sm.SecretKey:
-		secretKeyEncoded, err := fromCommonContentPayloadBase64(data, secretType)
+		secretKey, err := fromCommonContentPayload(data, secretType)
 		if err != nil {
 			return sc, err
 		}
 		if err := sc.FromSecretKeySecretContent(sm.SecretKeySecretContent{
-			Content: secretKeyEncoded,
+			Content: secretKey,
 		}); err != nil {
 			return sc, fmt.Errorf("marshaling SecretKeySecret into SecretContent union failed: %w", err)
 		}
