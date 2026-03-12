@@ -12,7 +12,7 @@ import (
 func getSecretAttributes(w http.ResponseWriter, r *http.Request) {
 	resp := []sm.BaseAttributeDtoV3{}
 
-	toJson(r.Context(), w, resp)
+	toJson(r.Context(), w, http.StatusOK, resp)
 }
 
 func (s *Server) listVaultAttributes(w http.ResponseWriter, r *http.Request) {
@@ -122,7 +122,7 @@ func (s *Server) listVaultAttributes(w http.ResponseWriter, r *http.Request) {
 	}
 	resp = append(resp, vaultPath)
 
-	toJson(r.Context(), w, resp)
+	toJson(r.Context(), w, http.StatusOK, resp)
 }
 
 func (s *Server) credentialsType(w http.ResponseWriter, r *http.Request) {
@@ -186,5 +186,5 @@ func (s *Server) credentialsType(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	toJson(r.Context(), w, resp)
+	toJson(r.Context(), w, http.StatusOK, resp)
 }
