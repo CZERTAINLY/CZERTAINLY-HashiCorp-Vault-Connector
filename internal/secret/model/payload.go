@@ -27,16 +27,12 @@ func GetBasicAuthSecretContent(secret SecretContent) (username, password string,
 	return
 }
 
-func GetGenericSecretContent(secret SecretContent) ([]byte, error) {
+func GetGenericSecretContent(secret SecretContent) (string, error) {
 	content, err := secret.AsGenericSecretContent()
 	if err != nil {
-		return nil, fmt.Errorf("unmarshalling SecretContent into GenericSecret failed: %w", err)
+		return "", fmt.Errorf("unmarshalling SecretContent into GenericSecret failed: %w", err)
 	}
-	decoded, err := base64.StdEncoding.DecodeString(content.Content)
-	if err != nil {
-		return nil, fmt.Errorf("base64 decoding GenericSecret content failed: %w", err)
-	}
-	return decoded, nil
+	return content.Content, nil
 }
 
 func GetJwtTokenSecretContent(secret SecretContent) ([]byte, error) {

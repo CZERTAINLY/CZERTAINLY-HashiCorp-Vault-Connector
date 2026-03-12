@@ -240,7 +240,7 @@ func fromGenericPayload(payload map[string]any) (string, error) {
 	}
 	for k, v := range payload {
 		if value, ok = v.(string); ok {
-			return base64.StdEncoding.EncodeToString([]byte(value)), nil
+			return value, nil
 		} else {
 			return "", fmt.Errorf("%w: %q expects value of the key %q to be a string", ErrNotDeclaredType, sm.Generic, k)
 		}

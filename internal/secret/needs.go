@@ -204,7 +204,7 @@ func resourceSecretContentTypeDataAttrSingle(ptrn sm.DataAttributeV3, recv sm.Re
 		if err != nil {
 			return "", fmt.Errorf("attribute %q: %w", recv.Uuid, err)
 		}
-		return string(content), nil
+		return content, nil
 
 	case sm.JwtToken:
 		content, err := sm.GetJwtTokenSecretContent(*secret.Content)
