@@ -223,14 +223,6 @@ func fromCommonContentPayload(payload map[string]any, secretType sm.SecretType) 
 	return content, nil
 }
 
-func fromCommonContentPayloadBase64(payload map[string]any, secretType sm.SecretType) (string, error) {
-	content, err := fromCommonContentPayload(payload, secretType)
-	if err != nil {
-		return "", err
-	}
-	return base64.StdEncoding.EncodeToString([]byte(content)), nil
-}
-
 func fromGenericPayload(payload map[string]any) (string, error) {
 	var ok bool
 	var value string
