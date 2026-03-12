@@ -43,17 +43,13 @@ func GetJwtTokenSecretContent(secret SecretContent) ([]byte, error) {
 	return decoded, nil
 }
 
-func GetKeyStoreSecretContent(secret SecretContent) (keyStoreType KeyStoreType, content []byte, password string, err error) {
+func GetKeyStoreSecretContent(secret SecretContent) (keyStoreType KeyStoreType, content string, password string, err error) {
 	ks, err := secret.AsKeyStoreSecretContent()
 	if err != nil {
 		err = fmt.Errorf("unmarshalling SecretContent into KeyStoreSecret failed: %w", err)
 		return
 	}
-	content, err = base64.StdEncoding.DecodeString(ks.Content)
-	if err != nil {
-		err = fmt.Errorf("base64 decoding KeyStoreSecret content failed: %w", err)
-		return
-	}
+	content = ks.Content
 	keyStoreType = ks.KeyStoreType
 	password = ks.Password
 	return

@@ -205,7 +205,7 @@ func fromKeyStorePayload(payload map[string]any) (string, string, sm.KeyStoreTyp
 		return "", "", keyStoreType, fmt.Errorf("%w: %q expects value of the key %q to be one of [\"JKS\", \"PKCS12\"]", ErrNotDeclaredType, sm.KeyStore, KeyStoreTypeKey)
 	}
 
-	return base64.StdEncoding.EncodeToString([]byte(content)), password, keyStoreType, nil
+	return content, password, keyStoreType, nil
 }
 
 func fromCommonContentPayload(payload map[string]any, secretType sm.SecretType) (string, error) {

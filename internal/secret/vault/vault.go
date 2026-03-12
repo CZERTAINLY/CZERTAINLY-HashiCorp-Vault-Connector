@@ -78,7 +78,7 @@ func ToPayload(ctx context.Context, secret sm.SecretContent) (map[string]any, er
 		}
 		return map[string]any{
 			KeyStoreTypeKey: keyStoreType,
-			ContentKey:      string(content),
+			ContentKey:      content,
 			PasswordKey:     password,
 		}, nil
 
