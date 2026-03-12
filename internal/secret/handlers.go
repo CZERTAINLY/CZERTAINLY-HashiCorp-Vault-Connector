@@ -33,8 +33,15 @@ func (s *Server) createSecret(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := s.m.Create(r.Context(), c, n.mount, vaultPath(n.path, req.Name), req.Secret)
-	_ = handleOpError(w, r, err)
+	secretType, err := s.m.Create(r.Context(), c, n.mount, vaultPath(n.path, req.Name), req.Secret)
+	if ok := handleOpError(w, r, err); ok {
+		return
+	}
+
+	toJson(r.Context(), w, sm.SecretResponseDto{
+		Name: req.Name,
+		Type: secretType,
+	})
 }
 
 func (s *Server) updateSecret(w http.ResponseWriter, r *http.Request) {
@@ -63,8 +70,15 @@ func (s *Server) updateSecret(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := s.m.Update(r.Context(), c, n.mount, vaultPath(n.path, req.Name), req.Secret)
-	_ = handleOpError(w, r, err)
+	secretType, err := s.m.Update(r.Context(), c, n.mount, vaultPath(n.path, req.Name), req.Secret)
+	if ok := handleOpError(w, r, err); ok {
+		return
+	}
+
+	toJson(r.Context(), w, sm.SecretResponseDto{
+		Name: req.Name,
+		Type: secretType,
+	})
 }
 
 func (s *Server) getSecretValue(w http.ResponseWriter, r *http.Request) {

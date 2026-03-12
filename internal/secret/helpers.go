@@ -94,11 +94,13 @@ func obtainNeeds(ctx context.Context, w http.ResponseWriter, r *http.Request, k8
 func handleOpError(w http.ResponseWriter, r *http.Request, err error) (doReturn bool) {
 	switch {
 	case errors.Is(err, internalVault.ErrForbidden):
-		forbidden(w, fmt.Sprintf("Authorization failed: %s.", err))
+		slog.Debug("Authorization failed.", slog.String("error", err.Error()))
+		forbidden(w, "Authorization failed.")
 		return true
 
 	case errors.Is(err, internalVault.ErrNotFound):
-		notfound(w, "Secret not found.")
+		slog.Debug("Not found.", slog.String("error", err.Error()))
+		notfound(w, "Not found.")
 		return true
 
 	case errors.Is(err, internalVault.ErrAlreadyExists):
@@ -106,7 +108,7 @@ func handleOpError(w http.ResponseWriter, r *http.Request, err error) (doReturn 
 
 	case err != nil:
 		slog.Error("Operation failed.", slog.String("error", err.Error()), slog.String("http-path", r.URL.Path))
-		internal(w, fmt.Sprintf("Operation failed: %s", err))
+		internal(w, "Operation failed.")
 		return true
 	}
 

@@ -11,19 +11,19 @@ import (
 	vcgSchema "github.com/hashicorp/vault-client-go/schema"
 )
 
-func (m *Manager) Create(ctx context.Context, client *vcg.Client, mount, path string, secret sm.SecretContent) error {
+func (m *Manager) Create(ctx context.Context, client *vcg.Client, mount, path string, secret sm.SecretContent) (sm.SecretType, error) {
 	u := lockRef(mount, path)
 	m.locks.Lock(u)
 	defer m.locks.Unlock(u)
 
 	v, err := DetectKVVersion(ctx, client, mount)
 	if err != nil {
-		return err
+		return sm.SecretType(""), err
 	}
 
-	payload, err := ToPayload(ctx, secret)
+	payload, secretType, err := ToPayload(ctx, secret)
 	if err != nil {
-		return err
+		return secretType, err
 	}
 
 	switch v {
@@ -31,17 +31,17 @@ func (m *Manager) Create(ctx context.Context, client *vcg.Client, mount, path st
 		_, err = client.Secrets.KvV1Read(ctx, path, vcg.WithMountPath(mount))
 		switch {
 		case err == nil:
-			return ErrAlreadyExists
+			return sm.SecretType(""), ErrAlreadyExists
 
 		case !vcg.IsErrorStatus(err, http.StatusNotFound):
-			return toPkgErr(err)
+			return secretType, toPkgErr(err)
 		}
 
 		_, err := client.Secrets.KvV1Write(ctx, path, payload, vcg.WithMountPath(mount))
 		if err != nil {
-			return toPkgErr(err)
+			return secretType, toPkgErr(err)
 		}
-		return nil
+		return secretType, nil
 
 	case KVVersionV2:
 		_, err := client.Secrets.KvV2Write(ctx, path, vcgSchema.KvV2WriteRequest{
@@ -52,13 +52,13 @@ func (m *Manager) Create(ctx context.Context, client *vcg.Client, mount, path st
 		}, vcg.WithMountPath(mount))
 		if err != nil {
 			if vcg.IsErrorStatus(err, http.StatusBadRequest) {
-				return ErrAlreadyExists
+				return secretType, ErrAlreadyExists
 			}
-			return toPkgErr(err)
+			return secretType, toPkgErr(err)
 		}
 	default:
-		return errors.New("unknown kv engine version")
+		return secretType, errors.New("unknown kv engine version")
 	}
 
-	return nil
+	return secretType, nil
 }
