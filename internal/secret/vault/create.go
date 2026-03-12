@@ -12,16 +12,15 @@ import (
 )
 
 func (m *Manager) Create(ctx context.Context, client *vcg.Client, mount, path string, secret sm.SecretContent) (sm.SecretType, error) {
-	u := lockRef(mount, path)
-	m.locks.Lock(u)
-	defer m.locks.Unlock(u)
+	createLock := lockRef(mount, path)
+	m.locks.Lock(createLock)
+	defer m.locks.Unlock(createLock)
 
-	v, err := DetectKVVersion(ctx, client, mount)
-	if err != nil {
-		return sm.SecretType(""), err
-	}
-
-	payload, secretType, err := ToPayload(ctx, secret)
+	v, payload, secretType, err := commonCreateUpdate(ctx,
+		client,
+		mount,
+		secret,
+	)
 	if err != nil {
 		return secretType, err
 	}
