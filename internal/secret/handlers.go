@@ -33,15 +33,8 @@ func (s *Server) createSecret(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	secretType, err := s.m.Create(r.Context(), c, n.mount, vaultPath(n.path, req.Name), req.Secret)
-	if ok := handleOpError(w, r, err); ok {
-		return
-	}
-
-	toJson(r.Context(), w, sm.SecretResponseDto{
-		Name: req.Name,
-		Type: secretType,
-	})
+	scrtType, err := s.m.Create(r.Context(), c, n.mount, vaultPath(n.path, req.Name), req.Secret)
+	handleOpError(w, r, http.StatusCreated, err, req.Name, string(scrtType))
 }
 
 func (s *Server) updateSecret(w http.ResponseWriter, r *http.Request) {
@@ -71,14 +64,7 @@ func (s *Server) updateSecret(w http.ResponseWriter, r *http.Request) {
 	}
 
 	secretType, err := s.m.Update(r.Context(), c, n.mount, vaultPath(n.path, req.Name), req.Secret)
-	if ok := handleOpError(w, r, err); ok {
-		return
-	}
-
-	toJson(r.Context(), w, sm.SecretResponseDto{
-		Name: req.Name,
-		Type: secretType,
-	})
+	_ = handleOpError(w, r, http.StatusOK, err, req.Name, string(secretType))
 }
 
 func (s *Server) getSecretValue(w http.ResponseWriter, r *http.Request) {
@@ -108,11 +94,11 @@ func (s *Server) getSecretValue(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sc, err := s.m.Read(r.Context(), c, n.mount, vaultPath(n.path, req.Name), req.Type)
-	if doRet := handleOpError(w, r, err); doRet {
+	if handleOpError(w, r, 0, err, "", "") {
 		return
 	}
 
-	toJson(r.Context(), w, sc)
+	toJson(r.Context(), w, http.StatusOK, sc)
 }
 
 func (s *Server) deleteSecret(w http.ResponseWriter, r *http.Request) {
@@ -142,7 +128,7 @@ func (s *Server) deleteSecret(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err := s.m.Delete(r.Context(), c, n.mount, vaultPath(n.path, req.Name))
-	handleOpError(w, r, err)
+	_ = handleOpError(w, r, http.StatusNoContent, err, "", "")
 }
 
 func (s *Server) rotateSecretValue(w http.ResponseWriter, _ *http.Request) {
