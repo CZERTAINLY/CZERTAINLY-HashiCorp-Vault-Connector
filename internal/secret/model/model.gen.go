@@ -101,11 +101,16 @@ const (
 // Defines values for ErrorCode.
 const (
 	ATTRIBUTESERROR       ErrorCode = "ATTRIBUTES_ERROR"
+	BADREQUEST            ErrorCode = "BAD_REQUEST"
+	FORBIDDEN             ErrorCode = "FORBIDDEN"
+	INTERNALSERVERERROR   ErrorCode = "INTERNAL_SERVER_ERROR"
 	OPERATIONNOTSUPPORTED ErrorCode = "OPERATION_NOT_SUPPORTED"
+	RATELIMITEXCEEDED     ErrorCode = "RATE_LIMIT_EXCEEDED"
 	REQUESTTIMEOUT        ErrorCode = "REQUEST_TIMEOUT"
 	RESOURCEALREADYEXISTS ErrorCode = "RESOURCE_ALREADY_EXISTS"
 	RESOURCENOTFOUND      ErrorCode = "RESOURCE_NOT_FOUND"
 	SERVICEUNAVAILABLE    ErrorCode = "SERVICE_UNAVAILABLE"
+	UNAUTHORIZED          ErrorCode = "UNAUTHORIZED"
 	VALIDATIONFAILED      ErrorCode = "VALIDATION_FAILED"
 )
 
@@ -1108,7 +1113,7 @@ type ResourceSecretContentData struct {
 	Uuid string `json:"uuid"`
 }
 
-// ResourceSimpleContentData Content data for resource object attribute containing secret content
+// ResourceSimpleContentData Content data for resource object defined by its attributes
 type ResourceSimpleContentData struct {
 	// Attributes Attributes of the resource object
 	Attributes *[]ResponseAttribute `json:"attributes,omitempty"`
@@ -2940,7 +2945,7 @@ func (t ResourceObjectContentData) AsResourceSimpleContentData() (ResourceSimple
 
 // FromResourceSimpleContentData overwrites any union data inside the ResourceObjectContentData as the provided ResourceSimpleContentData
 func (t *ResourceObjectContentData) FromResourceSimpleContentData(v ResourceSimpleContentData) error {
-	v.Resource = "authorities"
+	v.Resource = "credentials"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -2948,7 +2953,7 @@ func (t *ResourceObjectContentData) FromResourceSimpleContentData(v ResourceSimp
 
 // MergeResourceSimpleContentData performs a merge with any union data inside the ResourceObjectContentData, using the provided ResourceSimpleContentData
 func (t *ResourceObjectContentData) MergeResourceSimpleContentData(v ResourceSimpleContentData) error {
-	v.Resource = "authorities"
+	v.Resource = "credentials"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -3029,10 +3034,10 @@ func (t ResourceObjectContentData) ValueByDiscriminator() (interface{}, error) {
 		return nil, err
 	}
 	switch discriminator {
-	case "authorities":
-		return t.AsResourceSimpleContentData()
 	case "certificates":
 		return t.AsResourceCertificateContentData()
+	case "credentials":
+		return t.AsResourceSimpleContentData()
 	case "secrets":
 		return t.AsResourceSecretContentData()
 	default:
