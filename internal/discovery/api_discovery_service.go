@@ -7,11 +7,12 @@ import (
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/vault"
 	"context"
 	"encoding/base64"
+	"net/http"
+	"strings"
+
 	vault2 "github.com/hashicorp/vault-client-go"
 	"github.com/yuseferi/zax/v2"
 	"go.uber.org/zap"
-	"net/http"
-	"strings"
 )
 
 // DiscoveryAPIService is a service that implements the logic for the DiscoveryAPIServicer
@@ -124,7 +125,7 @@ func (s *DiscoveryAPIService) GetDiscovery(ctx context.Context, uuid string, dis
 		return model.Response(http.StatusNotFound, model.ErrorMessageDto{Message: "Discovery " + uuid + " not found."}), nil
 	}
 	if discovery.Status == "IN_PROGRESS" {
-		return model.Response(http.StatusOK, model.DiscoveryProviderDto{Uuid: discovery.UUID, Name: discovery.Name, Status: model.IN_PROGRESS, TotalCertificatesDiscovered: 0, CertificateData: nil, Meta: nil}), nil
+		return model.Response(http.StatusOK, model.DiscoveryProviderDto{Uuid: discovery.UUID, Name: discovery.Name, Status: model.IN_PROGRESS, TotalCertificatesDiscovered: 0, CertificateData: []model.DiscoveryProviderCertificateDataDto{}, Meta: []model.MetadataAttribute{}}), nil
 	} else {
 		pagination := db.Pagination{
 			Page:  int(discoveryDataRequestDto.PageNumber),
@@ -137,11 +138,12 @@ func (s *DiscoveryAPIService) GetDiscovery(ctx context.Context, uuid string, dis
 			discoveryProviderCertificateDataDto := model.DiscoveryProviderCertificateDataDto{
 				Uuid:          certificateData.UUID,
 				Base64Content: certificateData.Base64Content,
+				Meta:          []model.MetadataAttribute{}, //empty array
 			}
 			certificateDtos = append(certificateDtos, discoveryProviderCertificateDataDto)
 		}
 
-		return model.Response(http.StatusOK, model.DiscoveryProviderDto{Uuid: discovery.UUID, Name: discovery.Name, Status: model.COMPLETED, TotalCertificatesDiscovered: result.TotalRows, CertificateData: certificateDtos, Meta: nil}), nil
+		return model.Response(http.StatusOK, model.DiscoveryProviderDto{Uuid: discovery.UUID, Name: discovery.Name, Status: model.COMPLETED, TotalCertificatesDiscovered: result.TotalRows, CertificateData: certificateDtos, Meta: []model.MetadataAttribute{}}), nil
 	}
 
 }

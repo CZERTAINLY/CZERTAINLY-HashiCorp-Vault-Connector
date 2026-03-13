@@ -86,26 +86,29 @@ func (d *DiscoveryRepository) List(pagination Pagination, discovery *Discovery) 
 	var certificates []*Certificate
 	page := pagination.Page
 	pageSize := pagination.Limit
-	var count int
 	offset := (page - 1) * pageSize
-	d.db.Table("certificates").Select("certificates.*").
-		Joins("JOIN discovery_certificates ON discovery_certificates.certificate_id = certificates.id").
-		Where("discovery_certificates.discovery_id = ?", discovery.Id).
+
+	err := d.db.Model(discovery).
 		Offset(offset).Limit(pageSize).
-		Order("certificates.id ASC").
+		Order("id ASC").
+		Association("Certificates").
 		Find(&certificates)
 
+	if err != nil {
+		return nil, err
+	}
+
 	pagination.Rows = certificates
-	pagination.TotalRows = int64(len(discovery.Certificates))
-	totalPages := int(math.Ceil(float64(count) / float64(pagination.Limit)))
+	pagination.TotalRows = d.db.Model(discovery).Association("Certificates").Count()
+	totalPages := int(math.Ceil(float64(pagination.TotalRows) / float64(pagination.Limit)))
 	pagination.TotalPages = totalPages
 	return &pagination, nil
 }
 
 func (d *DiscoveryRepository) DeleteDiscovery(discovery *Discovery) error {
-	result := d.db.Delete(&discovery)
-	if result.Error != nil {
-		return result.Error
+	err := d.db.Select("Certificates").Delete(&discovery).Error
+	if err != nil {
+		return err
 	}
 	return nil
 }
