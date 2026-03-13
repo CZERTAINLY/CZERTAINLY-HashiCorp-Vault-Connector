@@ -100,7 +100,6 @@ func (s *Server) getSecretValue(w http.ResponseWriter, r *http.Request) {
 
 	toJson(r.Context(), w, http.StatusOK, sm.SecretContentResponseDto{
 		Content: sc,
-		Version: ptrStr("3"),
 	})
 }
 
