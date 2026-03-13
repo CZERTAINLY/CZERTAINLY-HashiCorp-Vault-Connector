@@ -27,7 +27,7 @@ func vaultPath(path, name string) string {
 	return fmt.Sprintf("%s/%s", path, name)
 }
 
-func toJson(_ context.Context, w http.ResponseWriter, resp any) {
+func toJson(_ context.Context, w http.ResponseWriter, statusCode int, resp any) {
 	b, err := json.Marshal(resp)
 	if err != nil {
 		slog.Error("Failed to marshal structure to json.",
@@ -91,23 +91,33 @@ func obtainNeeds(ctx context.Context, w http.ResponseWriter, r *http.Request, k8
 	return &n
 }
 
-func handleOpError(w http.ResponseWriter, r *http.Request, err error) (doReturn bool) {
+func handleOpError(w http.ResponseWriter, r *http.Request, statusCode int, err error, reqName, reqType string) (doReturn bool) {
 	switch {
 	case errors.Is(err, internalVault.ErrForbidden):
-		forbidden(w, fmt.Sprintf("Authorization failed: %s.", err))
+		slog.Debug("Authorization failed.", slog.String("error", err.Error()))
+		forbidden(w, "Authorization failed.")
 		return true
 
 	case errors.Is(err, internalVault.ErrNotFound):
-		notfound(w, "Secret not found.")
+		slog.Debug("Not found.", slog.String("error", err.Error()))
+		notfound(w, "Not found.")
 		return true
 
 	case errors.Is(err, internalVault.ErrAlreadyExists):
 		precondition(w, "Secret already exists.", sm.RESOURCEALREADYEXISTS)
+		return true
 
 	case err != nil:
 		slog.Error("Operation failed.", slog.String("error", err.Error()), slog.String("http-path", r.URL.Path))
-		internal(w, fmt.Sprintf("Operation failed: %s", err))
+		internal(w, "Operation failed.")
 		return true
+	}
+
+	if reqName != "" && reqType != "" {
+		toJson(r.Context(), w, statusCode, sm.SecretResponseDto{
+			Name: reqName,
+			Type: sm.SecretType(reqType),
+		})
 	}
 
 	return false

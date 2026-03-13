@@ -27,90 +27,90 @@ func (m *Manager) ConnCheck(ctx context.Context, client *vcg.Client) error {
 	return nil
 }
 
-func ToPayload(ctx context.Context, secret sm.SecretContent) (map[string]any, error) {
+func ToPayload(ctx context.Context, secret sm.SecretContent) (map[string]any, sm.SecretType, error) {
 	secretType, err := secret.Discriminator()
 	if err != nil {
-		return nil, fmt.Errorf("unmarshalling discriminator field for SecretContent failed: %w", err)
+		return nil, sm.SecretType(secretType), fmt.Errorf("unmarshalling discriminator field for SecretContent failed: %w", err)
 	}
 
 	switch sm.SecretType(secretType) {
 	case sm.ApiKey:
 		apiKeyContent, err := sm.GetApiKeySecretContent(secret)
 		if err != nil {
-			return nil, err
+			return nil, sm.SecretType(secretType), err
 		}
 		return map[string]any{
 			ContentKey: apiKeyContent,
-		}, nil
+		}, sm.SecretType(secretType), nil
 
 	case sm.BasicAuth:
 		username, password, err := sm.GetBasicAuthSecretContent(secret)
 		if err != nil {
-			return nil, err
+			return nil, sm.SecretType(secretType), err
 		}
 		return map[string]any{
 			UsernameKey: username,
 			PasswordKey: password,
-		}, nil
+		}, sm.SecretType(secretType), nil
 
 	case sm.Generic:
 		content, err := sm.GetGenericSecretContent(secret)
 		if err != nil {
-			return nil, err
+			return nil, sm.SecretType(secretType), err
 		}
 		return map[string]any{
 			ContentKey: content,
-		}, nil
+		}, sm.SecretType(secretType), nil
 
 	case sm.JwtToken:
 		content, err := sm.GetJwtTokenSecretContent(secret)
 		if err != nil {
-			return nil, err
+			return nil, sm.SecretType(secretType), err
 		}
 		return map[string]any{
 			ContentKey: content,
-		}, nil
+		}, sm.SecretType(secretType), nil
 
 	case sm.KeyStore:
 		keyStoreType, content, password, err := sm.GetKeyStoreSecretContent(secret)
 		if err != nil {
-			return nil, err
+			return nil, sm.SecretType(secretType), err
 		}
 		return map[string]any{
 			KeyStoreTypeKey: keyStoreType,
 			ContentKey:      content,
 			PasswordKey:     password,
-		}, nil
+		}, sm.SecretType(secretType), nil
 
 	case sm.KeyValue:
 		content, err := sm.GetKeyValueSecretContent(secret)
 		if err != nil {
-			return nil, err
+			return nil, sm.SecretType(secretType), err
 		}
-		return content, nil
+		return content, sm.SecretType(secretType), nil
 
 	case sm.PrivateKey:
 		decoded, err := sm.GetPrivateKeySecretContent(secret)
 		if err != nil {
-			return nil, err
+			return nil, sm.SecretType(secretType), err
 		}
 		if !isPemFormat(decoded) {
-			return nil, fmt.Errorf("%w: not PEM format", ErrNotDeclaredType)
+			return nil, sm.SecretType(secretType), fmt.Errorf("%w: not PEM format", ErrNotDeclaredType)
 		}
 		return map[string]any{
 			ContentKey: string(decoded),
-		}, nil
+		}, sm.SecretType(secretType), nil
 
 	case sm.SecretKey:
 		secretKeyContent, err := sm.GetSecretKeySecretContent(secret)
 		if err != nil {
-			return nil, err
+			return nil, sm.SecretType(secretType), err
 		}
 		return map[string]any{
 			ContentKey: secretKeyContent,
-		}, nil
+		}, sm.SecretType(secretType), nil
 	}
-	return nil, fmt.Errorf("unknown secret type %q", secretType)
+	return nil, sm.SecretType(secretType), fmt.Errorf("unknown secret type %q", secretType)
 }
 
 func isPemFormat(pk []byte) bool {
