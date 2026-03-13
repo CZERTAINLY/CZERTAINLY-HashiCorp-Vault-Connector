@@ -98,7 +98,9 @@ func (s *Server) getSecretValue(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	toJson(r.Context(), w, http.StatusOK, sc)
+	toJson(r.Context(), w, http.StatusOK, sm.SecretContentResponseDto{
+		Content: sc,
+	})
 }
 
 func (s *Server) deleteSecret(w http.ResponseWriter, r *http.Request) {
