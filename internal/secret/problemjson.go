@@ -2,11 +2,13 @@ package secret
 
 import (
 	"encoding/json"
-	"log/slog"
 	"net/http"
 	"time"
 
+	"CZERTAINLY-HashiCorp-Vault-Connector/internal/logger"
 	sm "CZERTAINLY-HashiCorp-Vault-Connector/internal/secret/model"
+
+	"go.uber.org/zap"
 )
 
 const (
@@ -119,8 +121,8 @@ func (p problem) Json(w http.ResponseWriter) {
 	var b []byte
 	if b, err = json.Marshal(p); err != nil {
 		// this shouldn't happen as we control the annotation of problem struct
-		slog.Error("Failed to marshal problem struct to json",
-			slog.String("error", err.Error()), slog.Any("struct", p))
+		logger.Get().Error("Failed to marshal problem struct to json",
+			zap.Error(err), zap.Any("struct", p))
 		http.Error(w, "Internal server error.", http.StatusInternalServerError)
 		return
 	}

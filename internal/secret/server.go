@@ -2,14 +2,15 @@ package secret
 
 import (
 	"errors"
-	"log/slog"
 	"net/http"
 	"os"
 
+	"CZERTAINLY-HashiCorp-Vault-Connector/internal/logger"
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/metrics"
 	sv "CZERTAINLY-HashiCorp-Vault-Connector/internal/secret/vault"
 
 	"github.com/gorilla/mux"
+	"go.uber.org/zap"
 )
 
 const DEFAULT_K8S_TOKEN_PATH = "/var/run/secrets/kubernetes.io/serviceaccount/token"
@@ -24,23 +25,23 @@ func New() Server {
 		m: sv.New(),
 	}
 
+	log := logger.Get()
 	_, err := os.Stat(DEFAULT_K8S_TOKEN_PATH)
 	switch {
 	case errors.Is(err, os.ErrNotExist):
-		slog.Debug("Kubernetes service account JWT file is not present.",
-			slog.String("file", DEFAULT_K8S_TOKEN_PATH))
+		log.Debug("Kubernetes service account JWT file is not present.", zap.String("file", DEFAULT_K8S_TOKEN_PATH))
 	case err != nil:
-		slog.Error("Error executing `os.Stat()` for kubernetes service account JWT file.",
-			slog.String("file", DEFAULT_K8S_TOKEN_PATH),
-			slog.String("error", err.Error()))
+		log.Error("Error executing `os.Stat()` for kubernetes service account JWT file.",
+			zap.String("file", DEFAULT_K8S_TOKEN_PATH),
+			zap.String("error", err.Error()))
 	default:
-		slog.Debug("Kubernetes service account JWT file exists.")
+		log.Debug("Kubernetes service account JWT file exists.")
 		b, rerr := os.ReadFile(DEFAULT_K8S_TOKEN_PATH)
 		switch {
 		case rerr != nil:
-			slog.Error("Error reading kubernetes service account JWT file.",
-				slog.String("file", DEFAULT_K8S_TOKEN_PATH),
-				slog.String("error", rerr.Error()))
+			log.Error("Error reading kubernetes service account JWT file.",
+				zap.String("file", DEFAULT_K8S_TOKEN_PATH),
+				zap.String("error", rerr.Error()))
 		default:
 			str := string(b)
 			s.k8sToken = &str

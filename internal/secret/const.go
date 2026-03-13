@@ -6,30 +6,29 @@ import (
 
 // Vault specific attribute definitions
 var (
+	vaultManagementInfo = sm.InfoAttributeV3{
+		Uuid:          "",
+		Version:       ptrInt32(3),
+		SchemaVersion: sm.V3,
+		Name:          "Hashicorp Vault instance configuration",
+		Description:   ptrStr("Create a new HashiCorp Vault instance configuration"),
+		ContentType:   sm.AttributeContentTypeText,
+		Properties: sm.InfoAttributeProperties{
+			Label:   "Hashicorp Vault instance configuration",
+			Visible: true,
+		},
+	}
 	vaultManagementURI = sm.DataAttributeV3{
 		Uuid:          "ffd606d5-5fd0-4425-9a5a-29c2713ce18d",
 		Version:       3,
 		SchemaVersion: sm.V3,
 		Name:          "data_vault_management_uri",
 		ContentType:   sm.AttributeContentTypeString,
-		Description:   ptrStr("Vault URI should be in the following format: `http(s)://<vault-url>:<port>`."),
+		Description:   ptrStr("Vault URL should be in the following format: `http(s)://<vault-url>:<port>`."),
 		Properties: sm.DataAttributeProperties{
-			Label:    "Vault URI",
+			Label:    "Vault URL",
 			Visible:  true,
 			Required: true,
-		},
-	}
-	vaultManagementRequestTmout = sm.DataAttributeV3{
-		Uuid:          "4494de6b-7c33-44d2-8609-c3a561f5e3f1",
-		Version:       3,
-		SchemaVersion: sm.V3,
-		Name:          "data_vault_management_request_timeout",
-		ContentType:   sm.AttributeContentTypeInteger,
-		Description:   ptrStr("Request timeout in seconds applied to each Vault request."),
-		Properties: sm.DataAttributeProperties{
-			Label:    "Individual Vault request timeout",
-			Visible:  true,
-			Required: false,
 		},
 	}
 	vaultManagementMount = sm.DataAttributeV3{
@@ -40,7 +39,7 @@ var (
 		ContentType:   sm.AttributeContentTypeString,
 		Description:   ptrStr("Vault mount."),
 		Properties: sm.DataAttributeProperties{
-			Label:    "Vault mount",
+			Label:    "Vault mount path",
 			Visible:  true,
 			Required: true,
 		},
@@ -70,7 +69,7 @@ var (
 		ContentType:   sm.AttributeContentTypeString,
 		Description:   ptrStr("Path of secret in Vault without trailing slash."),
 		Properties: sm.DataAttributeProperties{
-			Label:    "Secret Path",
+			Label:    "Secret path prefix",
 			Visible:  true,
 			Required: false,
 		},
@@ -150,29 +149,10 @@ var (
 			Required: true,
 		},
 	}
-	vaultManagementJwt = sm.DataAttributeV3{
-		Uuid:          "94ec433b-9c50-4fcd-aabd-ab8da204d5db",
-		Version:       3,
-		SchemaVersion: sm.V3,
-		Name:          "data_vault_management_jwt",
-		ContentType:   sm.AttributeContentTypeResource,
-		Description:   ptrStr("Vault JWT."),
-		Properties: sm.DataAttributeProperties{
-			Resource: ptrAttributeResource(sm.Secrets),
-			Label:    "JWT/OIDC",
-			Visible:  true,
-			Required: true,
-		},
-		AttributeCallback: &sm.AttributeCallback{
-			Mappings: []sm.AttributeCallbackMapping{
-				{
-					To:      "SECRET_TYPE.EQUALS",
-					Value:   []sm.SecretType{sm.JwtToken, sm.Generic},
-					Targets: []sm.AttributeValueTarget{sm.Filter},
-				},
-			},
-		},
-	}
+)
+
+const (
+	vaultInfoContentDescrConst = "### HashiCorp Vault instance configuration.\n\nProvide URL of your Vault and select one of the available authentication methods:\n-  **AppRole** - Use AppRole authentication method with Role ID and Secret ID\n-  **Kubernetes** - Use Kubernetes authentication method with Service Account Token (automatically taken from the environment)\n-  **JWT/OIDC** - Use JWT/OIDC authentication method with provided JWT token (automatically taken from the environment)\n"
 )
 
 const (

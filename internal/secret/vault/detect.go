@@ -3,10 +3,13 @@ package vault
 import (
 	"context"
 	"fmt"
-	"log/slog"
+
+	"CZERTAINLY-HashiCorp-Vault-Connector/internal/logger"
 
 	vcg "github.com/hashicorp/vault-client-go"
 	"github.com/stretchr/objx"
+
+	"go.uber.org/zap"
 )
 
 const (
@@ -19,14 +22,14 @@ func DetectKVVersion(ctx context.Context, client *vcg.Client, mount string) (KVV
 		return KVVersionV1, fmt.Errorf("`InternalUiListEnabledVisibleMounts()` failed: %w", toPkgErr(err))
 	}
 
+	log := logger.Get()
 	// if there are any warnings on the response, log them as warnings if the warn log level is enabled
-	if len(mounts.Warnings) > 0 && slog.Default().Enabled(context.Background(), slog.LevelWarn) {
-		attrs := []slog.Attr{}
+	if len(mounts.Warnings) > 0 {
+		fields := make([]zap.Field, 0, len(mounts.Warnings))
 		for i, v := range mounts.Warnings {
-			attrs = append(attrs, slog.String(fmt.Sprintf("warning-%d", i), v))
+			fields = append(fields, zap.String(fmt.Sprintf("warning-%d", i), v))
 		}
-		// TODO: maybe group them under `warnings` key?
-		slog.LogAttrs(ctx, slog.LevelWarn, "Calling `InternalUiListEnabledVisibleMounts()` returned a response with warnings.", attrs...)
+		log.Warn("Calling `InternalUiListEnabledVisibleMounts()` returned a response with warnings.", fields...)
 	}
 
 	for engineName, engineData := range mounts.Data.Secret {
@@ -36,7 +39,7 @@ func DetectKVVersion(ctx context.Context, client *vcg.Client, mount string) (KVV
 
 		o := objx.New(engineData)
 		if !o.Get("type").IsStr() {
-			slog.WarnContext(ctx, "Unexpected mount info structure, expected type of key `type` is string.", slog.String("mount", engineName), slog.Any("info", engineData))
+			log.Warn("Unexpected mount info structure, expected type of key `type` is string.", zap.String("mount", engineName), zap.Any("info", engineData))
 			continue
 		}
 

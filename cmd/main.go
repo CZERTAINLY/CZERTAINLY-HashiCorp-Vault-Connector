@@ -17,7 +17,6 @@ import (
 	"context"
 	"encoding/json"
 	"io"
-	"log/slog"
 	"net/http"
 	"strings"
 
@@ -27,7 +26,6 @@ import (
 
 	"github.com/gorilla/mux"
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 )
 
 var version = "1.1.4"
@@ -37,24 +35,6 @@ var routes map[string][]model.EndpointDto
 var log = logger.Get()
 
 func main() {
-	// At the moment we think we'll be splitting the secret provider code into a separate repo,
-	// therefore we don't want to reuse the zap logger. Should the secret provider code stay
-	// in this repo, we'll rework to log/slog into zap to stay consistent
-	llevel := log.Level()
-
-	switch llevel {
-	case zapcore.DebugLevel:
-		slog.SetLogLoggerLevel(slog.LevelDebug)
-	case zapcore.InfoLevel:
-		slog.SetLogLoggerLevel(slog.LevelInfo)
-	case zapcore.WarnLevel:
-		slog.SetLogLoggerLevel(slog.LevelWarn)
-	case zapcore.ErrorLevel:
-		slog.SetLogLoggerLevel(slog.LevelError)
-	default:
-		slog.SetLogLoggerLevel(slog.LevelError)
-	}
-
 	routes = make(map[string][]model.EndpointDto)
 	c := config.Get()
 	log.Info("Starting CZERTAINLY-HashiCorp-Vault-Connector", zap.String("version", version))

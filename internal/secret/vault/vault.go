@@ -20,7 +20,7 @@ func New() *Manager {
 }
 
 func (m *Manager) ConnCheck(ctx context.Context, client *vcg.Client) error {
-	if _, err := client.System.MountsListSecretsEngines(ctx); err != nil {
+	if _, err := client.System.InternalUiListEnabledVisibleMounts(ctx); err != nil {
 		return toPkgErr(err)
 	}
 
