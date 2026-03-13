@@ -83,34 +83,47 @@ func (d *DiscoveryRepository) UpdateDiscovery(discovery *Discovery) error {
 }
 
 func (d *DiscoveryRepository) List(pagination Pagination, discovery *Discovery) (*Pagination, error) {
-	var certificates []*Certificate
+	var certificates []Certificate
 	page := pagination.Page
 	pageSize := pagination.Limit
 	offset := (page - 1) * pageSize
 
-	err := d.db.Model(discovery).
-		Offset(offset).Limit(pageSize).
-		Order("id ASC").
-		Association("Certificates").
-		Find(&certificates)
+	pagination.TotalRows = d.db.Model(discovery).Association("Certificates").Count()
+	if pagination.TotalRows == 0 {
+		pagination.Rows = []Certificate{}
+		pagination.TotalPages = 0
+		return &pagination, nil
+	}
+
+	tempDiscovery := Discovery{Id: discovery.Id}
+	err := d.db.Preload("Certificates", func(db *gorm.DB) *gorm.DB {
+		return db.Order("id ASC").Offset(offset).Limit(pageSize)
+	}).First(&tempDiscovery).Error
 
 	if err != nil {
 		return nil, err
 	}
 
+	certificates = tempDiscovery.Certificates
 	pagination.Rows = certificates
-	pagination.TotalRows = d.db.Model(discovery).Association("Certificates").Count()
 	totalPages := int(math.Ceil(float64(pagination.TotalRows) / float64(pagination.Limit)))
 	pagination.TotalPages = totalPages
 	return &pagination, nil
 }
 
 func (d *DiscoveryRepository) DeleteDiscovery(discovery *Discovery) error {
-	err := d.db.Select("Certificates").Delete(&discovery).Error
-	if err != nil {
-		return err
-	}
-	return nil
+	return d.db.Transaction(func(tx *gorm.DB) error {
+		// 1. Clear the many-to-many associations in the join table (discovery_certificates)
+		// This will NOT delete the actual Certificate records.
+		err := tx.Model(discovery).Association("Certificates").Clear()
+		if err != nil {
+			return err
+		}
+
+		// 2. Delete the Discovery record itself.
+		// Use discovery directly as it is already a *Discovery.
+		return tx.Delete(discovery).Error
+	})
 }
 
 type Pagination struct {

@@ -133,7 +133,7 @@ func (s *DiscoveryAPIService) GetDiscovery(ctx context.Context, uuid string, dis
 		}
 		result, _ := s.discoveryRepo.List(pagination, discovery)
 		var certificateDtos []model.DiscoveryProviderCertificateDataDto
-		rows, _ := result.Rows.([]*db.Certificate)
+		rows, _ := result.Rows.([]db.Certificate)
 		for _, certificateData := range rows {
 			discoveryProviderCertificateDataDto := model.DiscoveryProviderCertificateDataDto{
 				Uuid:          certificateData.UUID,
