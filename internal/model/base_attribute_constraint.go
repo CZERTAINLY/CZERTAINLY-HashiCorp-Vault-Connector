@@ -12,12 +12,12 @@ type BaseAttributeConstraint struct {
 	Type AttributeConstraintType `json:"type"`
 
 	// Attribute Constraint Data
-	Data map[string]interface{} `json:"data"`
+	Data any `json:"data,omitzero"`
 }
 
 // AssertBaseAttributeConstraintRequired checks if the required fields are not zero-ed
 func AssertBaseAttributeConstraintRequired(obj BaseAttributeConstraint) error {
-	elements := map[string]interface{}{
+	elements := map[string]any{
 		"type": obj.Type,
 		"data": obj.Data,
 	}

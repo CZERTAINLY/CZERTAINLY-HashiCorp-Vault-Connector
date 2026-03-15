@@ -12,7 +12,7 @@ type HealthDto struct {
 
 // AssertHealthDtoRequired checks if the required fields are not zero-ed
 func AssertHealthDtoRequired(obj HealthDto) error {
-	elements := map[string]interface{}{
+	elements := map[string]any{
 		"status": obj.Status,
 	}
 	for name, el := range elements {

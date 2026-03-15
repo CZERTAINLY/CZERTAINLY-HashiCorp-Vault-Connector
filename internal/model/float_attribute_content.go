@@ -11,7 +11,7 @@ type FloatAttributeContent struct {
 
 // AssertFloatAttributeContentRequired checks if the required fields are not zero-ed
 func AssertFloatAttributeContentRequired(obj FloatAttributeContent) error {
-	elements := map[string]interface{}{
+	elements := map[string]any{
 		"data": obj.Data,
 	}
 	for name, el := range elements {

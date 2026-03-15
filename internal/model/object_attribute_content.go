@@ -5,10 +5,10 @@ type ObjectAttributeContent struct {
 	Reference string `json:"reference,omitempty"`
 
 	// Object attribute content data
-	Data map[string]interface{} `json:"data"`
+	Data map[string]any `json:"data"`
 }
 
-func (o ObjectAttributeContent) GetData() interface{} {
+func (o ObjectAttributeContent) GetData() any {
 	return o.Data
 }
 
@@ -18,7 +18,7 @@ func (o ObjectAttributeContent) GetReference() string {
 
 // AssertObjectAttributeContentRequired checks if the required fields are not zero-ed
 func AssertObjectAttributeContentRequired(obj ObjectAttributeContent) error {
-	elements := map[string]interface{}{
+	elements := map[string]any{
 		"data": obj.Data,
 	}
 	for name, el := range elements {

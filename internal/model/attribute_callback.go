@@ -15,7 +15,7 @@ type AttributeCallback struct {
 
 // AssertAttributeCallbackRequired checks if the required fields are not zero-ed
 func AssertAttributeCallbackRequired(obj AttributeCallback) error {
-	elements := map[string]interface{}{
+	elements := map[string]any{
 		"callbackContext": obj.CallbackContext,
 		"callbackMethod":  obj.CallbackMethod,
 		"mappings":        obj.Mappings,

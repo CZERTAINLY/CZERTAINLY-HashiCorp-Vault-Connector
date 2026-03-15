@@ -22,7 +22,7 @@ type DiscoveryProviderDto struct {
 
 // AssertDiscoveryProviderDtoRequired checks if the required fields are not zero-ed
 func AssertDiscoveryProviderDtoRequired(obj DiscoveryProviderDto) error {
-	elements := map[string]interface{}{
+	elements := map[string]any{
 		"uuid":            obj.Uuid,
 		"name":            obj.Name,
 		"status":          obj.Status,

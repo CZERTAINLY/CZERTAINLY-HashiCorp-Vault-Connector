@@ -18,7 +18,7 @@ func (a *CertificateIdentificationRequestDto) Unmarshal(json []byte) {
 
 // AssertCertificateIdentificationRequestDtoRequired checks if the required fields are not zero-ed
 func AssertCertificateIdentificationRequestDtoRequired(obj CertificateIdentificationRequestDto) error {
-	elements := map[string]interface{}{
+	elements := map[string]any{
 		"certificate":         obj.Certificate,
 		"raProfileAttributes": obj.RaProfileAttributes,
 	}

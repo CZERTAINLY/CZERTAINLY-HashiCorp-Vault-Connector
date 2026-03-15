@@ -22,7 +22,7 @@ func (a *DiscoveryRequestDto) Unmarshal(json []byte) {
 
 // AssertDiscoveryRequestDtoRequired checks if the required fields are not zero-ed
 func AssertDiscoveryRequestDtoRequired(obj DiscoveryRequestDto) error {
-	elements := map[string]interface{}{
+	elements := map[string]any{
 		"name": obj.Name,
 		"kind": obj.Kind,
 	}

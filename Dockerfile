@@ -2,9 +2,9 @@
 # Install golang
 
 # Build Stage
-FROM golang:1.26-alpine3.22 AS builder
+FROM golang:1.26-alpine3.23 AS builder
 
-ENV WRK_DIR /app
+ENV WRK_DIR=/app
 
 # Copy the contents to /app
 COPY . $WRK_DIR
@@ -20,7 +20,7 @@ COPY docker /app/docker
 #
 # Run Stage
 #
-FROM alpine:3.22
+FROM alpine:3.23
 
 LABEL org.opencontainers.image.authors="CZERTAINLY <support@czertainly.com>"
 

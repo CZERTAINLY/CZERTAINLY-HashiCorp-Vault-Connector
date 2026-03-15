@@ -15,7 +15,7 @@ type InfoAttributeProperties struct {
 
 // AssertInfoAttributePropertiesRequired checks if the required fields are not zero-ed
 func AssertInfoAttributePropertiesRequired(obj InfoAttributeProperties) error {
-	elements := map[string]interface{}{
+	elements := map[string]any{
 		"label":   obj.Label,
 		"visible": obj.Visible,
 	}

@@ -8,7 +8,7 @@ type ErrorMessageDto struct {
 
 // AssertErrorMessageDtoRequired checks if the required fields are not zero-ed
 func AssertErrorMessageDtoRequired(obj ErrorMessageDto) error {
-	elements := map[string]interface{}{
+	elements := map[string]any{
 		"message": obj.Message,
 	}
 	for name, el := range elements {

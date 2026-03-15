@@ -18,7 +18,7 @@ func (a *CertificateRevocationListRequestDto) Unmarshal(json []byte) {
 
 // AssertCertificateRevocationListRequestDtoRequired checks if the required fields are not zero-ed
 func AssertCertificateRevocationListRequestDtoRequired(obj CertificateRevocationListRequestDto) error {
-	elements := map[string]interface{}{
+	elements := map[string]any{
 		"raProfileAttributes": obj.RaProfileAttributes,
 	}
 	for name, el := range elements {

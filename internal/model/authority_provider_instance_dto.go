@@ -14,7 +14,7 @@ type AuthorityProviderInstanceDto struct {
 
 // AssertAuthorityProviderInstanceDtoRequired checks if the required fields are not zero-ed
 func AssertAuthorityProviderInstanceDtoRequired(obj AuthorityProviderInstanceDto) error {
-	elements := map[string]interface{}{
+	elements := map[string]any{
 		"uuid":       obj.Uuid,
 		"name":       obj.Name,
 		"attributes": obj.Attributes,

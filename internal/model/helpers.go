@@ -15,7 +15,7 @@ import (
 )
 
 // Response return a ImplResponse struct filled
-func Response(code int, body interface{}) ImplResponse {
+func Response(code int, body any) ImplResponse {
 	return ImplResponse{
 		Code: code,
 		Body: body,
@@ -23,13 +23,13 @@ func Response(code int, body interface{}) ImplResponse {
 }
 
 // IsZeroValue checks if the val is the zero-ed value.
-func IsZeroValue(val interface{}) bool {
+func IsZeroValue(val any) bool {
 	return val == nil || reflect.DeepEqual(val, reflect.Zero(reflect.TypeOf(val)).Interface())
 }
 
 // AssertRecurseInterfaceRequired recursively checks each struct in a slice against the callback.
 // This method traverse nested slices in a preorder fashion.
-func AssertRecurseInterfaceRequired[T any](obj interface{}, callback func(T) error) error {
+func AssertRecurseInterfaceRequired[T any](obj any, callback func(T) error) error {
 	return AssertRecurseValueRequired(reflect.ValueOf(obj), callback)
 }
 

@@ -18,7 +18,7 @@ type CredentialAttributeContentData struct {
 
 // // AssertCredentialAttributeContentDataRequired checks if the required fields are not zero-ed
 // func AssertCredentialAttributeContentDataRequired(obj CredentialAttributeContentData) error {
-// 	elements := map[string]interface{}{
+// 	elements := map[string]any{
 // 		"uuid":       obj.Uuid,
 // 		"name":       obj.Name,
 // 		"kind":       obj.Kind,

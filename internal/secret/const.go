@@ -12,7 +12,7 @@ var (
 		SchemaVersion: sm.V3,
 		Name:          "data_vault_management_uri",
 		ContentType:   sm.AttributeContentTypeString,
-		Description:   ptrStr("Vault URI should be in the following format: `http(s)://<vault-url>:<port>`."),
+		Description:   new("Vault URI should be in the following format: `http(s)://<vault-url>:<port>`."),
 		Properties: sm.DataAttributeProperties{
 			Label:    "Vault URI",
 			Visible:  true,
@@ -25,7 +25,7 @@ var (
 		SchemaVersion: sm.V3,
 		Name:          "data_vault_management_request_timeout",
 		ContentType:   sm.AttributeContentTypeInteger,
-		Description:   ptrStr("Request timeout in seconds applied to each Vault request."),
+		Description:   new("Request timeout in seconds applied to each Vault request."),
 		Properties: sm.DataAttributeProperties{
 			Label:    "Individual Vault request timeout",
 			Visible:  true,
@@ -38,7 +38,7 @@ var (
 		SchemaVersion: sm.V3,
 		Name:          "data_vault_management_mount",
 		ContentType:   sm.AttributeContentTypeString,
-		Description:   ptrStr("Vault mount."),
+		Description:   new("Vault mount."),
 		Properties: sm.DataAttributeProperties{
 			Label:    "Vault mount",
 			Visible:  true,
@@ -51,7 +51,7 @@ var (
 		SchemaVersion: sm.V3,
 		Name:          "data_vault_management_credential_type",
 		ContentType:   sm.AttributeContentTypeString,
-		Description:   ptrStr("List of available Vault authentication methods."),
+		Description:   new("List of available Vault authentication methods."),
 		Properties: sm.DataAttributeProperties{
 			Label:       "Please select an authentication method",
 			Visible:     true,
@@ -68,7 +68,7 @@ var (
 		Name:          "data_vault_management_secret_path",
 		Type:          sm.Data,
 		ContentType:   sm.AttributeContentTypeString,
-		Description:   ptrStr("Path of secret in Vault without trailing slash."),
+		Description:   new("Path of secret in Vault without trailing slash."),
 		Properties: sm.DataAttributeProperties{
 			Label:    "Secret Path",
 			Visible:  true,
@@ -80,25 +80,25 @@ var (
 // credential type specific attribute definitions
 var (
 	credentialTypeAppRole = sm.StringAttributeContentV3{
-		Reference: ptrStr("AppRole"),
+		Reference: new("AppRole"),
 		Data:      "approle",
 	}
 	credentialTypeJwt = sm.StringAttributeContentV3{
-		Reference: ptrStr("JWT/OIDC"),
+		Reference: new("JWT/OIDC"),
 		Data:      "jwt",
 	}
 	credentialTypeK8s = sm.StringAttributeContentV3{
-		Reference: ptrStr("Kubernetes"),
+		Reference: new("Kubernetes"),
 		Data:      "kubernetes",
 	}
 	vaultManagementRoleID = sm.DataAttributeV3{
 		Version:     3,
 		Uuid:        "302af8ad-0c4d-4eb2-9add-2d4a894c6b32",
 		Name:        "data_vault_management_role_id",
-		Description: ptrStr("Vault AppRole ID."),
+		Description: new("Vault AppRole ID."),
 		ContentType: sm.AttributeContentTypeResource,
 		Properties: sm.DataAttributeProperties{
-			Resource: ptrAttributeResource(sm.Secrets),
+			Resource: new(sm.Secrets),
 			Visible:  true,
 			Label:    "AppRole ID",
 			Required: true,
@@ -120,9 +120,9 @@ var (
 		SchemaVersion: sm.V3,
 		Name:          "data_vault_management_role_secret",
 		ContentType:   sm.AttributeContentTypeResource,
-		Description:   ptrStr("Vault AppRole Secret."),
+		Description:   new("Vault AppRole Secret."),
 		Properties: sm.DataAttributeProperties{
-			Resource: ptrAttributeResource(sm.Secrets),
+			Resource: new(sm.Secrets),
 			Label:    "AppRole Secret",
 			Visible:  true,
 			Required: true,
@@ -143,7 +143,7 @@ var (
 		SchemaVersion: sm.V3,
 		Name:          "data_vault_management_role",
 		ContentType:   sm.AttributeContentTypeString,
-		Description:   ptrStr("Vault Role."),
+		Description:   new("Vault Role."),
 		Properties: sm.DataAttributeProperties{
 			Label:    "Vault role",
 			Visible:  true,
@@ -156,9 +156,9 @@ var (
 		SchemaVersion: sm.V3,
 		Name:          "data_vault_management_jwt",
 		ContentType:   sm.AttributeContentTypeResource,
-		Description:   ptrStr("Vault JWT."),
+		Description:   new("Vault JWT."),
 		Properties: sm.DataAttributeProperties{
-			Resource: ptrAttributeResource(sm.Secrets),
+			Resource: new(sm.Secrets),
 			Label:    "JWT/OIDC",
 			Visible:  true,
 			Required: true,

@@ -27,7 +27,7 @@ type CustomAttributeProperties struct {
 
 // AssertCustomAttributePropertiesRequired checks if the required fields are not zero-ed
 func AssertCustomAttributePropertiesRequired(obj CustomAttributeProperties) error {
-	elements := map[string]interface{}{
+	elements := map[string]any{
 		"label":       obj.Label,
 		"visible":     obj.Visible,
 		"required":    obj.Required,

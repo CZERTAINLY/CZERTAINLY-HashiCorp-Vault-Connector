@@ -18,7 +18,7 @@ type MetadataAttributeProperties struct {
 
 // AssertMetadataAttributePropertiesRequired checks if the required fields are not zero-ed
 func AssertMetadataAttributePropertiesRequired(obj MetadataAttributeProperties) error {
-	elements := map[string]interface{}{
+	elements := map[string]any{
 		"label":   obj.Label,
 		"visible": obj.Visible,
 	}

@@ -22,7 +22,7 @@ func (a *AuthorityProviderInstanceRequestDto) Unmarshal(json []byte) {
 
 // AssertAuthorityProviderInstanceRequestDtoRequired checks if the required fields are not zero-ed
 func AssertAuthorityProviderInstanceRequestDtoRequired(obj AuthorityProviderInstanceRequestDto) error {
-	elements := map[string]interface{}{
+	elements := map[string]any{
 		"name":       obj.Name,
 		"kind":       obj.Kind,
 		"attributes": obj.Attributes,

@@ -17,12 +17,12 @@ type AttributeCallbackMapping struct {
 	Targets []AttributeValueTarget `json:"targets"`
 
 	// Static value to be propagated to targets. It is optional and is set only if the value is known at attribute creation time.
-	Value map[string]interface{} `json:"value,omitempty"`
+	Value any `json:"value,omitzero"`
 }
 
 // AssertAttributeCallbackMappingRequired checks if the required fields are not zero-ed
 func AssertAttributeCallbackMappingRequired(obj AttributeCallbackMapping) error {
-	elements := map[string]interface{}{
+	elements := map[string]any{
 		"to":      obj.To,
 		"targets": obj.Targets,
 	}

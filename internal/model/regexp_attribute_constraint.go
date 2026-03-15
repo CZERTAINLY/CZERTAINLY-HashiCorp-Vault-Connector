@@ -21,7 +21,7 @@ func (a RegexpAttributeConstraint) GetConstraintType() AttributeConstraintType {
 
 // AssertRegexpAttributeConstraintRequired checks if the required fields are not zero-ed
 func AssertRegexpAttributeConstraintRequired(obj RegexpAttributeConstraint) error {
-	elements := map[string]interface{}{
+	elements := map[string]any{
 		"type": obj.Type,
 	}
 	for name, el := range elements {

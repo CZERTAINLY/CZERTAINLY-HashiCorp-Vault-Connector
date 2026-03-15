@@ -2,9 +2,10 @@ package secret
 
 import (
 	"fmt"
-	"github.com/gorilla/mux"
 	"log/slog"
 	"net/http"
+
+	"github.com/gorilla/mux"
 
 	sm "CZERTAINLY-HashiCorp-Vault-Connector/internal/secret/model"
 )
@@ -93,11 +94,11 @@ func (s *Server) listVaultAttributes(w http.ResponseWriter, r *http.Request) {
 		SchemaVersion: sm.V3,
 		Name:          VaultManagementCredentialGroupName,
 		AttributeCallback: &sm.AttributeCallback{
-			CallbackContext: ptrStr("v1/secretProvider/credentialType/{credentialsType}/callback"),
-			CallbackMethod:  ptrStr("GET"),
+			CallbackContext: new("v1/secretProvider/credentialType/{credentialsType}/callback"),
+			CallbackMethod:  new("GET"),
 			Mappings: []sm.AttributeCallbackMapping{
 				{
-					From:                 ptrStr(fmt.Sprintf("%s.data", vaultManagementCredentialType.Name)),
+					From:                 new(fmt.Sprintf("%s.data", vaultManagementCredentialType.Name)),
 					AttributeType:        &credentialGroupAttrType,
 					AttributeContentType: &credentialGroupAttrContentType,
 					To:                   "credentialsType",

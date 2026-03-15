@@ -23,11 +23,7 @@ func GenerateRandomUUID() string {
 }
 
 func DeterministicGUID(parts ...string) string {
-	// concatenate all strings
-	var combined string
-	for _, part := range parts {
-		combined += part
-	}
+	combined := strings.Join(parts, "")
 
 	md5hash := md5.New()
 	md5hash.Write([]byte(combined))

@@ -16,7 +16,7 @@ type CertificateDataResponseDto struct {
 
 // AssertCertificateDataResponseDtoRequired checks if the required fields are not zero-ed
 func AssertCertificateDataResponseDtoRequired(obj CertificateDataResponseDto) error {
-	elements := map[string]interface{}{
+	elements := map[string]any{
 		"certificateData": obj.CertificateData,
 	}
 	for name, el := range elements {

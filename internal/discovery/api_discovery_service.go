@@ -67,7 +67,7 @@ func (s *DiscoveryAPIService) DiscoverCertificate(ctx context.Context, discovery
 		Certificates: nil,
 	}
 
-	uuid := model.GetAttributeFromArrayByUUID(model.DISCOVERY_AUTHORITY_ATTR, discoveryRequestDto.Attributes).GetContent()[0].GetData().(map[string]interface{})["uuid"].(string)
+	uuid := model.GetAttributeFromArrayByUUID(model.DISCOVERY_AUTHORITY_ATTR, discoveryRequestDto.Attributes).GetContent()[0].GetData().(map[string]any)["uuid"].(string)
 
 	authority, err := s.authorityRepo.FindAuthorityInstanceByUUID(uuid)
 	if err != nil {
@@ -101,7 +101,7 @@ func (s *DiscoveryAPIService) DiscoverCertificate(ctx context.Context, discovery
 	} else {
 		enginesList = make([]string, 0)
 		for _, engine := range enginesAttr.GetContent() {
-			engineData := engine.(model.ObjectAttributeContent).GetData().(map[string]interface{})
+			engineData := engine.(model.ObjectAttributeContent).GetData().(map[string]any)
 			engineName := engineData["engineName"].(string)
 			enginesList = append(enginesList, engineName)
 		}

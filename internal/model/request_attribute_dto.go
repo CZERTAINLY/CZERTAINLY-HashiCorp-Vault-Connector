@@ -34,7 +34,7 @@ func (r RequestAttributeDto) GetUuid() string {
 
 // AssertRequestAttributeDtoRequired checks if the required fields are not zero-ed
 func AssertRequestAttributeDtoRequired(obj Attribute) error {
-	elements := map[string]interface{}{
+	elements := map[string]any{
 		"name":    obj.GetName(),
 		"content": obj.GetContent(),
 	}

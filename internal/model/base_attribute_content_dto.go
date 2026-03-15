@@ -7,12 +7,12 @@ type BaseAttributeContentDto struct {
 	Reference string `json:"reference,omitempty"`
 
 	// Content Data
-	Data map[string]interface{} `json:"data"`
+	Data any `json:"data,omitzero"`
 }
 
 // AssertBaseAttributeContentDtoRequired checks if the required fields are not zero-ed
 func AssertBaseAttributeContentDtoRequired(obj AttributeContent) error {
-	elements := map[string]interface{}{
+	elements := map[string]any{
 		"data": obj.GetData(),
 	}
 	for name, el := range elements {
