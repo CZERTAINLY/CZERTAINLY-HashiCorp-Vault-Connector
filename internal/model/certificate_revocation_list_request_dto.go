@@ -1,10 +1,6 @@
 package model
 
-import (
-	"context"
-
-	"github.com/tidwall/gjson"
-)
+import "github.com/tidwall/gjson"
 
 type CertificateRevocationListRequestDto struct {
 
@@ -17,7 +13,7 @@ type CertificateRevocationListRequestDto struct {
 
 func (a *CertificateRevocationListRequestDto) Unmarshal(json []byte) {
 	a.Delta = gjson.GetBytes(json, "delta").String() == "true"
-	a.RaProfileAttributes = UnmarshalAttributesValues(context.Background(), []byte(gjson.GetBytes(json, "raProfileAttributes").Raw))
+	a.RaProfileAttributes = UnmarshalAttributesValues([]byte(gjson.GetBytes(json, "raProfileAttributes").Raw))
 }
 
 // AssertCertificateRevocationListRequestDtoRequired checks if the required fields are not zero-ed

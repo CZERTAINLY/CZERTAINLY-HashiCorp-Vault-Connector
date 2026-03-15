@@ -1,10 +1,6 @@
 package model
 
-import (
-	"context"
-
-	"github.com/tidwall/gjson"
-)
+import "github.com/tidwall/gjson"
 
 type DiscoveryRequestDto struct {
 
@@ -21,7 +17,7 @@ type DiscoveryRequestDto struct {
 func (a *DiscoveryRequestDto) Unmarshal(json []byte) {
 	a.Name = gjson.GetBytes(json, "name").String()
 	a.Kind = gjson.GetBytes(json, "kind").String()
-	a.Attributes = UnmarshalAttributesValues(context.Background(), []byte(gjson.GetBytes(json, "attributes").Raw))
+	a.Attributes = UnmarshalAttributesValues([]byte(gjson.GetBytes(json, "attributes").Raw))
 }
 
 // AssertDiscoveryRequestDtoRequired checks if the required fields are not zero-ed

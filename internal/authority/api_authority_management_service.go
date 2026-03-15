@@ -101,7 +101,7 @@ func (s *AuthorityManagementAPIService) GetAuthorityInstance(ctx context.Context
 			Message: "Authority not found",
 		}), nil
 	}
-	attributes := model.UnmarshalAttributes(ctx, []byte(authority.Attributes))
+	attributes := model.UnmarshalAttributes([]byte(authority.Attributes))
 	authorityDto := model.AuthorityProviderInstanceDto{
 		Uuid:       authority.UUID,
 		Name:       authority.Name,
@@ -255,7 +255,7 @@ func (s *AuthorityManagementAPIService) ListAuthorityInstances(ctx context.Conte
 	authorities, _ := s.authorityRepo.ListAuthorityInstances()
 	var authoritiesDto []model.AuthorityProviderInstanceDto
 	for _, authority := range authorities {
-		attributes := model.UnmarshalAttributes(ctx, []byte(authority.Attributes))
+		attributes := model.UnmarshalAttributes([]byte(authority.Attributes))
 		authoritiesDto = append(authoritiesDto, model.AuthorityProviderInstanceDto{
 			Uuid:       authority.UUID,
 			Name:       authority.Name,
@@ -387,7 +387,7 @@ func (s *AuthorityManagementAPIService) UpdateAuthorityInstance(ctx context.Cont
 		// Handle error, failed to delete authority
 		return model.Response(http.StatusInternalServerError, model.ErrorMessageDto{}), err
 	}
-	attributesEntity := model.UnmarshalAttributes(ctx, []byte(authority.Attributes))
+	attributesEntity := model.UnmarshalAttributes([]byte(authority.Attributes))
 	authorityDto := model.AuthorityProviderInstanceDto{
 		Uuid:       authority.UUID,
 		Name:       authority.Name,

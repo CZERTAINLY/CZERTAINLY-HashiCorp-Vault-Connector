@@ -62,7 +62,7 @@ func (s *DiscoveryAPIService) DiscoverCertificate(ctx context.Context, discovery
 	discovery := &db.Discovery{
 		UUID:         response.Uuid,
 		Name:         response.Name,
-		Status:       response.Status,
+		Status:       string(response.Status),
 		Meta:         nil,
 		Certificates: nil,
 	}
@@ -190,6 +190,7 @@ func (s *DiscoveryAPIService) DiscoveryCertificates(ctx context.Context, authori
 					return
 				}
 				certificate := db.Certificate{
+					SerialNumber:  certificateKey,
 					UUID:          utils.DeterministicGUID(certificateKey),
 					Base64Content: base64.StdEncoding.EncodeToString([]byte(certificateData.Data.Certificate)),
 				}
