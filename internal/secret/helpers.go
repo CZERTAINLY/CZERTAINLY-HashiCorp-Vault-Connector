@@ -15,6 +15,10 @@ import (
 	vcg "github.com/hashicorp/vault-client-go"
 )
 
+func ptr[T any](v T) *T {
+	return &v
+}
+
 func vaultPath(path, name string) string {
 	return fmt.Sprintf("%s/%s", path, name)
 }
