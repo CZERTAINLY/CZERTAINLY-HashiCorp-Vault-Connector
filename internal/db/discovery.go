@@ -1,9 +1,14 @@
 package db
 
 import (
+	"CZERTAINLY-HashiCorp-Vault-Connector/internal/model"
+	"context"
+	"encoding/json"
+	"fmt"
 	"math"
 
 	"gorm.io/datatypes"
+
 	"gorm.io/gorm"
 )
 
@@ -11,18 +16,67 @@ type Discovery struct {
 	Id           uint `gorm:"primarykey"`
 	UUID         string
 	Name         string
-	Status       string
-	Meta         datatypes.JSON
-	Certificates []Certificate `gorm:"many2many:discovery_certificates;"`
+	Status       model.DiscoveryStatus
+	Meta         datatypes.JSON `gorm:"type:json"`
+	Certificates []Certificate  `gorm:"many2many:discovery_certificates;"`
 }
 
 type Certificate struct {
 	Id            uint `gorm:"primarykey"`
-	SerialNumber  string
 	UUID          string
 	Base64Content string
-	Meta          datatypes.JSON
-	Discoveries   []Discovery `gorm:"many2many:discovery_certificates;"`
+	Meta          datatypes.JSON `gorm:"type:json"`
+	Discoveries   []Discovery    `gorm:"many2many:discovery_certificates;"`
+}
+
+// Marshal your MetadataAttribute array to JSON for storing in the Meta field
+func (d *Discovery) SetMeta(attributes []model.MetadataAttribute) error {
+	jsonData, err := json.Marshal(attributes)
+	if err != nil {
+		return err
+	}
+	d.Meta = jsonData
+	return nil
+}
+
+// Unmarshal your JSON data from the Meta field into a MetadataAttribute array
+func (d *Discovery) GetMeta() ([]model.MetadataAttribute, error) {
+	attributes := model.UnmarshalAttributes(context.TODO(), d.Meta)
+	if attributes == nil {
+		return nil, fmt.Errorf("failed to unmarshal metadata attributes")
+	} else {
+		var metaAttributes []model.MetadataAttribute
+		for _, attribute := range attributes {
+			metadataAttribute := attribute.(model.MetadataAttribute)
+			metaAttributes = append(metaAttributes, metadataAttribute)
+		}
+		return metaAttributes, nil
+	}
+}
+
+// Marshal your MetadataAttribute array to JSON for storing in the Meta field
+func (d *Certificate) SetMeta(attributes []model.MetadataAttribute) error {
+	jsonData, err := json.Marshal(attributes)
+	if err != nil {
+		return err
+	}
+	d.Meta = jsonData
+	return nil
+}
+
+// Unmarshal your JSON data from the Meta field into a MetadataAttribute array
+func (d *Certificate) GetMeta() ([]model.MetadataAttribute, error) {
+	attributes := model.UnmarshalAttributes(context.TODO(), d.Meta)
+	if attributes == nil {
+		return nil, fmt.Errorf("failed to unmarshal metadata attributes")
+	} else {
+		var metaAttributes []model.MetadataAttribute
+		for _, attribute := range attributes {
+			metadataAttribute := attribute.(model.MetadataAttribute)
+			metaAttributes = append(metaAttributes, metadataAttribute)
+		}
+		return metaAttributes, nil
+	}
 }
 
 type DiscoveryRepository struct {
@@ -34,6 +88,12 @@ func NewDiscoveryRepository(db *gorm.DB) (*DiscoveryRepository, error) {
 }
 
 func (d *DiscoveryRepository) CreateDiscovery(discovery *Discovery) error {
+	var exisitngDiscovery Discovery
+	d.db.First(&exisitngDiscovery, "name = ?", discovery.Name)
+	if exisitngDiscovery.Name != "" {
+		return fmt.Errorf("discovery instance with name %s already exists", discovery.Name)
+	}
+
 	result := d.db.Create(&discovery)
 	if result.Error != nil {
 		return result.Error
@@ -43,7 +103,7 @@ func (d *DiscoveryRepository) CreateDiscovery(discovery *Discovery) error {
 
 func (d *DiscoveryRepository) AssociateCertificatesToDiscovery(discovery *Discovery, certificates ...*Certificate) error {
 	for _, certificate := range certificates {
-		d.db.FirstOrCreate(&certificate, Certificate{SerialNumber: certificate.SerialNumber})
+		d.db.FirstOrCreate(&certificate, Certificate{UUID: certificate.UUID})
 	}
 	assoc := d.db.Model(&discovery).Association("Certificates")
 	err := assoc.Append(&certificates)
@@ -56,7 +116,7 @@ func (d *DiscoveryRepository) AssociateCertificatesToDiscovery(discovery *Discov
 func (d *DiscoveryRepository) CreateDiscoveryAndAssociateCertificates(discovery *Discovery, certificates ...*Certificate) error {
 	d.db.Create(&discovery)
 	for _, certificate := range certificates {
-		d.db.FirstOrCreate(&certificate, Certificate{SerialNumber: certificate.SerialNumber})
+		d.db.FirstOrCreate(&certificate, Certificate{UUID: certificate.UUID})
 		assoc := d.db.Model(&discovery).Association("Certificates")
 		err := assoc.Append(&certificate)
 		if err != nil {
@@ -83,47 +143,53 @@ func (d *DiscoveryRepository) UpdateDiscovery(discovery *Discovery) error {
 }
 
 func (d *DiscoveryRepository) List(pagination Pagination, discovery *Discovery) (*Pagination, error) {
-	var certificates []Certificate
-	page := pagination.Page
-	pageSize := pagination.Limit
+	var certificates []*Certificate
+	page, pageSize := pagination.Page, pagination.Limit
 	offset := (page - 1) * pageSize
 
-	pagination.TotalRows = d.db.Model(discovery).Association("Certificates").Count()
-	if pagination.TotalRows == 0 {
-		pagination.Rows = []Certificate{}
-		pagination.TotalPages = 0
-		return &pagination, nil
-	}
+	certTbl := tbl("certificates")
+	linkTbl := tbl("discovery_certificates")
 
-	tempDiscovery := Discovery{Id: discovery.Id}
-	err := d.db.Preload("Certificates", func(db *gorm.DB) *gorm.DB {
-		return db.Order("id ASC").Offset(offset).Limit(pageSize)
-	}).First(&tempDiscovery).Error
+	// build the base query only once
+	q := d.db.Table(certTbl).
+		Select(certTbl+".*").
+		Joins("JOIN "+linkTbl+" dc ON dc.certificate_id = "+certTbl+".id").
+		Where("dc.discovery_id = ?", discovery.Id)
 
-	if err != nil {
+	var total int64
+	if err := q.Count(&total).Error; err != nil {
 		return nil, err
 	}
 
-	certificates = tempDiscovery.Certificates
+	if err := q.
+		Order(certTbl + ".id").
+		Offset(offset).
+		Limit(pageSize).
+		Find(&certificates).Error; err != nil {
+		return nil, err
+	}
+
 	pagination.Rows = certificates
-	totalPages := int(math.Ceil(float64(pagination.TotalRows) / float64(pagination.Limit)))
-	pagination.TotalPages = totalPages
+	pagination.TotalRows = total
+	pagination.TotalPages = int(math.Ceil(float64(total) / float64(pageSize)))
 	return &pagination, nil
 }
 
 func (d *DiscoveryRepository) DeleteDiscovery(discovery *Discovery) error {
-	return d.db.Transaction(func(tx *gorm.DB) error {
-		// 1. Clear the many-to-many associations in the join table (discovery_certificates)
-		// This will NOT delete the actual Certificate records.
-		err := tx.Model(discovery).Association("Certificates").Clear()
-		if err != nil {
-			return err
-		}
+	result := d.db.Delete(&discovery)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
 
-		// 2. Delete the Discovery record itself.
-		// Use discovery directly as it is already a *Discovery.
-		return tx.Delete(discovery).Error
-	})
+func (d *DiscoveryRepository) DeleteOrphanedCertificates() error {
+	dcTbl := tbl("discovery_certificates")
+	certTbl := tbl("certificates")
+
+	return d.db.
+		Where("NOT EXISTS (SELECT 1 FROM " + dcTbl + " dc WHERE dc.certificate_id = " + certTbl + ".id)").
+		Delete(&Certificate{}).Error
 }
 
 type Pagination struct {

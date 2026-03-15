@@ -3,14 +3,22 @@ package model
 type CredentialAttributeContent struct {
 
 	// Content Reference
-	Reference string `json:"reference,omitempty"`
+	Reference string `json:"reference,omitzero"`
 
 	Data CredentialAttributeContentData `json:"data"`
 }
 
+func (c CredentialAttributeContent) GetData() any {
+	return c.Data
+}
+
+func (c CredentialAttributeContent) GetReference() string {
+	return c.Reference
+}
+
 // // AssertCredentialAttributeContentRequired checks if the required fields are not zero-ed
 // func AssertCredentialAttributeContentRequired(obj CredentialAttributeContent) error {
-// 	elements := map[string]interface{}{
+// 	elements := map[string]any{
 // 		"data": obj.Data,
 // 	}
 // 	for name, el := range elements {

@@ -2,7 +2,10 @@ package model
 
 import (
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/logger"
+	"context"
 	"encoding/json"
+	"fmt"
+	"strings"
 
 	"github.com/tidwall/gjson"
 	"go.uber.org/zap"
@@ -139,7 +142,7 @@ func GetAttributeByName(name string) AttributeDefinition {
 	return AttributeDefinition{}
 }
 
-func unmarshalAttributeContent(content []byte, contentType AttributeContentType) AttributeContent {
+func unmarshalAttributeContent(ctx context.Context, content []byte, contentType AttributeContentType) AttributeContent {
 	var result AttributeContent
 	switch contentType {
 	case STRING:
@@ -150,22 +153,12 @@ func unmarshalAttributeContent(content []byte, contentType AttributeContentType)
 			log.Error(err.Error(), zap.String("content", string(content)))
 		}
 	case OBJECT:
-		//TODO: remove conversion to string after UI will be able to handle ObjectAttributeContent
-		stringData := StringAttributeContent{}
-		err := json.Unmarshal(content, &stringData)
-		result = ObjectAttributeContent{
-			Reference: stringData.Reference,
-			Data:      map[string]interface{}{"objectData": stringData.Data},
-		}
+		objectData := ObjectAttributeContent{}
+		err := json.Unmarshal(content, &objectData)
 		if err != nil {
 			log.Error(err.Error(), zap.String("content", string(content)))
-			objectData := ObjectAttributeContent{}
-			err := json.Unmarshal(content, &objectData)
-			if err != nil {
-				log.Error(err.Error(), zap.String("content", string(content)))
-			}
-			result = objectData
 		}
+		result = objectData
 	case BOOLEAN:
 		booleanContent := BooleanAttributeContent{}
 		err := json.Unmarshal(content, &booleanContent)
@@ -173,33 +166,48 @@ func unmarshalAttributeContent(content []byte, contentType AttributeContentType)
 		if err != nil {
 			log.Error(err.Error(), zap.String("content", string(content)))
 		}
-
 	case SECRET:
-		//TODO: remove conversion to string after UI will be able to handle SecretAttributeContentData
-		//secretAttributeContent := SecretAttributeContent{}
-		stringData := StringAttributeContent{}
-		err := json.Unmarshal(content, &stringData)
-		result = SecretAttributeContent{
-			Reference: stringData.Reference,
-			Data: SecretAttributeContentData{
-				Secret: stringData.Data,
-			},
+		secretData := SecretAttributeContent{}
+		err := json.Unmarshal(content, &secretData)
+		if err != nil {
+			log.Debug(err.Error(), zap.String("content", string(content)))
+			log.Error(err.Error())
 		}
+		result = secretData
+	case DATETIME:
+		dateTimeContent := DateTimeAttributeContent{}
+		err := json.Unmarshal(content, &dateTimeContent)
+		result = dateTimeContent
 		if err != nil {
 			log.Error(err.Error(), zap.String("content", string(content)))
-			secretData := SecretAttributeContent{}
-			err := json.Unmarshal(content, &secretData)
-			if err != nil {
+		}
+	case CREDENTIAL: // we assume here to get only ApiKey as secret attribute content
+		credentialContent := CredentialAttributeContent{}
+		err := json.Unmarshal(content, &credentialContent)
+
+		// credential content has nested attributes with content
+		for i, attr := range credentialContent.Data.Attributes {
+			attrContents := gjson.GetBytes(content, fmt.Sprintf("data.attributes.%d.content", i))
+			for _, attrContent := range attrContents.Array() {
+				credentialContent.Data.Attributes[i].Content[i] = unmarshalAttributeContent(ctx, []byte(attrContent.Raw), attr.ContentType)
+				//attr.Content = append(attr.Content, unmarshalAttributeContent([]byte(attrContent.Raw), attr.ContentType))
+			}
+		}
+
+		result = credentialContent
+		if err != nil {
+			// TODO:  json: cannot unmarshal object into Go struct field DataAttribute.data.attributes.content of type model.AttributeContent
+			// if error message contains this string, then we have a problem with unmarshalling the content
+			if !strings.HasPrefix(err.Error(), "json: cannot unmarshal object into Go struct field DataAttribute.data.attributes.content of type model.AttributeContent") {
 				log.Error(err.Error(), zap.String("content", string(content)))
 			}
-			result = secretData
 		}
 	}
 
 	return result
 }
 
-func unmarshalAttribute(content []byte, attrDef AttributeDefinition) Attribute {
+func unmarshalAttribute(ctx context.Context, content []byte, attrDef AttributeDefinition) Attribute {
 	var result Attribute
 	switch attrDef.AttributeType {
 	case DATA:
@@ -207,7 +215,7 @@ func unmarshalAttribute(content []byte, attrDef AttributeDefinition) Attribute {
 		data := DataAttribute{}
 		contents := gjson.GetBytes(content, "content")
 		for _, content := range contents.Array() {
-			data.Content = append(data.Content, unmarshalAttributeContent([]byte(content.Raw), attrDef.AttributeContentType))
+			data.Content = append(data.Content, unmarshalAttributeContent(ctx, []byte(content.Raw), attrDef.AttributeContentType))
 		}
 		data.Uuid = gjson.GetBytes(content, "uuid").String()
 		data.Name = gjson.GetBytes(content, "name").String()
@@ -236,12 +244,32 @@ func unmarshalAttribute(content []byte, attrDef AttributeDefinition) Attribute {
 			}
 		}
 		result = data
+
+	case META:
+		meta := MetadataAttribute{}
+		contents := gjson.GetBytes(content, "content")
+		for _, content := range contents.Array() {
+			meta.Content = append(meta.Content, unmarshalAttributeContent(ctx, []byte(content.Raw), attrDef.AttributeContentType))
+		}
+		meta.Uuid = gjson.GetBytes(content, "uuid").String()
+		meta.Name = gjson.GetBytes(content, "name").String()
+		meta.Description = gjson.GetBytes(content, "description").String()
+		meta.Type = attrDef.AttributeType
+		meta.ContentType = attrDef.AttributeContentType
+		properties := gjson.GetBytes(content, "properties").Raw
+		if properties != "" {
+			err := json.Unmarshal([]byte(properties), &meta.Properties)
+			if err != nil {
+				log.Error(err.Error(), zap.String("content", string(content)))
+			}
+		}
+		result = meta
 	}
 
 	return result
 }
 
-func unmarshalAttributeValue(content []byte, attrDef AttributeDefinition) Attribute {
+func unmarshalAttributeValue(ctx context.Context, content []byte, attrDef AttributeDefinition) Attribute {
 	var result Attribute
 	switch attrDef.AttributeType {
 	case DATA:
@@ -249,7 +277,7 @@ func unmarshalAttributeValue(content []byte, attrDef AttributeDefinition) Attrib
 		contents := gjson.GetBytes(content, "content")
 		data.Content = []AttributeContent{}
 		for _, content := range contents.Array() {
-			data.Content = append(data.Content, unmarshalAttributeContent([]byte(content.Raw), attrDef.AttributeContentType))
+			data.Content = append(data.Content, unmarshalAttributeContent(ctx, []byte(content.Raw), attrDef.AttributeContentType))
 		}
 		result = data
 	}
@@ -257,18 +285,18 @@ func unmarshalAttributeValue(content []byte, attrDef AttributeDefinition) Attrib
 	return result
 }
 
-func UnmarshalAttributesValues(content []byte) []Attribute {
+func UnmarshalAttributesValues(ctx context.Context, content []byte) []Attribute {
 	attributes := gjson.GetBytes(content, "@values")
 	var result []Attribute
 	for _, attribute := range attributes.Array() {
 		def := GetAttributeByName(gjson.Get(attribute.Raw, "name").String())
-		attributeObject := unmarshalAttributeValue([]byte(attribute.Raw), def)
+		attributeObject := unmarshalAttributeValue(ctx, []byte(attribute.Raw), def)
 		result = append(result, attributeObject)
 	}
 	return result
 }
 
-func UnmarshalAttributes(content []byte) []Attribute {
+func UnmarshalAttributes(ctx context.Context, content []byte) []Attribute {
 	attributes := gjson.GetBytes(content, "@values")
 	var result []Attribute
 	for _, attribute := range attributes.Array() {
@@ -282,7 +310,7 @@ func UnmarshalAttributes(content []byte) []Attribute {
 			definition.AttributeType = def.AttributeType
 			definition.AttributeContentType = def.AttributeContentType
 		}
-		attributeObject := unmarshalAttribute([]byte(attribute.Raw), definition)
+		attributeObject := unmarshalAttribute(ctx, []byte(attribute.Raw), definition)
 		result = append(result, attributeObject)
 	}
 	return result
