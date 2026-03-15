@@ -27,7 +27,7 @@ type DataAttributeProperties struct {
 
 // AssertDataAttributePropertiesRequired checks if the required fields are not zero-ed
 func AssertDataAttributePropertiesRequired(obj DataAttributeProperties) error {
-	elements := map[string]interface{}{
+	elements := map[string]any{
 		"label":       obj.Label,
 		"visible":     obj.Visible,
 		"required":    obj.Required,

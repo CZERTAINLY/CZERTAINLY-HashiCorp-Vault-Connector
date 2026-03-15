@@ -9,7 +9,7 @@ type Attribute interface {
 }
 
 type AttributeContent interface {
-	GetData() interface{}
+	GetData() any
 	GetReference() string
 }
 

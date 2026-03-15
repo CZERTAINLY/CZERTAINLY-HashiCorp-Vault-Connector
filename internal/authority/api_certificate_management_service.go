@@ -34,7 +34,7 @@ func NewCertificateManagementAPIService(authorityRepo *db.AuthorityRepository, l
 // IdentifyCertificate - Identify Certificate
 func (s *CertificateManagementAPIService) IdentifyCertificate(ctx context.Context, uuid string, certificateIdentificationRequestDto model.CertificateIdentificationRequestDto) (model.ImplResponse, error) {
 	raAttributes := certificateIdentificationRequestDto.RaProfileAttributes
-	engineData := model.GetAttributeFromArrayByUUID(model.RA_PROFILE_ENGINE_ATTR, raAttributes).GetContent()[0].GetData().(map[string]interface{})
+	engineData := model.GetAttributeFromArrayByUUID(model.RA_PROFILE_ENGINE_ATTR, raAttributes).GetContent()[0].GetData().(map[string]any)
 	engineName := engineData["engineName"].(string)
 	authority, err := s.authorityRepo.FindAuthorityInstanceByUUID(uuid)
 	if err != nil {
@@ -87,9 +87,9 @@ func (s *CertificateManagementAPIService) IssueCertificate(ctx context.Context, 
 			Message: "Invalid certificate request format, PKCS#10 format expected.",
 		}), nil
 	}
-  
+
 	raAttributes := certificateSignRequestDto.RaProfileAttributes
-	engineData := model.GetAttributeFromArrayByUUID(model.RA_PROFILE_ENGINE_ATTR, raAttributes).GetContent()[0].GetData().(map[string]interface{})
+	engineData := model.GetAttributeFromArrayByUUID(model.RA_PROFILE_ENGINE_ATTR, raAttributes).GetContent()[0].GetData().(map[string]any)
 	engineName := engineData["engineName"].(string)
 	role := model.GetAttributeFromArrayByUUID(model.RA_PROFILE_ROLE_ATTR, raAttributes).GetContent()[0].GetData().(string)
 	authority, err := s.authorityRepo.FindAuthorityInstanceByUUID(uuid)
@@ -182,7 +182,7 @@ func (s *CertificateManagementAPIService) RenewCertificate(ctx context.Context, 
 	}
 
 	raAttributes := certificateRenewRequestDto.RaProfileAttributes
-	engineData := model.GetAttributeFromArrayByUUID(model.RA_PROFILE_ENGINE_ATTR, raAttributes).GetContent()[0].GetData().(map[string]interface{})
+	engineData := model.GetAttributeFromArrayByUUID(model.RA_PROFILE_ENGINE_ATTR, raAttributes).GetContent()[0].GetData().(map[string]any)
 	engineName := engineData["engineName"].(string)
 	role := model.GetAttributeFromArrayByUUID(model.RA_PROFILE_ROLE_ATTR, raAttributes).GetContent()[0].GetData().(string)
 	authority, err := s.authorityRepo.FindAuthorityInstanceByUUID(uuid)

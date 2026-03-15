@@ -15,7 +15,7 @@ type FileAttributeContentData struct {
 
 // AssertFileAttributeContentDataRequired checks if the required fields are not zero-ed
 func AssertFileAttributeContentDataRequired(obj FileAttributeContentData) error {
-	elements := map[string]interface{}{
+	elements := map[string]any{
 		"content":  obj.Content,
 		"fileName": obj.FileName,
 		"mimeType": obj.MimeType,

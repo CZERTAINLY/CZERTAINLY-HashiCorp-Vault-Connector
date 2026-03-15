@@ -15,12 +15,8 @@ import (
 	vcg "github.com/hashicorp/vault-client-go"
 )
 
-func ptrStr(v string) *string {
+func ptr[T any](v T) *T {
 	return &v
-}
-
-func ptrAttributeResource(r sm.AttributeResource) *sm.AttributeResource {
-	return &r
 }
 
 func vaultPath(path, name string) string {

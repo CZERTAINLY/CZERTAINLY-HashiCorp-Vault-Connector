@@ -9,7 +9,7 @@ type TextAttributeContent struct {
 	Data string `json:"data"`
 }
 
-func (a TextAttributeContent) GetData() interface{} {
+func (a TextAttributeContent) GetData() any {
 	return a.Data
 }
 
@@ -19,7 +19,7 @@ func (a TextAttributeContent) GetReference() string {
 
 // AssertTextAttributeContentRequired checks if the required fields are not zero-ed
 func AssertTextAttributeContentRequired(obj TextAttributeContent) error {
-	elements := map[string]interface{}{
+	elements := map[string]any{
 		"data": obj.Data,
 	}
 	for name, el := range elements {

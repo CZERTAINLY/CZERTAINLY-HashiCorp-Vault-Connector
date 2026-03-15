@@ -15,7 +15,7 @@ type DiscoveryProviderCertificateDataDto struct {
 
 // AssertDiscoveryProviderCertificateDataDtoRequired checks if the required fields are not zero-ed
 func AssertDiscoveryProviderCertificateDataDtoRequired(obj DiscoveryProviderCertificateDataDto) error {
-	elements := map[string]interface{}{
+	elements := map[string]any{
 		"uuid":          obj.Uuid,
 		"base64Content": obj.Base64Content,
 		"meta":          obj.Meta,

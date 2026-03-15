@@ -10,12 +10,12 @@ type RangeAttributeConstraint struct {
 
 	Type AttributeConstraintType `json:"type"`
 
-	Data RangeAttributeConstraintData `json:"data,omitempty"`
+	Data RangeAttributeConstraintData `json:"data,omitzero"`
 }
 
 // AssertRangeAttributeConstraintRequired checks if the required fields are not zero-ed
 func AssertRangeAttributeConstraintRequired(obj RangeAttributeConstraint) error {
-	elements := map[string]interface{}{
+	elements := map[string]any{
 		"type": obj.Type,
 	}
 	for name, el := range elements {

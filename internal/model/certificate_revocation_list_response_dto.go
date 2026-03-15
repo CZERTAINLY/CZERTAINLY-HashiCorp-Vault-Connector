@@ -8,7 +8,7 @@ type CertificateRevocationListResponseDto struct {
 
 // AssertCertificateRevocationListResponseDtoRequired checks if the required fields are not zero-ed
 func AssertCertificateRevocationListResponseDtoRequired(obj CertificateRevocationListResponseDto) error {
-	elements := map[string]interface{}{
+	elements := map[string]any{
 		"crlData": obj.CrlData,
 	}
 	for name, el := range elements {

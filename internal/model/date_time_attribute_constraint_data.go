@@ -8,10 +8,10 @@ import (
 type DateTimeAttributeConstraintData struct {
 
 	// Start of the datetime for validation
-	From time.Time `json:"from,omitempty"`
+	From time.Time `json:"from,omitzero"`
 
 	// End of the datetime for validation
-	To time.Time `json:"to,omitempty"`
+	To time.Time `json:"to,omitzero"`
 }
 
 // AssertDateTimeAttributeConstraintDataRequired checks if the required fields are not zero-ed

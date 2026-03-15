@@ -10,7 +10,7 @@ type CodeBlockAttributeContentData struct {
 
 // AssertCodeBlockAttributeContentDataRequired checks if the required fields are not zero-ed
 func AssertCodeBlockAttributeContentDataRequired(obj CodeBlockAttributeContentData) error {
-	elements := map[string]interface{}{
+	elements := map[string]any{
 		"language": obj.Language,
 		"code":     obj.Code,
 	}

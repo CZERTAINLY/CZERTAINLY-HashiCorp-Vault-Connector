@@ -127,7 +127,7 @@ func (s *AuthorityManagementAPIService) GetCaCertificates(ctx context.Context, u
 	}
 
 	s.log.With(zax.Get(ctx)...).Info("Getting CA certificates", zap.String("authority", authority.Name), zap.String("uuid", authority.UUID))
-	engineData := model.GetAttributeFromArrayByUUID(model.RA_PROFILE_ENGINE_ATTR, caCertificatesRequestDto.RaProfileAttributes).GetContent()[0].GetData().(map[string]interface{})
+	engineData := model.GetAttributeFromArrayByUUID(model.RA_PROFILE_ENGINE_ATTR, caCertificatesRequestDto.RaProfileAttributes).GetContent()[0].GetData().(map[string]any)
 	engineName := engineData["engineName"].(string)
 	//https://github.com/hashicorp/vault/issues/919 do not use PkiReadCaChainPem
 	certificateCaResponse, err := client.Secrets.PkiReadCertCaChain(ctx, vault2.WithMountPath(engineName+"/"))
@@ -197,7 +197,7 @@ func (s *AuthorityManagementAPIService) GetCrl(ctx context.Context, uuid string,
 		}), nil
 	}
 
-	engineData := model.GetAttributeFromArrayByUUID(model.RA_PROFILE_ENGINE_ATTR, certificateRevocationListRequestDto.RaProfileAttributes).GetContent()[0].GetData().(map[string]interface{})
+	engineData := model.GetAttributeFromArrayByUUID(model.RA_PROFILE_ENGINE_ATTR, certificateRevocationListRequestDto.RaProfileAttributes).GetContent()[0].GetData().(map[string]any)
 	engineName := engineData["engineName"].(string)
 	var chain []string
 	if certificateRevocationListRequestDto.Delta {
@@ -287,7 +287,7 @@ func (s *AuthorityManagementAPIService) ListRAProfileAttributes(ctx context.Cont
 		engineName = strings.TrimSuffix(engineName, "/")
 		if engineData.(map[string]any)["type"] == "pki" {
 
-			engineDataObject := make(map[string]interface{})
+			engineDataObject := make(map[string]any)
 			engineDataObject["engineName"] = engineName
 			engineDataObject["engineAccesor"] = engineData.(map[string]any)["accessor"]
 			engineDataObject["runningPluginVersion"] = engineData.(map[string]any)["running_plugin_version"]

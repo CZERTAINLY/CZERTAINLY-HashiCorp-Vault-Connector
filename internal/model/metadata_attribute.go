@@ -44,7 +44,7 @@ func (d MetadataAttribute) GetAttributeContentType() AttributeContentType {
 // AssertMetadataAttributeRequired checks if the required fields are not zero-ed
 func AssertMetadataAttributeRequired(obj Attribute) error {
 	objType := obj.(MetadataAttribute)
-	elements := map[string]interface{}{
+	elements := map[string]any{
 		"uuid":        objType.Uuid,
 		"name":        objType.Name,
 		"content":     objType.Content,

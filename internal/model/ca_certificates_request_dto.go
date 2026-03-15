@@ -14,7 +14,7 @@ func (a *CaCertificatesRequestDto) Unmarshal(json []byte) {
 
 // AssertCaCertificatesRequestDtoRequired checks if the required fields are not zero-ed
 func AssertCaCertificatesRequestDtoRequired(obj CaCertificatesRequestDto) error {
-	elements := map[string]interface{}{
+	elements := map[string]any{
 		"raProfileAttributes": obj.RaProfileAttributes,
 	}
 	for name, el := range elements {

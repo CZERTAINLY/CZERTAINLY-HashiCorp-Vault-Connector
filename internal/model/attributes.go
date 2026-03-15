@@ -155,7 +155,7 @@ func unmarshalAttributeContent(content []byte, contentType AttributeContentType)
 		err := json.Unmarshal(content, &stringData)
 		result = ObjectAttributeContent{
 			Reference: stringData.Reference,
-			Data:      map[string]interface{}{"objectData": stringData.Data},
+			Data:      map[string]any{"objectData": stringData.Data},
 		}
 		if err != nil {
 			log.Error(err.Error(), zap.String("content", string(content)))

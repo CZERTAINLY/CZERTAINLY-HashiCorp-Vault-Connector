@@ -40,10 +40,10 @@ func (s *ConnectorAttributesAPIService) ListAttributeDefinitions(ctx context.Con
 	objectContents := make([]model.AttributeContent, 0)
 
 	for _, authority := range authorities {
-		authorityData := map[string]interface{}{
+		authorityData := map[string]any{
 			"uuid": authority.UUID,
 		}
-		m := make(map[string]interface{})
+		m := make(map[string]any)
 		m["uuid"] = authority.UUID
 		objectContents = append(objectContents,
 			model.ObjectAttributeContent{
@@ -99,7 +99,7 @@ func (s *ConnectorAttributesAPIService) PkiEnginesCallback(ctx context.Context, 
 		engineName = strings.TrimSuffix(engineName, "/")
 		if engineData.(map[string]any)["type"] == "pki" {
 
-			engineDataObject := make(map[string]interface{})
+			engineDataObject := make(map[string]any)
 			engineDataObject["engineName"] = engineName
 			engineDataObject["engineAccesor"] = engineData.(map[string]any)["accessor"]
 			engineDataObject["runningPluginVersion"] = engineData.(map[string]any)["running_plugin_version"]

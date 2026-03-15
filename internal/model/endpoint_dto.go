@@ -21,7 +21,7 @@ type EndpointDto struct {
 
 // AssertEndpointDtoRequired checks if the required fields are not zero-ed
 func AssertEndpointDtoRequired(obj EndpointDto) error {
-	elements := map[string]interface{}{
+	elements := map[string]any{
 		"uuid":     obj.Uuid,
 		"name":     obj.Name,
 		"context":  obj.Context,

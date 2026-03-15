@@ -43,7 +43,7 @@ func (d InfoAttribute) GetAttributeContentType() AttributeContentType {
 
 // AssertInfoAttributeRequired checks if the required fields are not zero-ed
 func AssertInfoAttributeRequired(obj InfoAttribute) error {
-	elements := map[string]interface{}{
+	elements := map[string]any{
 		"uuid":        obj.Uuid,
 		"name":        obj.Name,
 		"content":     obj.Content,

@@ -11,7 +11,7 @@ type TimeAttributeContent struct {
 
 // AssertTimeAttributeContentRequired checks if the required fields are not zero-ed
 func AssertTimeAttributeContentRequired(obj TimeAttributeContent) error {
-	elements := map[string]interface{}{
+	elements := map[string]any{
 		"data": obj.Data,
 	}
 	for name, el := range elements {

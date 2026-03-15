@@ -18,7 +18,7 @@ func TestUnmarshalAttribute(t *testing.T) {
 	result := UnmarshalAttributes([]byte(JSON_STRING_ARR))
 	fmt.Println(result)
 	resultString, _ := json.Marshal(result)
-	var unmarshaled []interface{}
+	var unmarshaled []any
 	err := json.Unmarshal([]byte(JSON_STRING_ARR), &unmarshaled)
 	if err != nil {
 		return
@@ -35,8 +35,8 @@ func TestUnmarshalAttribute(t *testing.T) {
 }
 
 func compareJSON(s1, s2 string) (bool, error) {
-	var o1 interface{}
-	var o2 interface{}
+	var o1 any
+	var o2 any
 
 	err := json.Unmarshal([]byte(s1), &o1)
 	if err != nil {

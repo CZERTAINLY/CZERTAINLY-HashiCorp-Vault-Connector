@@ -10,12 +10,12 @@ type DateTimeAttributeConstraint struct {
 
 	Type AttributeConstraintType `json:"type"`
 
-	Data DateTimeAttributeConstraintData `json:"data,omitempty"`
+	Data DateTimeAttributeConstraintData `json:"data,omitzero"`
 }
 
 // AssertDateTimeAttributeConstraintRequired checks if the required fields are not zero-ed
 func AssertDateTimeAttributeConstraintRequired(obj DateTimeAttributeConstraint) error {
-	elements := map[string]interface{}{
+	elements := map[string]any{
 		"type": obj.Type,
 	}
 	for name, el := range elements {

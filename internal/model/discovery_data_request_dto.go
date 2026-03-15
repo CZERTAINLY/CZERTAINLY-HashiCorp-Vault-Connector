@@ -17,7 +17,7 @@ type DiscoveryDataRequestDto struct {
 
 // AssertDiscoveryDataRequestDtoRequired checks if the required fields are not zero-ed
 func AssertDiscoveryDataRequestDtoRequired(obj DiscoveryDataRequestDto) error {
-	elements := map[string]interface{}{
+	elements := map[string]any{
 		"name":         obj.Name,
 		"kind":         obj.Kind,
 		"pageNumber":   obj.PageNumber,

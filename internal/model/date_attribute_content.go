@@ -11,7 +11,7 @@ type DateAttributeContent struct {
 
 // AssertDateAttributeContentRequired checks if the required fields are not zero-ed
 func AssertDateAttributeContentRequired(obj DateAttributeContent) error {
-	elements := map[string]interface{}{
+	elements := map[string]any{
 		"data": obj.Data,
 	}
 	for name, el := range elements {

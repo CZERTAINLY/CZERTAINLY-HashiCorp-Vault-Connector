@@ -15,7 +15,7 @@ type BaseAttributeDto struct {
 	Type AttributeType `json:"type"`
 
 	// Content of the Attribute
-	Content map[string]interface{} `json:"content,omitempty"`
+	Content any `json:"content,omitzero"`
 
 	ContentType AttributeContentType `json:"contentType"`
 
@@ -24,12 +24,12 @@ type BaseAttributeDto struct {
 	// Optional regular expressions and constraints used for validating the Attribute content
 	Constraints []BaseAttributeConstraint `json:"constraints,omitempty"`
 
-	AttributeCallback AttributeCallback `json:"attributeCallback,omitempty"`
+	AttributeCallback AttributeCallback `json:"attributeCallback,omitzero"`
 }
 
 // AssertBaseAttributeDtoRequired checks if the required fields are not zero-ed
 func AssertBaseAttributeDtoRequired(obj BaseAttributeDto) error {
-	elements := map[string]interface{}{
+	elements := map[string]any{
 		"uuid":        obj.Uuid,
 		"name":        obj.Name,
 		"type":        obj.Type,

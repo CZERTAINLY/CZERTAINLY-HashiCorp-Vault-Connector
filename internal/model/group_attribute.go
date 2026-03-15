@@ -40,7 +40,7 @@ func (obj GroupAttribute) GetContent() []AttributeContent {
 
 // AssertGroupAttributeRequired checks if the required fields are not zero-ed
 func AssertGroupAttributeRequired(obj GroupAttribute) error {
-	elements := map[string]interface{}{
+	elements := map[string]any{
 		"uuid": obj.Uuid,
 		"name": obj.Name,
 		"type": obj.Type,

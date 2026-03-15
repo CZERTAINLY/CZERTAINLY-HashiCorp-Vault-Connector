@@ -12,7 +12,7 @@ type InfoResponse struct {
 
 // AssertInfoResponseRequired checks if the required fields are not zero-ed
 func AssertInfoResponseRequired(obj InfoResponse) error {
-	elements := map[string]interface{}{
+	elements := map[string]any{
 		"functionGroupCode": obj.FunctionGroupCode,
 		"kinds":             obj.Kinds,
 		"endPoints":         obj.EndPoints,

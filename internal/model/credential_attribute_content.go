@@ -10,7 +10,7 @@ type CredentialAttributeContent struct {
 
 // // AssertCredentialAttributeContentRequired checks if the required fields are not zero-ed
 // func AssertCredentialAttributeContentRequired(obj CredentialAttributeContent) error {
-// 	elements := map[string]interface{}{
+// 	elements := map[string]any{
 // 		"data": obj.Data,
 // 	}
 // 	for name, el := range elements {

@@ -8,7 +8,7 @@ type StringAttributeContent struct {
 	Data string `json:"data"`
 }
 
-func (a StringAttributeContent) GetData() interface{} {
+func (a StringAttributeContent) GetData() any {
 	return a.Data
 }
 
@@ -18,7 +18,7 @@ func (a StringAttributeContent) GetReference() string {
 
 // AssertStringAttributeContentRequired checks if the required fields are not zero-ed
 func AssertStringAttributeContentRequired(obj StringAttributeContent) error {
-	elements := map[string]interface{}{
+	elements := map[string]any{
 		"data": obj.Data,
 	}
 	for name, el := range elements {
