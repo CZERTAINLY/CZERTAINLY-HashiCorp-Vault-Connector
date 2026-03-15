@@ -116,7 +116,7 @@ func (c *ConnectorAttributesAPIController) ValidateAttributes(w http.ResponseWri
 		return
 	}
 
-	attributes := model.UnmarshalAttributesValues(json)
+	attributes := model.UnmarshalAttributesValues(r.Context(), json)
 	result, err := c.service.ValidateAttributes(r.Context(), kindParam, attributes)
 	// If an error occurred, encode the error with the status code
 	if err != nil {

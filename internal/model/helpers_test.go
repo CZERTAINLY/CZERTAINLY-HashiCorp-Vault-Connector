@@ -8,14 +8,14 @@ import (
 )
 
 func TestUnmarshalAttributeValue(t *testing.T) {
-	result := UnmarshalAttributesValues([]byte(JSON_STRING_VALUE_ARR))
+	result := UnmarshalAttributesValues(t.Context(), []byte(JSON_STRING_VALUE_ARR))
 	content := GetAttributeFromArrayByUUID(AUTHORITY_URL_ATTR, result).GetContent()[0]
 	URL := content.GetData().(string)
 	fmt.Println(URL)
 }
 
 func TestUnmarshalAttribute(t *testing.T) {
-	result := UnmarshalAttributes([]byte(JSON_STRING_ARR))
+	result := UnmarshalAttributes(t.Context(), []byte(JSON_STRING_ARR))
 	fmt.Println(result)
 	resultString, _ := json.Marshal(result)
 	var unmarshaled []interface{}

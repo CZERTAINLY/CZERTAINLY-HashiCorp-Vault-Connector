@@ -349,7 +349,7 @@ func (c *AuthorityManagementAPIController) ValidateRAProfileAttributes(w http.Re
 		c.errorHandler(w, r, &model.ParsingError{Err: err}, nil)
 		return
 	}
-	model.UnmarshalAttributesValues(jsonContent)
+	model.UnmarshalAttributesValues(r.Context(), jsonContent)
 	for _, el := range requestAttributeDtoParam {
 		if err := model.AssertRequestAttributeDtoRequired(el); err != nil {
 			c.errorHandler(w, r, err, nil)

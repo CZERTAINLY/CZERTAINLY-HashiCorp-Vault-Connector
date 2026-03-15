@@ -1,6 +1,10 @@
 package model
 
-import "github.com/tidwall/gjson"
+import (
+	"context"
+
+	"github.com/tidwall/gjson"
+)
 
 type AuthorityProviderInstanceRequestDto struct {
 
@@ -17,7 +21,7 @@ type AuthorityProviderInstanceRequestDto struct {
 func (a *AuthorityProviderInstanceRequestDto) Unmarshal(json []byte) {
 	a.Name = gjson.GetBytes(json, "name").String()
 	a.Kind = gjson.GetBytes(json, "kind").String()
-	a.Attributes = UnmarshalAttributesValues([]byte(gjson.GetBytes(json, "attributes").Raw))
+	a.Attributes = UnmarshalAttributesValues(context.Background(), []byte(gjson.GetBytes(json, "attributes").Raw))
 }
 
 // AssertAuthorityProviderInstanceRequestDtoRequired checks if the required fields are not zero-ed
