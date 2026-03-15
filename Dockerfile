@@ -10,15 +10,15 @@ ENV CGO_ENABLED=0 \
     LDFLAGS="-s -w -X main.version=${VERSION}" \
     WRK_DIR=/app
 
-# Copy the contents to /app
-COPY . $WRK_DIR
-
 # Set working directory
 WORKDIR $WRK_DIR
 
 # Better layer caching for deps
 COPY go.mod go.sum ./
 RUN --mount=type=cache,target=/go/pkg/mod go mod download
+
+# Copy the contents to /app
+COPY . $WRK_DIR
 
 RUN --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
