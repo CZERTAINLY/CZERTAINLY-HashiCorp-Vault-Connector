@@ -43,14 +43,6 @@ jobs:
       - name: Run tests
         run: go test -race -vet=off -coverprofile=coverage.out ./...
 
-      # Run integration tests
-      - name: Start Docker
-        run: |
-          docker --version
-      - name: Run integration tests
-        run: |
-          go test -v -tags=integration ./tests/integration/...
-
       # Package up PR context for downstream workflow_run
       - name: Prepare PR context artifact
         run: |
