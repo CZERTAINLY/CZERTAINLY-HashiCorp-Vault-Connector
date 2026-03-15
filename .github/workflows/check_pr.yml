@@ -1,0 +1,81 @@
+name: Check PR
+on:
+  pull_request:
+    paths-ignore:
+      - 'deploy/charts/**'
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-check
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    if: github.event_name != 'push'
+    name: Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: Setup Go
+        uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
+        with:
+          go-version: '1.26'
+
+      # Run linting
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@1e7e51e771db61008b38414a730f564565cf7c20 #v9.2.0
+        with:
+          version: latest
+          args: --timeout=5m
+
+      # Run unit tests and generate coverage report
+      - name: Verify dependencies
+        run: go mod verify
+      - name: Build
+        run: go build -v ./...
+      - name: Run go vet
+        run: go vet ./...
+      - name: Run tests
+        run: go test -race -vet=off -coverprofile=coverage.out ./...
+
+      # Package up PR context for downstream workflow_run
+      - name: Prepare PR context artifact
+        run: |
+          cat > pr-context.json <<'JSON'
+          {
+            "pr_number": "${{ github.event.pull_request.number }}",
+            "head_sha":  "${{ github.event.pull_request.head.sha }}",
+            "head_repo": "${{ github.event.pull_request.head.repo.full_name }}",
+            "head_branch": "${{ github.event.pull_request.head.ref }}",
+            "base_ref": "${{ github.event.pull_request.base.ref }}",
+            "run_id": "${{ github.run_id }}"
+          }
+          JSON
+          cat pr-context.json
+
+      - name: Upload PR context
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: pr-context
+          path: pr-context.json
+          retention-days: 1
+          if-no-files-found: error
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: coverage-report
+          path: coverage.out
+          if-no-files-found: error
+
+      - name: Upload golangci-lint report
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: golangci-lint-report
+          path: golangci-lint-report.xml
+          if-no-files-found: error

@@ -1,41 +1,65 @@
 name: Build
+
 on:
-  pull_request:
-    branches: [main]
   push:
-    branches: [main]
-  workflow_dispatch:
+    paths-ignore:
+      - 'deploy/charts/**'
+    branches: [ "main" ]
+
+# Cancel in-progress runs of the same workflow on the same branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-build
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # Change this to your binary name
+  APP_NAME: proxy
+  # Common build flags
+  GOFLAGS: -trimpath
+  LDFLAGS: -s -w -X "main.version=${{ github.sha }}"
 
 jobs:
-  check:
-    if: github.event_name != 'push'
-    name: Check
+  build:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - goos: linux   # x86_64
+            goarch: amd64
+            ext: ""
+
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-      - name: Setup Go
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up Go
         uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
         with:
-          go-version: '1.26.1'
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@1e7e51e771db61008b38414a730f564565cf7c20 # v9.2.0
-        with:
-          version: latest
-      - name: Verify dependencies
-        run: go mod verify
-      - name: Build
-        run: go build -v ./...
-      - name: Run go vet
-        run: go vet ./...
-      - name: Run tests
-        run: go test -race -vet=off ./...
-  build:
-    if: github.event_name != 'pull_request'
-    name: Build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          fetch-depth: 0
+          go-version: '1.26'
+          cache: 'true'
+
+      - name: Print Go env
+        run: |
+          go env
+          go version
+          go tool dist list | grep -E '^(linux|darwin|windows)/(amd64|arm64)$' || true
+
+      - name: Build (${{ matrix.goos }}/${{ matrix.goarch }})
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: '0'
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          NAME="${APP_NAME}-${GOOS}-${GOARCH}"
+          BIN="dist/${NAME}${{ matrix.ext }}"
+          echo "Building -> ${BIN}"
+          go build $GOFLAGS -ldflags "$LDFLAGS" -o "$BIN" ./cmd/$APP_NAME
+          # Ensure executable bit on unix-like targets (Windows ignores it)
+          chmod +x "$BIN" || true
+          ls -lh "$BIN"
