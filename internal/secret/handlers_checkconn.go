@@ -5,36 +5,40 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log/slog"
 	"net/http"
 
+	"CZERTAINLY-HashiCorp-Vault-Connector/internal/logger"
 	sm "CZERTAINLY-HashiCorp-Vault-Connector/internal/secret/model"
 	internalVault "CZERTAINLY-HashiCorp-Vault-Connector/internal/secret/vault"
+
+	"go.uber.org/zap"
 )
 
 func (s *Server) checkVaultConnection(w http.ResponseWriter, r *http.Request) {
+	log := logger.Get()
 	ctx := r.Context()
 
 	b, err := io.ReadAll(r.Body)
 	if err != nil {
-		slog.Error("Calling `io.ReadAll()` failed.", slog.String("error", err.Error()))
+		log.Error("Calling `io.ReadAll()` failed.", zap.Error(err))
 		internal(w, "Reading request body failed.")
 		return
 	}
 
 	req := []sm.RequestAttribute{}
 	if err := json.Unmarshal(b, &req); err != nil {
-		slog.Debug("Calling `json.Unmarshal()` failed.", slog.String("error", err.Error()))
+		log.Debug("Calling `json.Unmarshal()` failed.", zap.Error(err))
 		badrequest(w, "Failed to unmarshal request.", sm.ATTRIBUTESERROR)
 		return
 	}
 
 	n := NewNeeds(s.k8sToken)
 	if err = n.Process(ctx, &req, nil); err != nil {
-		slog.Debug("Processing request attributes failed.",
-			slog.String("error", err.Error()),
-			slog.String("http-path", r.URL.Path),
-			slog.String("request-body", string(b)))
+		// TODO: before release, remove the `request-body` parameter
+		log.Debug("Processing request attributes failed.",
+			zap.Error(err),
+			zap.String("http-path", r.URL.Path),
+			zap.String("request-body", string(b)))
 		badrequest(w, fmt.Sprintf("Processing request attributes failed: %s.", err), sm.ATTRIBUTESERROR)
 		return
 	}
@@ -56,10 +60,11 @@ func (s *Server) checkVaultConnection(w http.ResponseWriter, r *http.Request) {
 		return
 
 	case err != nil:
-		slog.Error("Could not connect to Vault.",
-			slog.String("error", err.Error()),
-			slog.String("http-path", r.URL.Path),
-			slog.String("request-body", string(b)))
+		// TODO: before release, remove the `request-body` parameter
+		log.Error("Could not connect to Vault.",
+			zap.Error(err),
+			zap.String("http-path", r.URL.Path),
+			zap.String("request-body", string(b)))
 		internal(w, fmt.Sprintf("Could not connect to Vault: %s", err))
 		return
 	}

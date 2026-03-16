@@ -3,14 +3,15 @@ package secret
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"strings"
 	"time"
 
+	"CZERTAINLY-HashiCorp-Vault-Connector/internal/logger"
 	sm "CZERTAINLY-HashiCorp-Vault-Connector/internal/secret/model"
 
 	vcg "github.com/hashicorp/vault-client-go"
 	vcgSchema "github.com/hashicorp/vault-client-go/schema"
+	"go.uber.org/zap"
 )
 
 const (
@@ -110,7 +111,7 @@ func (n *Needs) Process(ctx context.Context, vaultAttrs, secretAttrs *[]sm.Reque
 			}
 
 		default:
-			slog.Debug("Unknown RequestAttributeV3 encountered.", slog.String("uuid", attr.Uuid.String()), slog.String("name", attr.Name))
+			logger.Get().Debug("Unknown RequestAttributeV3 encountered.", zap.String("uuid", attr.Uuid.String()), zap.String("name", attr.Name))
 		}
 	}
 
