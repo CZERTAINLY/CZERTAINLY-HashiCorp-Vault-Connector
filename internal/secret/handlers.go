@@ -34,7 +34,7 @@ func (s *Server) createSecret(w http.ResponseWriter, r *http.Request) {
 	}
 
 	scrtType, err := s.m.Create(r.Context(), c, n.mount, vaultPath(n.path, req.Name), req.Secret)
-	handleOpError(w, r, http.StatusCreated, err, req.Name, string(scrtType))
+	_ = handleOpError(w, r, http.StatusCreated, err, req.Name, string(scrtType))
 }
 
 func (s *Server) updateSecret(w http.ResponseWriter, r *http.Request) {

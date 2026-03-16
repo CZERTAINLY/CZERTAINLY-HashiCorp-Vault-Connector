@@ -8,6 +8,7 @@ import (
 	sm "CZERTAINLY-HashiCorp-Vault-Connector/internal/secret/model"
 
 	vcg "github.com/hashicorp/vault-client-go"
+	vcgSchema "github.com/hashicorp/vault-client-go/schema"
 	"github.com/moby/locker/v2"
 )
 
@@ -19,12 +20,20 @@ func New() *Manager {
 	return &Manager{}
 }
 
-func (m *Manager) ConnCheck(ctx context.Context, client *vcg.Client) error {
-	if _, err := client.System.MountsListSecretsEngines(ctx); err != nil {
+func (m *Manager) ConnCheck(ctx context.Context, client *vcg.Client, mount string) error {
+	var err error
+	var mounts *vcg.Response[vcgSchema.InternalUiListEnabledVisibleMountsResponse]
+	if mounts, err = client.System.InternalUiListEnabledVisibleMounts(ctx); err != nil {
 		return toPkgErr(err)
 	}
 
-	return nil
+	for k := range mounts.Data.Secret {
+		if mount == k {
+			return nil
+		}
+	}
+
+	return fmt.Errorf("%w: mount point %q", ErrNotFound, mount)
 }
 
 func ToPayload(ctx context.Context, secret sm.SecretContent) (map[string]any, sm.SecretType, error) {
