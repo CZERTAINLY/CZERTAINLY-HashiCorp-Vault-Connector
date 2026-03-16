@@ -41,7 +41,7 @@ type Needs struct {
 
 	// credential type specific attribute values
 	roleID, roleSecret string
-	role, jwt          string
+	role               string
 }
 
 func (n *Needs) Process(ctx context.Context, vaultAttrs, secretAttrs *[]sm.RequestAttribute) error {
@@ -65,11 +65,6 @@ func (n *Needs) Process(ctx context.Context, vaultAttrs, secretAttrs *[]sm.Reque
 		switch attr.Uuid.String() {
 		case vaultManagementRole.Uuid:
 			if n.role, err = strContentTypeDataAttrSingle(vaultManagementRole, attr); err != nil {
-				return err
-			}
-
-		case vaultManagementJwt.Uuid:
-			if n.jwt, err = resourceSecretContentTypeDataAttrSingle(vaultManagementJwt, attr); err != nil {
 				return err
 			}
 
@@ -268,12 +263,10 @@ func (n Needs) credTypeCheck() error {
 				n.credType, vaultManagementRoleID.Uuid, vaultManagementRoleID.Name,
 				vaultManagementRoleSecret.Uuid, vaultManagementRoleSecret.Name)
 		}
+
 	case credentialTypeJwt.Data:
-		if n.role == "" || n.jwt == "" {
-			return fmt.Errorf("required attributes for credential type %q missing %s(%s), %s(%s)",
-				n.credType, vaultManagementRole.Uuid, vaultManagementRole.Name,
-				vaultManagementJwt.Uuid, vaultManagementJwt.Name)
-		}
+		fallthrough
+
 	case credentialTypeK8s.Data:
 		if n.k8sToken != nil {
 			if n.role == "" {
@@ -322,8 +315,7 @@ func (n Needs) Client(ctx context.Context) (*vcg.Client, error) {
 			vcgSchema.AppRoleLoginRequest{
 				RoleId:   n.roleID,
 				SecretId: n.roleSecret,
-			},
-		)
+			})
 		if err != nil {
 			return nil, err
 		}
@@ -332,13 +324,15 @@ func (n Needs) Client(ctx context.Context) (*vcg.Client, error) {
 		}
 
 	case credentialTypeJwt.Data:
+		if n.k8sToken == nil {
+			return nil, fmt.Errorf("unknown credential type %q", credentialTypeJwt.Data)
+		}
 		resp, err := client.Auth.JwtLogin(
 			ctx,
 			vcgSchema.JwtLoginRequest{
-				Jwt:  n.jwt,
+				Jwt:  *n.k8sToken,
 				Role: n.role,
-			},
-		)
+			})
 		if err != nil {
 			return nil, err
 		}
@@ -351,10 +345,12 @@ func (n Needs) Client(ctx context.Context) (*vcg.Client, error) {
 		if n.k8sToken == nil {
 			return nil, fmt.Errorf("unknown credential type %q", credentialTypeK8s.Data)
 		}
-		resp, err := client.Auth.KubernetesLogin(ctx, vcgSchema.KubernetesLoginRequest{
-			Jwt:  *n.k8sToken,
-			Role: n.role,
-		})
+		resp, err := client.Auth.KubernetesLogin(
+			ctx,
+			vcgSchema.KubernetesLoginRequest{
+				Jwt:  *n.k8sToken,
+				Role: n.role,
+			})
 		if err != nil {
 			return nil, err
 		}

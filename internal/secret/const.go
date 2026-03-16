@@ -150,29 +150,6 @@ var (
 			Required: true,
 		},
 	}
-	vaultManagementJwt = sm.DataAttributeV3{
-		Uuid:          "94ec433b-9c50-4fcd-aabd-ab8da204d5db",
-		Version:       3,
-		SchemaVersion: sm.V3,
-		Name:          "data_vault_management_jwt",
-		ContentType:   sm.AttributeContentTypeResource,
-		Description:   ptr("Vault JWT."),
-		Properties: sm.DataAttributeProperties{
-			Resource: ptr(sm.Secrets),
-			Label:    "JWT/OIDC",
-			Visible:  true,
-			Required: true,
-		},
-		AttributeCallback: &sm.AttributeCallback{
-			Mappings: []sm.AttributeCallbackMapping{
-				{
-					To:      "SECRET_TYPE.EQUALS",
-					Value:   []sm.SecretType{sm.JwtToken, sm.Generic},
-					Targets: []sm.AttributeValueTarget{sm.Filter},
-				},
-			},
-		},
-	}
 )
 
 const (
