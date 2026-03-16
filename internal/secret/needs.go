@@ -41,7 +41,7 @@ type Needs struct {
 
 	// credential type specific attribute values
 	roleID, roleSecret string
-	role, jwt          string
+	role               string
 }
 
 func (n *Needs) Process(ctx context.Context, vaultAttrs, secretAttrs *[]sm.RequestAttribute) error {
@@ -68,11 +68,6 @@ func (n *Needs) Process(ctx context.Context, vaultAttrs, secretAttrs *[]sm.Reque
 				return err
 			}
 
-		case vaultManagementJwt.Uuid:
-			if n.jwt, err = resourceSecretContentTypeDataAttrSingle(vaultManagementJwt, attr); err != nil {
-				return err
-			}
-
 		case vaultManagementCredentialType.Uuid:
 			if n.credType, err = strContentTypeDataAttrSingle(vaultManagementCredentialType, attr); err != nil {
 				return err
@@ -92,13 +87,6 @@ func (n *Needs) Process(ctx context.Context, vaultAttrs, secretAttrs *[]sm.Reque
 			if n.address, err = strContentTypeDataAttrSingle(vaultManagementURI, attr); err != nil {
 				return err
 			}
-
-		case vaultManagementRequestTmout.Uuid:
-			var i int
-			if i, err = intContentTypeDataAttrSingle(vaultManagementRequestTmout, attr); err != nil {
-				return err
-			}
-			n.reqTimeout = time.Duration(i) * time.Second
 
 		case vaultManagementMount.Uuid:
 			if n.mount, err = strContentTypeDataAttrSingle(vaultManagementMount, attr); err != nil {
@@ -133,23 +121,6 @@ func strContentTypeDataAttrSingle(ptrn sm.DataAttributeV3, recv sm.RequestAttrib
 		return "", fmt.Errorf("unmarshalling BaseAttributeContentDtoV3 into StringAttributeContentV3 failed for attribute %q: %w", ptrn.Uuid, err)
 	}
 	return strAttr.Data, nil
-}
-
-func intContentTypeDataAttrSingle(ptrn sm.DataAttributeV3, recv sm.RequestAttributeV3) (int, error) {
-	if recv.ContentType != ptrn.ContentType {
-		return 0, fmt.Errorf(errstrDeclaredContentType, ptrn.Uuid, ptrn.ContentType, recv.ContentType)
-	}
-	if recv.Content == nil {
-		return 0, fmt.Errorf(errstrContentNil, ptrn.Uuid)
-	}
-	if len(*recv.Content) != 1 {
-		return 0, fmt.Errorf(errstrContentLenNotOne, ptrn.Uuid, len(*recv.Content))
-	}
-	intAttr, err := (*recv.Content)[0].AsIntegerAttributeContentV3()
-	if err != nil {
-		return 0, fmt.Errorf("unmarshalling BaseAttributeContentDtoV3 into IntegerAttributeContentV3 failed for attribute %q: %w", ptrn.Uuid, err)
-	}
-	return int(intAttr.Data), nil
 }
 
 func resourceSecretContentTypeDataAttrSingle(ptrn sm.DataAttributeV3, recv sm.RequestAttributeV3) (string, error) {
@@ -268,12 +239,10 @@ func (n Needs) credTypeCheck() error {
 				n.credType, vaultManagementRoleID.Uuid, vaultManagementRoleID.Name,
 				vaultManagementRoleSecret.Uuid, vaultManagementRoleSecret.Name)
 		}
+
 	case credentialTypeJwt.Data:
-		if n.role == "" || n.jwt == "" {
-			return fmt.Errorf("required attributes for credential type %q missing %s(%s), %s(%s)",
-				n.credType, vaultManagementRole.Uuid, vaultManagementRole.Name,
-				vaultManagementJwt.Uuid, vaultManagementJwt.Name)
-		}
+		fallthrough
+
 	case credentialTypeK8s.Data:
 		if n.k8sToken != nil {
 			if n.role == "" {
@@ -322,8 +291,7 @@ func (n Needs) Client(ctx context.Context) (*vcg.Client, error) {
 			vcgSchema.AppRoleLoginRequest{
 				RoleId:   n.roleID,
 				SecretId: n.roleSecret,
-			},
-		)
+			})
 		if err != nil {
 			return nil, err
 		}
@@ -332,13 +300,15 @@ func (n Needs) Client(ctx context.Context) (*vcg.Client, error) {
 		}
 
 	case credentialTypeJwt.Data:
+		if n.k8sToken == nil {
+			return nil, fmt.Errorf("unknown credential type %q", credentialTypeJwt.Data)
+		}
 		resp, err := client.Auth.JwtLogin(
 			ctx,
 			vcgSchema.JwtLoginRequest{
-				Jwt:  n.jwt,
+				Jwt:  *n.k8sToken,
 				Role: n.role,
-			},
-		)
+			})
 		if err != nil {
 			return nil, err
 		}
@@ -351,10 +321,12 @@ func (n Needs) Client(ctx context.Context) (*vcg.Client, error) {
 		if n.k8sToken == nil {
 			return nil, fmt.Errorf("unknown credential type %q", credentialTypeK8s.Data)
 		}
-		resp, err := client.Auth.KubernetesLogin(ctx, vcgSchema.KubernetesLoginRequest{
-			Jwt:  *n.k8sToken,
-			Role: n.role,
-		})
+		resp, err := client.Auth.KubernetesLogin(
+			ctx,
+			vcgSchema.KubernetesLoginRequest{
+				Jwt:  *n.k8sToken,
+				Role: n.role,
+			})
 		if err != nil {
 			return nil, err
 		}

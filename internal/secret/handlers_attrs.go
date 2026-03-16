@@ -29,14 +29,6 @@ func (s *Server) listVaultAttributes(w http.ResponseWriter, r *http.Request) {
 	}
 	resp = append(resp, vaultURI)
 
-	var vaultRequestTimeout sm.BaseAttributeDtoV3
-	if err := vaultRequestTimeout.FromDataAttributeV3(vaultManagementRequestTmout); err != nil {
-		log.Error("Error marshaling DataAttributeV3 into BaseAttributeDtoV3", zap.Error(err))
-		internal(w, "Marshaling data structure failed.")
-		return
-	}
-	resp = append(resp, vaultRequestTimeout)
-
 	var vaultMount sm.BaseAttributeDtoV3
 	if err := vaultMount.FromDataAttributeV3(vaultManagementMount); err != nil {
 		log.Error("Error marshaling DataAttributeV3 into BaseAttributeDtoV3", zap.Error(err))
@@ -57,15 +49,15 @@ func (s *Server) listVaultAttributes(w http.ResponseWriter, r *http.Request) {
 	}
 	credentialTypeContent = append(credentialTypeContent, appRole)
 
-	var jwtToken sm.BaseAttributeContentDtoV3
-	if err := jwtToken.FromStringAttributeContentV3(credentialTypeJwt); err != nil {
-		log.Error("Error marshaling StringAttributeContentV3 into BaseAttributeContentDtoV3", zap.Error(err))
-		internal(w, "Marshaling data structure failed.")
-		return
-	}
-	credentialTypeContent = append(credentialTypeContent, jwtToken)
-
 	if s.k8sToken != nil {
+		var jwtToken sm.BaseAttributeContentDtoV3
+		if err := jwtToken.FromStringAttributeContentV3(credentialTypeJwt); err != nil {
+			log.Error("Error marshaling StringAttributeContentV3 into BaseAttributeContentDtoV3", zap.Error(err))
+			internal(w, "Marshaling data structure failed.")
+			return
+		}
+		credentialTypeContent = append(credentialTypeContent, jwtToken)
+
 		var kubernetes sm.BaseAttributeContentDtoV3
 		if err := kubernetes.FromStringAttributeContentV3(credentialTypeK8s); err != nil {
 			log.Error("Error marshaling StringAttributeContentV3 into BaseAttributeContentDtoV3", zap.Error(err))
@@ -155,21 +147,7 @@ func (s *Server) credentialsType(w http.ResponseWriter, r *http.Request) {
 		resp = append(resp, roleSecret)
 
 	case credentialTypeJwt.Data:
-		var role sm.BaseAttributeDtoV3
-		if err := role.FromDataAttributeV3(vaultManagementRole); err != nil {
-			log.Error("Error marshaling DataAttributeV3 into BaseAttributeDtoV3", zap.Error(err))
-			internal(w, "Marshaling data structure failed.")
-			return
-		}
-		resp = append(resp, role)
-
-		var jwt sm.BaseAttributeDtoV3
-		if err := jwt.FromDataAttributeV3(vaultManagementJwt); err != nil {
-			log.Error("Error marshaling DataAttributeV3 into BaseAttributeDtoV3", zap.Error(err))
-			internal(w, "Marshaling data structure failed.")
-			return
-		}
-		resp = append(resp, jwt)
+		fallthrough
 
 	case credentialTypeK8s.Data:
 		if s.k8sToken == nil {
