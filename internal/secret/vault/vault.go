@@ -27,10 +27,8 @@ func (m *Manager) ConnCheck(ctx context.Context, client *vcg.Client, mount strin
 		return toPkgErr(err)
 	}
 
-	for k := range mounts.Data.Secret {
-		if mount == k {
-			return nil
-		}
+	if _, ok := mounts.Data.Secret[mount]; ok {
+		return nil
 	}
 
 	return fmt.Errorf("%w: mount point %q", ErrNotFound, mount)
