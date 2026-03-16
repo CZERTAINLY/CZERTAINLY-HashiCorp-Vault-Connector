@@ -29,14 +29,6 @@ func (s *Server) listVaultAttributes(w http.ResponseWriter, r *http.Request) {
 	}
 	resp = append(resp, vaultURI)
 
-	var vaultRequestTimeout sm.BaseAttributeDtoV3
-	if err := vaultRequestTimeout.FromDataAttributeV3(vaultManagementRequestTmout); err != nil {
-		log.Error("Error marshaling DataAttributeV3 into BaseAttributeDtoV3", zap.Error(err))
-		internal(w, "Marshaling data structure failed.")
-		return
-	}
-	resp = append(resp, vaultRequestTimeout)
-
 	var vaultMount sm.BaseAttributeDtoV3
 	if err := vaultMount.FromDataAttributeV3(vaultManagementMount); err != nil {
 		log.Error("Error marshaling DataAttributeV3 into BaseAttributeDtoV3", zap.Error(err))

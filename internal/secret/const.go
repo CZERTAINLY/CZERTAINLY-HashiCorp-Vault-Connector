@@ -19,19 +19,6 @@ var (
 			Required: true,
 		},
 	}
-	vaultManagementRequestTmout = sm.DataAttributeV3{
-		Uuid:          "4494de6b-7c33-44d2-8609-c3a561f5e3f1",
-		Version:       3,
-		SchemaVersion: sm.V3,
-		Name:          "data_vault_management_request_timeout",
-		ContentType:   sm.AttributeContentTypeInteger,
-		Description:   ptr("Request timeout in seconds applied to each Vault request."),
-		Properties: sm.DataAttributeProperties{
-			Label:    "Individual Vault request timeout",
-			Visible:  true,
-			Required: false,
-		},
-	}
 	vaultManagementMount = sm.DataAttributeV3{
 		Uuid:          "11541b02-6752-4651-8df3-86bed296af78",
 		Version:       3,

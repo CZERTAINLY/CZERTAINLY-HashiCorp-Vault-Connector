@@ -88,13 +88,6 @@ func (n *Needs) Process(ctx context.Context, vaultAttrs, secretAttrs *[]sm.Reque
 				return err
 			}
 
-		case vaultManagementRequestTmout.Uuid:
-			var i int
-			if i, err = intContentTypeDataAttrSingle(vaultManagementRequestTmout, attr); err != nil {
-				return err
-			}
-			n.reqTimeout = time.Duration(i) * time.Second
-
 		case vaultManagementMount.Uuid:
 			if n.mount, err = strContentTypeDataAttrSingle(vaultManagementMount, attr); err != nil {
 				return err
@@ -128,23 +121,6 @@ func strContentTypeDataAttrSingle(ptrn sm.DataAttributeV3, recv sm.RequestAttrib
 		return "", fmt.Errorf("unmarshalling BaseAttributeContentDtoV3 into StringAttributeContentV3 failed for attribute %q: %w", ptrn.Uuid, err)
 	}
 	return strAttr.Data, nil
-}
-
-func intContentTypeDataAttrSingle(ptrn sm.DataAttributeV3, recv sm.RequestAttributeV3) (int, error) {
-	if recv.ContentType != ptrn.ContentType {
-		return 0, fmt.Errorf(errstrDeclaredContentType, ptrn.Uuid, ptrn.ContentType, recv.ContentType)
-	}
-	if recv.Content == nil {
-		return 0, fmt.Errorf(errstrContentNil, ptrn.Uuid)
-	}
-	if len(*recv.Content) != 1 {
-		return 0, fmt.Errorf(errstrContentLenNotOne, ptrn.Uuid, len(*recv.Content))
-	}
-	intAttr, err := (*recv.Content)[0].AsIntegerAttributeContentV3()
-	if err != nil {
-		return 0, fmt.Errorf("unmarshalling BaseAttributeContentDtoV3 into IntegerAttributeContentV3 failed for attribute %q: %w", ptrn.Uuid, err)
-	}
-	return int(intAttr.Data), nil
 }
 
 func resourceSecretContentTypeDataAttrSingle(ptrn sm.DataAttributeV3, recv sm.RequestAttributeV3) (string, error) {
