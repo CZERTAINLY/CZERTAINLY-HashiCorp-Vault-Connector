@@ -219,7 +219,6 @@ func (n *Needs) CommonCheck() error {
 		return fmt.Errorf("missing attribute uuid %q, name %q", vaultManagementURI.Uuid, vaultManagementURI.Name)
 	case strings.TrimSpace(n.mount) == "":
 		return fmt.Errorf("missing attribute uuid %q, name %q", vaultManagementMount.Uuid, vaultManagementMount.Name)
-
 	case strings.TrimSpace(n.credType) == "":
 		return fmt.Errorf("missing attribute uuid %q, name %q", vaultManagementCredentialType.Uuid, vaultManagementCredentialType.Name)
 	}
@@ -256,21 +255,6 @@ func (n Needs) credTypeCheck() error {
 	default:
 		return fmt.Errorf("unknown credential type %q", n.credType)
 	}
-	return nil
-}
-
-func (n Needs) ConnectionCheck() error {
-	switch {
-	case strings.TrimSpace(n.address) == "":
-		return fmt.Errorf("missing attribute uuid %q, name %q", vaultManagementURI.Uuid, vaultManagementURI.Name)
-	case strings.TrimSpace(n.credType) == "":
-		return fmt.Errorf("missing attribute uuid %q, name %q", vaultManagementCredentialType.Uuid, vaultManagementCredentialType.Name)
-	}
-
-	if err := n.credTypeCheck(); err != nil {
-		return err
-	}
-
 	return nil
 }
 

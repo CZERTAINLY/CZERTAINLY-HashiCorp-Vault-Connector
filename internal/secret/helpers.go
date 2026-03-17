@@ -103,7 +103,7 @@ func handleOpError(w http.ResponseWriter, r *http.Request, statusCode int, err e
 
 	case errors.Is(err, internalVault.ErrNotFound):
 		log.Debug("Not found.", zap.Error(err))
-		notfound(w, "Not found.")
+		notfound(w, err.Error())
 		return true
 
 	case errors.Is(err, internalVault.ErrAlreadyExists):
