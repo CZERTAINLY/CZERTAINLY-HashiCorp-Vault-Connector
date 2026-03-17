@@ -6,15 +6,27 @@ import (
 
 // Vault specific attribute definitions
 var (
+	vaultManagementInfo = sm.InfoAttributeV3{
+		Uuid:          "890470a6-8cdd-4af9-a344-4f409dda4a64",
+		Version:       ptr(int32(3)),
+		SchemaVersion: sm.V3,
+		Name:          "info_vault_management_explanation",
+		Description:   ptr("Create a new HashiCorp Vault instance configuration"),
+		ContentType:   sm.AttributeContentTypeText,
+		Properties: sm.InfoAttributeProperties{
+			Label:   "HashiCorp Vault instance configuration",
+			Visible: true,
+		},
+	}
 	vaultManagementURI = sm.DataAttributeV3{
 		Uuid:          "ffd606d5-5fd0-4425-9a5a-29c2713ce18d",
 		Version:       3,
 		SchemaVersion: sm.V3,
 		Name:          "data_vault_management_uri",
 		ContentType:   sm.AttributeContentTypeString,
-		Description:   ptr("Vault URI should be in the following format: `http(s)://<vault-url>:<port>`."),
+		Description:   ptr("Vault URL should be in the following format: `http(s)://<vault-url>:<port>`."),
 		Properties: sm.DataAttributeProperties{
-			Label:    "Vault URI",
+			Label:    "Vault URL",
 			Visible:  true,
 			Required: true,
 		},
@@ -25,9 +37,9 @@ var (
 		SchemaVersion: sm.V3,
 		Name:          "data_vault_management_mount",
 		ContentType:   sm.AttributeContentTypeString,
-		Description:   ptr("Vault mount."),
+		Description:   ptr("Vault mount point"),
 		Properties: sm.DataAttributeProperties{
-			Label:    "Vault mount",
+			Label:    "Vault mount point",
 			Visible:  true,
 			Required: true,
 		},
@@ -57,7 +69,7 @@ var (
 		ContentType:   sm.AttributeContentTypeString,
 		Description:   ptr("Path of secret in Vault without trailing slash."),
 		Properties: sm.DataAttributeProperties{
-			Label:    "Secret Path",
+			Label:    "Secret path prefix",
 			Visible:  true,
 			Required: false,
 		},
@@ -137,6 +149,10 @@ var (
 			Required: true,
 		},
 	}
+)
+
+const (
+	vaultInfoContentDescrConst = "### HashiCorp Vault instance configuration.\n\nProvide URL of your Vault and select one of the available authentication methods:\n-  **AppRole** - Use AppRole authentication method with Role ID and Secret ID\n-  **Kubernetes** - Use Kubernetes authentication method with Service Account Token (automatically taken from the environment)\n-  **JWT/OIDC** - Use JWT/OIDC authentication method with provided JWT token (automatically taken from the environment)\n\n**Vault mount point** - The mount point is the root level \"directory\" where a secrets engine is enabled in Vault\n\n**Secret path prefix** - Relative path that is prepended to each request. Useful if you don't want to have all the secrets in the root level"
 )
 
 const (

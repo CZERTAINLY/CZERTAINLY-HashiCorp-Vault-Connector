@@ -21,6 +21,27 @@ func (s *Server) listVaultAttributes(w http.ResponseWriter, r *http.Request) {
 	log := logger.Get()
 	var resp []sm.BaseAttributeDtoV3
 
+	vaultInfoContent := []sm.BaseAttributeContentDtoV3{}
+	var vaultInfoContentDescr sm.BaseAttributeContentDtoV3
+	if err := vaultInfoContentDescr.FromTextAttributeContentV3(sm.TextAttributeContentV3{
+		Data: vaultInfoContentDescrConst,
+	}); err != nil {
+		log.Error("Error marshaling TextAttributeContentV3 into BaseAttributeContentDtoV3", zap.Error(err))
+		internal(w, "Marshaling data structure failed.")
+		return
+	}
+	vaultInfoContent = append(vaultInfoContent, vaultInfoContentDescr)
+
+	var vaultInfo sm.BaseAttributeDtoV3
+	vaultInfoAttr := vaultManagementInfo
+	vaultInfoAttr.Content = vaultInfoContent
+	if err := vaultInfo.FromInfoAttributeV3(vaultInfoAttr); err != nil {
+		log.Error("Error marshaling InfoAttributeV3 into BaseAttributeDtoV3", zap.Error(err))
+		internal(w, "Marshaling data structure failed.")
+		return
+	}
+	resp = append(resp, vaultInfo)
+
 	var vaultURI sm.BaseAttributeDtoV3
 	if err := vaultURI.FromDataAttributeV3(vaultManagementURI); err != nil {
 		log.Error("Error marshaling DataAttributeV3 into BaseAttributeDtoV3", zap.Error(err))
