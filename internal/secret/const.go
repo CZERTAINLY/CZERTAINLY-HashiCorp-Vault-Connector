@@ -199,9 +199,9 @@ var (
 )
 
 const (
-	vaultInfoContentDescrConst         = "### HashiCorp Vault instance configuration.\n\nProvide URL of your Vault and select one of the available authentication methods:\n-  **AppRole** - Use AppRole authentication method with Role ID and Secret ID\n-  **Kubernetes** - Use Kubernetes authentication method with Service Account Token (automatically taken from the environment)\n-  **JWT/OIDC** - Use JWT/OIDC authentication method with provided JWT token (automatically taken from the environment)\n\n**Secret path prefix** - Relative path that is prepended to each request. Useful if you don't want to have all the secrets in the root level"
-	vaultProfilesInfoContentDescrConst = "### HashiCorp Vault profile configuration**\n\nVault mount point** - The mount point is the root level \"directory\" where a secrets engine is enabled in Vault\n\n"
-	secretInfoContentDescrConst        = "### Secret operations related information\n\n**Relative secret path** - Additional relative path that is appended to this particular secret operation\n\n"
+	vaultInfoContentDescrConst         = "Provide URL of your Vault and select one of the available authentication methods:\n-  **AppRole** - Use AppRole authentication method with Role ID and Secret ID\n-  **Kubernetes** - Use Kubernetes authentication method with Service Account Token (automatically taken from the environment)\n-  **JWT/OIDC** - Use JWT/OIDC authentication method with provided JWT token (automatically taken from the environment)\n\n**Secret path prefix** - Relative path that is prepended to each request. Useful if you don't want to have all the secrets in the root level"
+	vaultProfilesInfoContentDescrConst = "**Vault mount point** - The mount point is the root level \"directory\" where a secrets engine is enabled in Vault."
+	secretInfoContentDescrConst        = "**Relative secret path** - Relative secret path that is appended to constructed secret path."
 )
 
 const (
