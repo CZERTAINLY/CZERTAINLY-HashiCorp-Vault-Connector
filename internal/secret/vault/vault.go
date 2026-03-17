@@ -5,11 +5,14 @@ import (
 	"encoding/pem"
 	"fmt"
 
+	"CZERTAINLY-HashiCorp-Vault-Connector/internal/logger"
 	sm "CZERTAINLY-HashiCorp-Vault-Connector/internal/secret/model"
 
 	vcg "github.com/hashicorp/vault-client-go"
 	vcgSchema "github.com/hashicorp/vault-client-go/schema"
 	"github.com/moby/locker/v2"
+	"github.com/stretchr/objx"
+	"go.uber.org/zap"
 )
 
 type Manager struct {
@@ -20,18 +23,35 @@ func New() *Manager {
 	return &Manager{}
 }
 
-func (m *Manager) ConnCheck(ctx context.Context, client *vcg.Client, mount string) error {
+func (m *Manager) ListVisibleMounts(ctx context.Context, client *vcg.Client) ([]string, error) {
 	var err error
+	resp := []string{}
+
 	var mounts *vcg.Response[vcgSchema.InternalUiListEnabledVisibleMountsResponse]
 	if mounts, err = client.System.InternalUiListEnabledVisibleMounts(ctx); err != nil {
-		return toPkgErr(err)
+		return resp, toPkgErr(err)
 	}
 
-	if _, ok := mounts.Data.Secret[mount]; ok {
-		return nil
+	for k, v := range mounts.Data.Secret {
+		obj := objx.New(v)
+		if !obj.Get("type").IsStr() {
+			logger.Get().Warn("Unexpected mount info structure, expected type of key `type` is string.",
+				zap.String("mount", k), zap.Any("info", v))
+			continue
+		}
+
+		if obj.Get("type").Str() != mountInfoTypeKVString {
+			continue
+		}
+
+		resp = append(resp, k)
 	}
 
-	return fmt.Errorf("%w: mount point %q", ErrNotFound, mount)
+	if len(resp) == 0 {
+		return resp, fmt.Errorf("%w: zero mount points listed for given credentials", ErrNotFound)
+	}
+
+	return resp, nil
 }
 
 func ToPayload(ctx context.Context, secret sm.SecretContent) (map[string]any, sm.SecretType, error) {

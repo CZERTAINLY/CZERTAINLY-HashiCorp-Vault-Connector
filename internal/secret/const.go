@@ -4,7 +4,67 @@ import (
 	sm "CZERTAINLY-HashiCorp-Vault-Connector/internal/secret/model"
 )
 
-// Vault specific attribute definitions
+// Secret attributes definitions
+var (
+	secretManagementInfo = sm.InfoAttributeV3{
+		Uuid:          "4f024397-aa6a-4307-9e3b-7ffdbd0afb6f",
+		Version:       ptr(int32(3)),
+		SchemaVersion: sm.V3,
+		Name:          "info_secret_management_explanation",
+		Description:   ptr("Secret operations related information"),
+		ContentType:   sm.AttributeContentTypeText,
+		Properties: sm.InfoAttributeProperties{
+			Label:   "Secret operations related information",
+			Visible: true,
+		},
+	}
+	secretManagementPath = sm.DataAttributeV3{
+		Uuid:          "17e54346-3c10-4afe-b221-b4e0325c306d",
+		Version:       3,
+		SchemaVersion: sm.V3,
+		Name:          "data_secret_management_secret_path",
+		Type:          sm.Data,
+		ContentType:   sm.AttributeContentTypeString,
+		Description:   ptr("Relative path of secret in Vault without trailing slash."),
+		Properties: sm.DataAttributeProperties{
+			Label:    "Relative secret path",
+			Visible:  true,
+			Required: false,
+		},
+	}
+)
+
+// Vault Profile attributes definitions
+var (
+	vaultManagementProfileInfo = sm.InfoAttributeV3{
+		Uuid:          "f2f17379-438f-4457-b322-5c4db383f206",
+		Version:       ptr(int32(3)),
+		SchemaVersion: sm.V3,
+		Name:          "info_vault_management_profile_explanation",
+		Description:   ptr("Create a new HashiCorp Vault profile configuration"),
+		ContentType:   sm.AttributeContentTypeText,
+		Properties: sm.InfoAttributeProperties{
+			Label:   "HashiCorp Vault profile configuration",
+			Visible: true,
+		},
+	}
+	vaultManagementMount = sm.DataAttributeV3{
+		Uuid:          "11541b02-6752-4651-8df3-86bed296af78",
+		Version:       3,
+		SchemaVersion: sm.V3,
+		Name:          "data_vault_management_mount",
+		ContentType:   sm.AttributeContentTypeString,
+		Description:   ptr("Vault mount point"),
+		Properties: sm.DataAttributeProperties{
+			Label:    "Vault mount point",
+			Visible:  true,
+			Required: true,
+			List:     true,
+		},
+	}
+)
+
+// Vault attributes definitions
 var (
 	vaultManagementInfo = sm.InfoAttributeV3{
 		Uuid:          "890470a6-8cdd-4af9-a344-4f409dda4a64",
@@ -31,19 +91,6 @@ var (
 			Required: true,
 		},
 	}
-	vaultManagementMount = sm.DataAttributeV3{
-		Uuid:          "11541b02-6752-4651-8df3-86bed296af78",
-		Version:       3,
-		SchemaVersion: sm.V3,
-		Name:          "data_vault_management_mount",
-		ContentType:   sm.AttributeContentTypeString,
-		Description:   ptr("Vault mount point"),
-		Properties: sm.DataAttributeProperties{
-			Label:    "Vault mount point",
-			Visible:  true,
-			Required: true,
-		},
-	}
 	vaultManagementCredentialType = sm.DataAttributeV3{
 		Uuid:          "f461a9ab-7a99-4b41-b190-d0338e833064",
 		Version:       3,
@@ -64,10 +111,10 @@ var (
 		Uuid:          "19c0493b-1eb3-4d20-9394-610f63078109",
 		Version:       3,
 		SchemaVersion: sm.V3,
-		Name:          "data_vault_management_secret_path",
+		Name:          "data_vault_management_secret_path_prefix",
 		Type:          sm.Data,
 		ContentType:   sm.AttributeContentTypeString,
-		Description:   ptr("Path of secret in Vault without trailing slash."),
+		Description:   ptr("Secret path prefix in Vault without trailing slash"),
 		Properties: sm.DataAttributeProperties{
 			Label:    "Secret path prefix",
 			Visible:  true,
@@ -152,7 +199,9 @@ var (
 )
 
 const (
-	vaultInfoContentDescrConst = "### HashiCorp Vault instance configuration.\n\nProvide URL of your Vault and select one of the available authentication methods:\n-  **AppRole** - Use AppRole authentication method with Role ID and Secret ID\n-  **Kubernetes** - Use Kubernetes authentication method with Service Account Token (automatically taken from the environment)\n-  **JWT/OIDC** - Use JWT/OIDC authentication method with provided JWT token (automatically taken from the environment)\n\n**Vault mount point** - The mount point is the root level \"directory\" where a secrets engine is enabled in Vault\n\n**Secret path prefix** - Relative path that is prepended to each request. Useful if you don't want to have all the secrets in the root level"
+	vaultInfoContentDescrConst         = "### HashiCorp Vault instance configuration.\n\nProvide URL of your Vault and select one of the available authentication methods:\n-  **AppRole** - Use AppRole authentication method with Role ID and Secret ID\n-  **Kubernetes** - Use Kubernetes authentication method with Service Account Token (automatically taken from the environment)\n-  **JWT/OIDC** - Use JWT/OIDC authentication method with provided JWT token (automatically taken from the environment)\n\n**Secret path prefix** - Relative path that is prepended to each request. Useful if you don't want to have all the secrets in the root level"
+	vaultProfilesInfoContentDescrConst = "### HashiCorp Vault profile configuration**\n\nVault mount point** - The mount point is the root level \"directory\" where a secrets engine is enabled in Vault\n\n"
+	secretInfoContentDescrConst        = "### Secret operations related information\n\n**Relative secret path** - Additional relative path that is appended to this particular secret operation\n\n"
 )
 
 const (

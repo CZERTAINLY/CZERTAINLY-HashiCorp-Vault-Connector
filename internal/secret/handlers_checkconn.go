@@ -18,12 +18,12 @@ func (s *Server) checkVaultConnection(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	n := obtainNeeds(r.Context(), w, r, s.k8sToken, &req, nil, ckBody)
+	n := obtainNeeds(r.Context(), w, r, s.k8sToken, &req, nil, nil, ckBody)
 	if n == nil {
 		return
 	}
 
-	if err := n.CommonCheck(); err != nil {
+	if err := n.ConnectionCheck(); err != nil {
 		badrequest(w, fmt.Sprintf("Missing request attribute or validation failed: %s.", err), sm.VALIDATIONFAILED)
 		return
 	}
@@ -33,7 +33,7 @@ func (s *Server) checkVaultConnection(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := s.m.ConnCheck(r.Context(), c, n.mount)
+	_, err := s.m.ListVisibleMounts(r.Context(), c)
 	if handleOpError(w, r, 0, err, "", "") {
 		return
 	}
