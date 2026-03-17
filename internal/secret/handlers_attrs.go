@@ -42,16 +42,44 @@ func (s *Server) listVaultAttributes(w http.ResponseWriter, r *http.Request) {
 	}
 	resp = append(resp, vaultInfo)
 
+	var vaultManagementURIRegexConstraint sm.BaseAttributeConstraint
+	if err := vaultManagementURIRegexConstraint.FromRegexpAttributeConstraint(sm.RegexpAttributeConstraint{
+		Data:         ptr("^(http|https)://[a-zA-Z0-9.-]+(:[0-9]+)?"),
+		Description:  ptr("URL for the HashiCorp Vault"),
+		ErrorMessage: ptr("URL must be a valid URL"),
+	}); err != nil {
+		log.Error("Error marshaling RegexpAttribute into BaseAttributeConstraint", zap.Error(err))
+		internal(w, "Marshaling data structure failed.")
+		return
+	}
+	vaultManagementURIConstraints := []sm.BaseAttributeConstraint{vaultManagementURIRegexConstraint}
+	vaultManagementURIAttr := vaultManagementURI
+	vaultManagementURIAttr.Constraints = &vaultManagementURIConstraints
+
 	var vaultURI sm.BaseAttributeDtoV3
-	if err := vaultURI.FromDataAttributeV3(vaultManagementURI); err != nil {
+	if err := vaultURI.FromDataAttributeV3(vaultManagementURIAttr); err != nil {
 		log.Error("Error marshaling DataAttributeV3 into BaseAttributeDtoV3", zap.Error(err))
 		internal(w, "Marshaling data structure failed.")
 		return
 	}
 	resp = append(resp, vaultURI)
 
+	var vaultManagementMountRegexConstraint sm.BaseAttributeConstraint
+	if err := vaultManagementMountRegexConstraint.FromRegexpAttributeConstraint(sm.RegexpAttributeConstraint{
+		Data:         ptr(".+/$"),
+		Description:  ptr("Mount point for the HashiCorp Vault"),
+		ErrorMessage: ptr("Must be a valid Vault mount point"),
+	}); err != nil {
+		log.Error("Error marshaling RegexpAttribute into BaseAttributeConstraint", zap.Error(err))
+		internal(w, "Marshaling data structure failed.")
+		return
+	}
+	vaultManagementMountConstraints := []sm.BaseAttributeConstraint{vaultManagementMountRegexConstraint}
+	vaultManagementMountAttr := vaultManagementMount
+	vaultManagementMountAttr.Constraints = &vaultManagementMountConstraints
+
 	var vaultMount sm.BaseAttributeDtoV3
-	if err := vaultMount.FromDataAttributeV3(vaultManagementMount); err != nil {
+	if err := vaultMount.FromDataAttributeV3(vaultManagementMountAttr); err != nil {
 		log.Error("Error marshaling DataAttributeV3 into BaseAttributeDtoV3", zap.Error(err))
 		internal(w, "Marshaling data structure failed.")
 		return
