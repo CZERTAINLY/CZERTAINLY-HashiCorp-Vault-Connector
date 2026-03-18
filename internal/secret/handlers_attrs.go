@@ -13,6 +13,37 @@ import (
 
 func getSecretAttributes(w http.ResponseWriter, r *http.Request) {
 	resp := []sm.BaseAttributeDtoV3{}
+	log := logger.Get()
+
+	secretsInfoContent := []sm.BaseAttributeContentDtoV3{}
+	var secretsInfoContentDescr sm.BaseAttributeContentDtoV3
+
+	if err := secretsInfoContentDescr.FromTextAttributeContentV3(sm.TextAttributeContentV3{
+		Data: secretInfoContentDescrConst,
+	}); err != nil {
+		log.Error("Error marshaling TextAttributeContentV3 into BaseAttributeContentDtoV3", zap.Error(err))
+		internal(w, "Marshaling data structure failed.")
+		return
+	}
+	secretsInfoContent = append(secretsInfoContent, secretsInfoContentDescr)
+
+	var secretsInfo sm.BaseAttributeDtoV3
+	secretsInfoAttr := secretManagementInfo
+	secretsInfoAttr.Content = secretsInfoContent
+	if err := secretsInfo.FromInfoAttributeV3(secretsInfoAttr); err != nil {
+		log.Error("Error marshaling InfoAttributeV3 into BaseAttributeDtoV3", zap.Error(err))
+		internal(w, "Marshaling data structure failed.")
+		return
+	}
+	resp = append(resp, secretsInfo)
+
+	var secretPath sm.BaseAttributeDtoV3
+	if err := secretPath.FromDataAttributeV3(secretManagementPath); err != nil {
+		log.Error("Error marshaling DataAttributeV3 into BaseAttributeDtoV3", zap.Error(err))
+		internal(w, "Marshaling data structure failed.")
+		return
+	}
+	resp = append(resp, secretPath)
 
 	toJson(r.Context(), w, http.StatusOK, resp)
 }
@@ -96,13 +127,6 @@ func (s *Server) listVaultProfileAttributes(w http.ResponseWriter, r *http.Reque
 
 	resp = append(resp, vaultMount)
 
-	var secretPath sm.BaseAttributeDtoV3
-	if err := secretPath.FromDataAttributeV3(vaultManagementProfilePath); err != nil {
-		log.Error("Error marshaling DataAttributeV3 into BaseAttributeDtoV3", zap.Error(err))
-		internal(w, "Marshaling data structure failed.")
-		return
-	}
-	resp = append(resp, secretPath)
 	toJson(r.Context(), w, http.StatusOK, resp)
 }
 

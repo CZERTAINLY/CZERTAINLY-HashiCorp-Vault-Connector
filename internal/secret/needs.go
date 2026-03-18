@@ -101,8 +101,8 @@ func (n *Needs) Process(ctx context.Context, vaultAttrs, vaultProfileAttrs, secr
 				return err
 			}
 
-		case vaultManagementProfilePath.Uuid:
-			if n.secretPath, err = strContentTypeDataAttrSingle(vaultManagementProfilePath, attr); err != nil {
+		case secretManagementPath.Uuid:
+			if n.secretPath, err = strContentTypeDataAttrSingle(vaultManagementPath, attr); err != nil {
 				return err
 			}
 
