@@ -104,7 +104,7 @@ func (s *Server) listVaultProfileAttributes(w http.ResponseWriter, r *http.Reque
 	}
 	resp = append(resp, vaultInfo)
 
-	vaultManagementMountAttr := vaultManagementMount
+	vaultManagementMountAttr := vaultManagementProfileMount
 	vaultManagementMountAttrContent := []sm.BaseAttributeContentDtoV3{}
 	for _, cpy := range mnts {
 		item := sm.BaseAttributeContentDtoV3{}
@@ -124,8 +124,15 @@ func (s *Server) listVaultProfileAttributes(w http.ResponseWriter, r *http.Reque
 		internal(w, "Marshaling data structure failed.")
 		return
 	}
-
 	resp = append(resp, vaultMount)
+
+	var vaultPath sm.BaseAttributeDtoV3
+	if err := vaultPath.FromDataAttributeV3(vaultManagementProfilePath); err != nil {
+		log.Error("Error marshaling DataAttributeV3 into BaseAttributeDtoV3", zap.Error(err))
+		internal(w, "Marshaling data structure failed.")
+		return
+	}
+	resp = append(resp, vaultPath)
 
 	toJson(r.Context(), w, http.StatusOK, resp)
 }
@@ -248,14 +255,6 @@ func (s *Server) listVaultAttributes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	resp = append(resp, credentialGroup)
-
-	var vaultPath sm.BaseAttributeDtoV3
-	if err := vaultPath.FromDataAttributeV3(vaultManagementPath); err != nil {
-		log.Error("Error marshaling DataAttributeV3 into BaseAttributeDtoV3", zap.Error(err))
-		internal(w, "Marshaling data structure failed.")
-		return
-	}
-	resp = append(resp, vaultPath)
 
 	toJson(r.Context(), w, http.StatusOK, resp)
 }

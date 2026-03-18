@@ -48,11 +48,11 @@ var (
 			Visible: true,
 		},
 	}
-	vaultManagementMount = sm.DataAttributeV3{
+	vaultManagementProfileMount = sm.DataAttributeV3{
 		Uuid:          "11541b02-6752-4651-8df3-86bed296af78",
 		Version:       3,
 		SchemaVersion: sm.V3,
-		Name:          "data_vault_management_mount",
+		Name:          "data_vault_management_profile_mount",
 		ContentType:   sm.AttributeContentTypeString,
 		Description:   ptr("Vault mount point"),
 		Properties: sm.DataAttributeProperties{
@@ -60,6 +60,20 @@ var (
 			Visible:  true,
 			Required: true,
 			List:     true,
+		},
+	}
+	vaultManagementProfilePath = sm.DataAttributeV3{
+		Uuid:          "19c0493b-1eb3-4d20-9394-610f63078109",
+		Version:       3,
+		SchemaVersion: sm.V3,
+		Name:          "data_vault_management_profile_secret_path_prefix",
+		Type:          sm.Data,
+		ContentType:   sm.AttributeContentTypeString,
+		Description:   ptr("Secret path prefix in Vault without trailing slash"),
+		Properties: sm.DataAttributeProperties{
+			Label:    "Secret path prefix",
+			Visible:  true,
+			Required: false,
 		},
 	}
 )
@@ -105,20 +119,6 @@ var (
 			ReadOnly:    false,
 			List:        true,
 			MultiSelect: false,
-		},
-	}
-	vaultManagementPath = sm.DataAttributeV3{
-		Uuid:          "19c0493b-1eb3-4d20-9394-610f63078109",
-		Version:       3,
-		SchemaVersion: sm.V3,
-		Name:          "data_vault_management_secret_path_prefix",
-		Type:          sm.Data,
-		ContentType:   sm.AttributeContentTypeString,
-		Description:   ptr("Secret path prefix in Vault without trailing slash"),
-		Properties: sm.DataAttributeProperties{
-			Label:    "Secret path prefix",
-			Visible:  true,
-			Required: false,
 		},
 	}
 )
@@ -199,8 +199,8 @@ var (
 )
 
 const (
-	vaultInfoContentDescrConst         = "Provide URL of your Vault and select one of the available authentication methods:\n-  **AppRole** - Use AppRole authentication method with Role ID and Secret ID\n-  **Kubernetes** - Use Kubernetes authentication method with Service Account Token (automatically taken from the environment)\n-  **JWT/OIDC** - Use JWT/OIDC authentication method with provided JWT token (automatically taken from the environment)\n\n**Secret path prefix** - Relative path that is prepended to each request. Useful if you don't want to have all the secrets in the root level"
-	vaultProfilesInfoContentDescrConst = "**Vault mount point** - The mount point is the root level \"directory\" where a secrets engine is enabled in Vault."
+	vaultInfoContentDescrConst         = "Provide URL of your Vault and select one of the available authentication methods:\n-  **AppRole** - Use AppRole authentication method with Role ID and Secret ID\n-  **Kubernetes** - Use Kubernetes authentication method with Service Account Token (automatically taken from the environment)\n-  **JWT/OIDC** - Use JWT/OIDC authentication method with provided JWT token (automatically taken from the environment)"
+	vaultProfilesInfoContentDescrConst = "**Vault mount point** - The mount point is the root level \"directory\" where a secrets engine is enabled in Vault.\n\n**Secret path prefix** - Relative path that is prepended to each request. Useful if you don't want to have all the secrets in the root level"
 	secretInfoContentDescrConst        = "**Relative secret path** - Relative secret path that is appended to constructed secret path."
 )
 
