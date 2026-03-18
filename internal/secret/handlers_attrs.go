@@ -184,6 +184,14 @@ func (s *Server) listVaultAttributes(w http.ResponseWriter, r *http.Request) {
 	}
 	resp = append(resp, vaultURI)
 
+	var vaultNamespace sm.BaseAttributeDtoV3
+	if err := vaultNamespace.FromDataAttributeV3(vaultManagementNamespace); err != nil {
+		log.Error("Error marshaling DataAttributeV3 into BaseAttributeDtoV3", zap.Error(err))
+		internal(w, "Marshaling data structure failed.")
+		return
+	}
+	resp = append(resp, vaultNamespace)
+
 	// auth methods
 
 	credentialTypeContent := []sm.BaseAttributeContentDtoV3{}

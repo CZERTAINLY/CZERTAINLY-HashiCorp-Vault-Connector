@@ -78,7 +78,7 @@ var (
 	}
 )
 
-// Vault attributes definitions
+// Vault instance attributes definitions
 var (
 	vaultManagementInfo = sm.InfoAttributeV3{
 		Uuid:          "890470a6-8cdd-4af9-a344-4f409dda4a64",
@@ -111,7 +111,7 @@ var (
 		SchemaVersion: sm.V3,
 		Name:          "data_vault_management_credential_type",
 		ContentType:   sm.AttributeContentTypeString,
-		Description:   ptr("List of available Vault authentication methods."),
+		Description:   ptr("List of available Vault authentication methods"),
 		Properties: sm.DataAttributeProperties{
 			Label:       "Please select an authentication method",
 			Visible:     true,
@@ -119,6 +119,19 @@ var (
 			ReadOnly:    false,
 			List:        true,
 			MultiSelect: false,
+		},
+	}
+	vaultManagementNamespace = sm.DataAttributeV3{
+		Uuid:          "b7755e40-3ad3-404b-af8d-55a8a1105213",
+		Version:       3,
+		SchemaVersion: sm.V3,
+		Name:          "data_vault_management_namespace",
+		ContentType:   sm.AttributeContentTypeString,
+		Description:   ptr("Vault namespace the request is taking place within"),
+		Properties: sm.DataAttributeProperties{
+			Label:    "Vault namespace",
+			Visible:  true,
+			Required: false,
 		},
 	}
 )

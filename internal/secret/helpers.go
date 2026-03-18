@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strings"
 
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/logger"
 	sm "CZERTAINLY-HashiCorp-Vault-Connector/internal/secret/model"
@@ -24,10 +23,10 @@ func ptr[T any](v T) *T {
 func vaultPath(pathPrefix, secretPath, name string) string {
 	var res string
 	if pathPrefix != "" {
-		res = fmt.Sprintf("%s/", strings.TrimLeft(strings.TrimRight(pathPrefix, "/"), "/"))
+		res = fmt.Sprintf("%s/", pathPrefix)
 	}
 	if secretPath != "" {
-		res = fmt.Sprintf("%s%s/", res, strings.TrimLeft(strings.TrimRight(secretPath, "/"), "/"))
+		res = fmt.Sprintf("%s%s/", res, secretPath)
 	}
 
 	return fmt.Sprintf("%s%s", res, name)
