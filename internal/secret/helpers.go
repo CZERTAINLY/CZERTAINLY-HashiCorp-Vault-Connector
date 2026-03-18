@@ -24,10 +24,10 @@ func ptr[T any](v T) *T {
 func vaultPath(pathPrefix, secretPath, name string) string {
 	var res string
 	if pathPrefix != "" {
-		res = fmt.Sprintf("%s/", strings.TrimPrefix(strings.TrimSuffix(pathPrefix, "/"), "/"))
+		res = fmt.Sprintf("%s/", strings.TrimLeft(strings.TrimRight(pathPrefix, "/"), "/"))
 	}
 	if secretPath != "" {
-		res = fmt.Sprintf("%s%s/", res, strings.TrimPrefix(strings.TrimSuffix(secretPath, "/"), "/"))
+		res = fmt.Sprintf("%s%s/", res, strings.TrimLeft(strings.TrimRight(secretPath, "/"), "/"))
 	}
 
 	return fmt.Sprintf("%s%s", res, name)
