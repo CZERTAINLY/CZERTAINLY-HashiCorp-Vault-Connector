@@ -305,6 +305,12 @@ func (n Needs) Client(ctx context.Context) (*vcg.Client, error) {
 		return nil, err
 	}
 
+	if n.namespace != "" {
+		if err := client.SetNamespace(n.namespace); err != nil {
+			return nil, err
+		}
+	}
+
 	var resp *vcg.Response[map[string]interface{}]
 
 	switch n.credType {
@@ -346,14 +352,15 @@ func (n Needs) Client(ctx context.Context) (*vcg.Client, error) {
 		if err != nil {
 			return nil, err
 		}
+
+	default:
+		return nil, fmt.Errorf("unknown credential type %q", n.credType)
+	}
+	if resp == nil || resp.Auth == nil {
+		return nil, fmt.Errorf("auth response is nil for credential type %q", n.credType)
 	}
 	if err := client.SetToken(resp.Auth.ClientToken); err != nil {
 		return nil, err
-	}
-	if n.namespace != "" {
-		if err := client.SetNamespace(n.namespace); err != nil {
-			return nil, err
-		}
 	}
 
 	return client, nil
