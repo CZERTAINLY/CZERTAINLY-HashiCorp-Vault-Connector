@@ -202,7 +202,7 @@ const (
 
 // ApiKeySecretContent Secret representing an API Key
 type ApiKeySecretContent struct {
-	// Content API Key content encoded as Base64 string
+	// Content API Key content string
 	Content string     `json:"content"`
 	Type    SecretType `json:"type"`
 }
@@ -404,6 +404,9 @@ type CreateSecretRequestDto struct {
 
 	// VaultAttributes Vault attributes
 	VaultAttributes *[]RequestAttribute `json:"vaultAttributes,omitempty"`
+
+	// VaultProfileAttributes Vault profile attributes
+	VaultProfileAttributes *[]RequestAttribute `json:"vaultProfileAttributes,omitempty"`
 }
 
 // CredentialAttributeContentData defines model for CredentialAttributeContentData.
@@ -698,9 +701,9 @@ type FloatAttributeContentV3 struct {
 	Reference *string `json:"reference,omitempty"`
 }
 
-// GenericSecretContent Secret representing generic content encoded as Base64 string
+// GenericSecretContent Secret representing generic content represented as string
 type GenericSecretContent struct {
-	// Content Generic secret content encoded as Base64 string
+	// Content Generic secret content represented as string. In case secret content are binary data, it should be encoded as BASE64 string
 	Content string     `json:"content"`
 	Type    SecretType `json:"type"`
 }
@@ -846,7 +849,7 @@ type IntegerAttributeContentV3 struct {
 
 // JwtTokenSecretContent Secret representing JWT Token
 type JwtTokenSecretContent struct {
-	// Content JWT Token content encoded as Base64 string
+	// Content JWT Token content in compact (dot separated) format specified in [RFC 7519](https://datatracker.ietf.org/doc/html/rfc7519#section-3)
 	Content string     `json:"content"`
 	Type    SecretType `json:"type"`
 }
@@ -1215,6 +1218,9 @@ type SecretRequestDto struct {
 
 	// VaultAttributes Vault attributes
 	VaultAttributes *[]RequestAttribute `json:"vaultAttributes,omitempty"`
+
+	// VaultProfileAttributes Vault profile attributes
+	VaultProfileAttributes *[]RequestAttribute `json:"vaultProfileAttributes,omitempty"`
 }
 
 // SecretResponseDto defines model for SecretResponseDto.
@@ -1309,12 +1315,18 @@ type UpdateSecretRequestDto struct {
 
 	// VaultAttributes Vault attributes
 	VaultAttributes *[]RequestAttribute `json:"vaultAttributes,omitempty"`
+
+	// VaultProfileAttributes Vault profile attributes
+	VaultProfileAttributes *[]RequestAttribute `json:"vaultProfileAttributes,omitempty"`
 }
 
 // GetSecretContentParams defines parameters for GetSecretContent.
 type GetSecretContentParams struct {
 	Version *string `form:"version,omitempty" json:"version,omitempty"`
 }
+
+// ListVaultProfileAttributesJSONBody defines parameters for ListVaultProfileAttributes.
+type ListVaultProfileAttributesJSONBody = []RequestAttribute
 
 // CheckVaultConnectionJSONBody defines parameters for CheckVaultConnection.
 type CheckVaultConnectionJSONBody = []RequestAttribute
@@ -1333,6 +1345,9 @@ type GetSecretContentJSONRequestBody = SecretRequestDto
 
 // RotateSecretJSONRequestBody defines body for RotateSecret for application/json ContentType.
 type RotateSecretJSONRequestBody = SecretRequestDto
+
+// ListVaultProfileAttributesJSONRequestBody defines body for ListVaultProfileAttributes for application/json ContentType.
+type ListVaultProfileAttributesJSONRequestBody = ListVaultProfileAttributesJSONBody
 
 // CheckVaultConnectionJSONRequestBody defines body for CheckVaultConnection for application/json ContentType.
 type CheckVaultConnectionJSONRequestBody = CheckVaultConnectionJSONBody
@@ -2945,7 +2960,7 @@ func (t ResourceObjectContentData) AsResourceSimpleContentData() (ResourceSimple
 
 // FromResourceSimpleContentData overwrites any union data inside the ResourceObjectContentData as the provided ResourceSimpleContentData
 func (t *ResourceObjectContentData) FromResourceSimpleContentData(v ResourceSimpleContentData) error {
-	v.Resource = "credentials"
+	v.Resource = "authorities"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -2953,7 +2968,7 @@ func (t *ResourceObjectContentData) FromResourceSimpleContentData(v ResourceSimp
 
 // MergeResourceSimpleContentData performs a merge with any union data inside the ResourceObjectContentData, using the provided ResourceSimpleContentData
 func (t *ResourceObjectContentData) MergeResourceSimpleContentData(v ResourceSimpleContentData) error {
-	v.Resource = "credentials"
+	v.Resource = "authorities"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -3034,10 +3049,10 @@ func (t ResourceObjectContentData) ValueByDiscriminator() (interface{}, error) {
 		return nil, err
 	}
 	switch discriminator {
+	case "authorities":
+		return t.AsResourceSimpleContentData()
 	case "certificates":
 		return t.AsResourceCertificateContentData()
-	case "credentials":
-		return t.AsResourceSimpleContentData()
 	case "secrets":
 		return t.AsResourceSecretContentData()
 	default:

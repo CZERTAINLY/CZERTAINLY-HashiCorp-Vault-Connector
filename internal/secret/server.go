@@ -60,6 +60,7 @@ func (s *Server) MuxRouter() *mux.Router {
 	r.Methods(http.MethodDelete).Path("/v1/secretProvider/secrets").Handler(metrics.Middleware()(http.HandlerFunc(s.deleteSecret)))
 
 	r.Methods(http.MethodGet).Path("/v1/secretProvider/vaults/attributes").Handler(metrics.Middleware()(http.HandlerFunc(s.listVaultAttributes)))
+	r.Methods(http.MethodPost).Path("/v1/secretProvider/vaultProfiles/attributes").Handler(metrics.Middleware()(http.HandlerFunc(s.listVaultProfileAttributes)))
 	r.Methods(http.MethodGet).Path("/v1/secretProvider/secrets/{secretType}/attributes").Handler(metrics.Middleware()(http.HandlerFunc(getSecretAttributes)))
 	r.Methods(http.MethodGet).Path("/v1/secretProvider/credentialType/{credentialsType}/callback").Handler(metrics.Middleware()(http.HandlerFunc(s.credentialsType)))
 

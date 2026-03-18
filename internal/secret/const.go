@@ -4,30 +4,103 @@ import (
 	sm "CZERTAINLY-HashiCorp-Vault-Connector/internal/secret/model"
 )
 
-// Vault specific attribute definitions
+// Secret attributes definitions
 var (
+	secretManagementInfo = sm.InfoAttributeV3{
+		Uuid:          "4f024397-aa6a-4307-9e3b-7ffdbd0afb6f",
+		Version:       ptr(int32(3)),
+		SchemaVersion: sm.V3,
+		Name:          "info_secret_management_explanation",
+		Description:   ptr("Secret operations related information"),
+		ContentType:   sm.AttributeContentTypeText,
+		Properties: sm.InfoAttributeProperties{
+			Label:   "Secret operations related information",
+			Visible: true,
+		},
+	}
+	secretManagementPath = sm.DataAttributeV3{
+		Uuid:          "17e54346-3c10-4afe-b221-b4e0325c306d",
+		Version:       3,
+		SchemaVersion: sm.V3,
+		Name:          "data_secret_management_secret_path",
+		Type:          sm.Data,
+		ContentType:   sm.AttributeContentTypeString,
+		Description:   ptr("Relative path of secret in Vault without trailing slash."),
+		Properties: sm.DataAttributeProperties{
+			Label:    "Relative secret path",
+			Visible:  true,
+			Required: false,
+		},
+	}
+)
+
+// Vault Profile attributes definitions
+var (
+	vaultManagementProfileInfo = sm.InfoAttributeV3{
+		Uuid:          "f2f17379-438f-4457-b322-5c4db383f206",
+		Version:       ptr(int32(3)),
+		SchemaVersion: sm.V3,
+		Name:          "info_vault_management_profile_explanation",
+		Description:   ptr("Create a new HashiCorp Vault profile configuration"),
+		ContentType:   sm.AttributeContentTypeText,
+		Properties: sm.InfoAttributeProperties{
+			Label:   "HashiCorp Vault profile configuration",
+			Visible: true,
+		},
+	}
+	vaultManagementProfileMount = sm.DataAttributeV3{
+		Uuid:          "11541b02-6752-4651-8df3-86bed296af78",
+		Version:       3,
+		SchemaVersion: sm.V3,
+		Name:          "data_vault_management_profile_mount",
+		ContentType:   sm.AttributeContentTypeString,
+		Description:   ptr("Vault mount point"),
+		Properties: sm.DataAttributeProperties{
+			Label:    "Vault mount point",
+			Visible:  true,
+			Required: true,
+			List:     true,
+		},
+	}
+	vaultManagementProfilePath = sm.DataAttributeV3{
+		Uuid:          "19c0493b-1eb3-4d20-9394-610f63078109",
+		Version:       3,
+		SchemaVersion: sm.V3,
+		Name:          "data_vault_management_profile_secret_path_prefix",
+		Type:          sm.Data,
+		ContentType:   sm.AttributeContentTypeString,
+		Description:   ptr("Secret path prefix in Vault without trailing slash"),
+		Properties: sm.DataAttributeProperties{
+			Label:    "Secret path prefix",
+			Visible:  true,
+			Required: false,
+		},
+	}
+)
+
+// Vault attributes definitions
+var (
+	vaultManagementInfo = sm.InfoAttributeV3{
+		Uuid:          "890470a6-8cdd-4af9-a344-4f409dda4a64",
+		Version:       ptr(int32(3)),
+		SchemaVersion: sm.V3,
+		Name:          "info_vault_management_explanation",
+		Description:   ptr("Create a new HashiCorp Vault instance configuration"),
+		ContentType:   sm.AttributeContentTypeText,
+		Properties: sm.InfoAttributeProperties{
+			Label:   "HashiCorp Vault instance configuration",
+			Visible: true,
+		},
+	}
 	vaultManagementURI = sm.DataAttributeV3{
 		Uuid:          "ffd606d5-5fd0-4425-9a5a-29c2713ce18d",
 		Version:       3,
 		SchemaVersion: sm.V3,
 		Name:          "data_vault_management_uri",
 		ContentType:   sm.AttributeContentTypeString,
-		Description:   ptr("Vault URI should be in the following format: `http(s)://<vault-url>:<port>`."),
+		Description:   ptr("Vault URL should be in the following format: `http(s)://<vault-url>:<port>`."),
 		Properties: sm.DataAttributeProperties{
-			Label:    "Vault URI",
-			Visible:  true,
-			Required: true,
-		},
-	}
-	vaultManagementMount = sm.DataAttributeV3{
-		Uuid:          "11541b02-6752-4651-8df3-86bed296af78",
-		Version:       3,
-		SchemaVersion: sm.V3,
-		Name:          "data_vault_management_mount",
-		ContentType:   sm.AttributeContentTypeString,
-		Description:   ptr("Vault mount."),
-		Properties: sm.DataAttributeProperties{
-			Label:    "Vault mount",
+			Label:    "Vault URL",
 			Visible:  true,
 			Required: true,
 		},
@@ -46,20 +119,6 @@ var (
 			ReadOnly:    false,
 			List:        true,
 			MultiSelect: false,
-		},
-	}
-	vaultManagementPath = sm.DataAttributeV3{
-		Uuid:          "19c0493b-1eb3-4d20-9394-610f63078109",
-		Version:       3,
-		SchemaVersion: sm.V3,
-		Name:          "data_vault_management_secret_path",
-		Type:          sm.Data,
-		ContentType:   sm.AttributeContentTypeString,
-		Description:   ptr("Path of secret in Vault without trailing slash."),
-		Properties: sm.DataAttributeProperties{
-			Label:    "Secret Path",
-			Visible:  true,
-			Required: false,
 		},
 	}
 )
@@ -137,6 +196,12 @@ var (
 			Required: true,
 		},
 	}
+)
+
+const (
+	vaultInfoContentDescrConst         = "Provide URL of your Vault and select one of the available authentication methods:\n-  **AppRole** - Use AppRole authentication method with Role ID and Secret ID\n-  **Kubernetes** - Use Kubernetes authentication method with Service Account Token (automatically taken from the environment)\n-  **JWT/OIDC** - Use JWT/OIDC authentication method with provided JWT token (automatically taken from the environment)"
+	vaultProfilesInfoContentDescrConst = "**Vault mount point** - The mount point is the root level \"directory\" where a secrets engine is enabled in Vault.\n\n**Secret path prefix** - Relative path that is prepended to each request. Useful if you don't want to have all the secrets in the root level"
+	secretInfoContentDescrConst        = "**Relative secret path** - Relative secret path that is appended to constructed secret path."
 )
 
 const (

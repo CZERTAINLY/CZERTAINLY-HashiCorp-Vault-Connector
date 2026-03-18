@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/logger"
 	sm "CZERTAINLY-HashiCorp-Vault-Connector/internal/secret/model"
@@ -20,8 +21,16 @@ func ptr[T any](v T) *T {
 	return &v
 }
 
-func vaultPath(path, name string) string {
-	return fmt.Sprintf("%s/%s", path, name)
+func vaultPath(pathPrefix, secretPath, name string) string {
+	var res string
+	if pathPrefix != "" {
+		res = fmt.Sprintf("%s/", strings.TrimLeft(strings.TrimRight(pathPrefix, "/"), "/"))
+	}
+	if secretPath != "" {
+		res = fmt.Sprintf("%s%s/", res, strings.TrimLeft(strings.TrimRight(secretPath, "/"), "/"))
+	}
+
+	return fmt.Sprintf("%s%s", res, name)
 }
 
 func toJson(_ context.Context, w http.ResponseWriter, statusCode int, resp any) {
@@ -80,9 +89,9 @@ func unmrshl(w http.ResponseWriter, body []byte, req any) bool {
 	return true
 }
 
-func obtainNeeds(_ context.Context, w http.ResponseWriter, r *http.Request, k8sToken *string, vaultAttrs, secretAttrs *[]sm.RequestAttribute, b []byte) *Needs {
+func obtainNeeds(_ context.Context, w http.ResponseWriter, r *http.Request, k8sToken *string, vaultAttrs, vaultProfileAttrs, secretAttrs *[]sm.RequestAttribute, b []byte) *Needs {
 	n := NewNeeds(k8sToken)
-	if err := n.Process(r.Context(), vaultAttrs, secretAttrs); err != nil {
+	if err := n.Process(r.Context(), vaultAttrs, vaultProfileAttrs, secretAttrs); err != nil {
 		logger.Get().Debug("Processing request attributes failed.",
 			zap.Error(err),
 			zap.String("http-path", r.URL.Path),

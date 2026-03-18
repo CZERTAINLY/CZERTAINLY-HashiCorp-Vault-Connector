@@ -33,21 +33,24 @@ type Needs struct {
 	k8sToken *string
 
 	// common attribute values
-	address    string
-	mount      string
-	path       string
-	reqTimeout time.Duration
-	credType   string
+	address                string
+	mount                  string
+	pathPrefix, secretPath string
+	reqTimeout             time.Duration
+	credType               string
 
 	// credential type specific attribute values
 	roleID, roleSecret string
 	role               string
 }
 
-func (n *Needs) Process(ctx context.Context, vaultAttrs, secretAttrs *[]sm.RequestAttribute) error {
+func (n *Needs) Process(ctx context.Context, vaultAttrs, vaultProfileAttrs, secretAttrs *[]sm.RequestAttribute) error {
 	attrs := []sm.RequestAttribute{}
 	if vaultAttrs != nil {
 		attrs = append(attrs, *vaultAttrs...)
+	}
+	if vaultProfileAttrs != nil {
+		attrs = append(attrs, *vaultProfileAttrs...)
 	}
 	if secretAttrs != nil {
 		attrs = append(attrs, *secretAttrs...)
@@ -88,13 +91,18 @@ func (n *Needs) Process(ctx context.Context, vaultAttrs, secretAttrs *[]sm.Reque
 				return err
 			}
 
-		case vaultManagementMount.Uuid:
-			if n.mount, err = strContentTypeDataAttrSingle(vaultManagementMount, attr); err != nil {
+		case vaultManagementProfileMount.Uuid:
+			if n.mount, err = strContentTypeDataAttrSingle(vaultManagementProfileMount, attr); err != nil {
 				return err
 			}
 
-		case vaultManagementPath.Uuid:
-			if n.path, err = strContentTypeDataAttrSingle(vaultManagementPath, attr); err != nil {
+		case vaultManagementProfilePath.Uuid:
+			if n.pathPrefix, err = strContentTypeDataAttrSingle(vaultManagementProfilePath, attr); err != nil {
+				return err
+			}
+
+		case secretManagementPath.Uuid:
+			if n.secretPath, err = strContentTypeDataAttrSingle(secretManagementPath, attr); err != nil {
 				return err
 			}
 
@@ -213,12 +221,27 @@ func resourceSecretContentTypeDataAttrSingle(ptrn sm.DataAttributeV3, recv sm.Re
 	return "", fmt.Errorf("attribute %q, unexpected secret type %q", recv.Uuid, secretType)
 }
 
+func (n *Needs) ConnectionCheck() error {
+	switch {
+	case strings.TrimSpace(n.credType) == "":
+		return fmt.Errorf("missing attribute uuid %q, name %q", vaultManagementCredentialType.Uuid, vaultManagementCredentialType.Name)
+	case strings.TrimSpace(n.address) == "":
+		return fmt.Errorf("missing attribute uuid %q, name %q", vaultManagementURI.Uuid, vaultManagementURI.Name)
+	}
+
+	if err := n.credTypeCheck(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (n *Needs) CommonCheck() error {
 	switch {
 	case strings.TrimSpace(n.address) == "":
 		return fmt.Errorf("missing attribute uuid %q, name %q", vaultManagementURI.Uuid, vaultManagementURI.Name)
 	case strings.TrimSpace(n.mount) == "":
-		return fmt.Errorf("missing attribute uuid %q, name %q", vaultManagementMount.Uuid, vaultManagementMount.Name)
+		return fmt.Errorf("missing attribute uuid %q, name %q", vaultManagementProfileMount.Uuid, vaultManagementProfileMount.Name)
 	case strings.TrimSpace(n.credType) == "":
 		return fmt.Errorf("missing attribute uuid %q, name %q", vaultManagementCredentialType.Uuid, vaultManagementCredentialType.Name)
 	}

@@ -13,6 +13,126 @@ import (
 
 func getSecretAttributes(w http.ResponseWriter, r *http.Request) {
 	resp := []sm.BaseAttributeDtoV3{}
+	log := logger.Get()
+
+	secretsInfoContent := []sm.BaseAttributeContentDtoV3{}
+	var secretsInfoContentDescr sm.BaseAttributeContentDtoV3
+
+	if err := secretsInfoContentDescr.FromTextAttributeContentV3(sm.TextAttributeContentV3{
+		Data: secretInfoContentDescrConst,
+	}); err != nil {
+		log.Error("Error marshaling TextAttributeContentV3 into BaseAttributeContentDtoV3", zap.Error(err))
+		internal(w, "Marshaling data structure failed.")
+		return
+	}
+	secretsInfoContent = append(secretsInfoContent, secretsInfoContentDescr)
+
+	var secretsInfo sm.BaseAttributeDtoV3
+	secretsInfoAttr := secretManagementInfo
+	secretsInfoAttr.Content = secretsInfoContent
+	if err := secretsInfo.FromInfoAttributeV3(secretsInfoAttr); err != nil {
+		log.Error("Error marshaling InfoAttributeV3 into BaseAttributeDtoV3", zap.Error(err))
+		internal(w, "Marshaling data structure failed.")
+		return
+	}
+	resp = append(resp, secretsInfo)
+
+	var secretPath sm.BaseAttributeDtoV3
+	if err := secretPath.FromDataAttributeV3(secretManagementPath); err != nil {
+		log.Error("Error marshaling DataAttributeV3 into BaseAttributeDtoV3", zap.Error(err))
+		internal(w, "Marshaling data structure failed.")
+		return
+	}
+	resp = append(resp, secretPath)
+
+	toJson(r.Context(), w, http.StatusOK, resp)
+}
+
+func (s *Server) listVaultProfileAttributes(w http.ResponseWriter, r *http.Request) {
+	lvpBody, ok := readRBody(w, r)
+	if !ok {
+		return
+	}
+
+	lvpReq := []sm.RequestAttribute{}
+	if ok := unmrshl(w, lvpBody, &lvpReq); !ok {
+		return
+	}
+
+	n := obtainNeeds(r.Context(), w, r, s.k8sToken, &lvpReq, nil, nil, lvpBody)
+	if n == nil {
+		return
+	}
+
+	if err := n.ConnectionCheck(); err != nil {
+		badrequest(w, fmt.Sprintf("Missing request attribute or validation failed: %s.", err), sm.VALIDATIONFAILED)
+		return
+	}
+
+	c := obtainVClient(r.Context(), w, r, *n, lvpBody)
+	if c == nil {
+		return
+	}
+
+	mnts, err := s.m.ListVisibleMounts(r.Context(), c)
+	if handleOpError(w, r, 0, err, "", "") {
+		return
+	}
+
+	log := logger.Get()
+	var resp []sm.BaseAttributeDtoV3
+
+	vaultProfilesInfoContent := []sm.BaseAttributeContentDtoV3{}
+	var vaultProfilesInfoContentDescr sm.BaseAttributeContentDtoV3
+
+	if err := vaultProfilesInfoContentDescr.FromTextAttributeContentV3(sm.TextAttributeContentV3{
+		Data: vaultProfilesInfoContentDescrConst,
+	}); err != nil {
+		log.Error("Error marshaling TextAttributeContentV3 into BaseAttributeContentDtoV3", zap.Error(err))
+		internal(w, "Marshaling data structure failed.")
+		return
+	}
+	vaultProfilesInfoContent = append(vaultProfilesInfoContent, vaultProfilesInfoContentDescr)
+
+	var vaultInfo sm.BaseAttributeDtoV3
+	vaultProfilesInfoAttr := vaultManagementProfileInfo
+	vaultProfilesInfoAttr.Content = vaultProfilesInfoContent
+	if err := vaultInfo.FromInfoAttributeV3(vaultProfilesInfoAttr); err != nil {
+		log.Error("Error marshaling InfoAttributeV3 into BaseAttributeDtoV3", zap.Error(err))
+		internal(w, "Marshaling data structure failed.")
+		return
+	}
+	resp = append(resp, vaultInfo)
+
+	vaultManagementMountAttr := vaultManagementProfileMount
+	vaultManagementMountAttrContent := []sm.BaseAttributeContentDtoV3{}
+	for _, cpy := range mnts {
+		item := sm.BaseAttributeContentDtoV3{}
+		if err := item.FromStringAttributeContentV3(sm.StringAttributeContentV3{Data: cpy}); err != nil {
+			log.Error("Error marshaling StringAttributeContentV3 into BaseAttributeContentDtoV3", zap.Error(err))
+			internal(w, "Marshaling data structure failed.")
+			return
+		}
+		vaultManagementMountAttrContent = append(vaultManagementMountAttrContent, item)
+	}
+
+	vaultManagementMountAttr.Content = &vaultManagementMountAttrContent
+
+	var vaultMount sm.BaseAttributeDtoV3
+	if err := vaultMount.FromDataAttributeV3(vaultManagementMountAttr); err != nil {
+		log.Error("Error marshaling DataAttributeV3 into BaseAttributeDtoV3", zap.Error(err))
+		internal(w, "Marshaling data structure failed.")
+		return
+	}
+	resp = append(resp, vaultMount)
+
+	var vaultPath sm.BaseAttributeDtoV3
+	if err := vaultPath.FromDataAttributeV3(vaultManagementProfilePath); err != nil {
+		log.Error("Error marshaling DataAttributeV3 into BaseAttributeDtoV3", zap.Error(err))
+		internal(w, "Marshaling data structure failed.")
+		return
+	}
+	resp = append(resp, vaultPath)
 
 	toJson(r.Context(), w, http.StatusOK, resp)
 }
@@ -21,21 +141,48 @@ func (s *Server) listVaultAttributes(w http.ResponseWriter, r *http.Request) {
 	log := logger.Get()
 	var resp []sm.BaseAttributeDtoV3
 
+	vaultInfoContent := []sm.BaseAttributeContentDtoV3{}
+	var vaultInfoContentDescr sm.BaseAttributeContentDtoV3
+	if err := vaultInfoContentDescr.FromTextAttributeContentV3(sm.TextAttributeContentV3{
+		Data: vaultInfoContentDescrConst,
+	}); err != nil {
+		log.Error("Error marshaling TextAttributeContentV3 into BaseAttributeContentDtoV3", zap.Error(err))
+		internal(w, "Marshaling data structure failed.")
+		return
+	}
+	vaultInfoContent = append(vaultInfoContent, vaultInfoContentDescr)
+
+	var vaultInfo sm.BaseAttributeDtoV3
+	vaultInfoAttr := vaultManagementInfo
+	vaultInfoAttr.Content = vaultInfoContent
+	if err := vaultInfo.FromInfoAttributeV3(vaultInfoAttr); err != nil {
+		log.Error("Error marshaling InfoAttributeV3 into BaseAttributeDtoV3", zap.Error(err))
+		internal(w, "Marshaling data structure failed.")
+		return
+	}
+	resp = append(resp, vaultInfo)
+
+	var vaultManagementURIRegexConstraint sm.BaseAttributeConstraint
+	if err := vaultManagementURIRegexConstraint.FromRegexpAttributeConstraint(sm.RegexpAttributeConstraint{
+		Data:         ptr("^(http|https)://[a-zA-Z0-9.-]+(:[0-9]+)?"),
+		Description:  ptr("URL for the HashiCorp Vault"),
+		ErrorMessage: ptr("URL must be a valid URL"),
+	}); err != nil {
+		log.Error("Error marshaling RegexpAttribute into BaseAttributeConstraint", zap.Error(err))
+		internal(w, "Marshaling data structure failed.")
+		return
+	}
+	vaultManagementURIConstraints := []sm.BaseAttributeConstraint{vaultManagementURIRegexConstraint}
+	vaultManagementURIAttr := vaultManagementURI
+	vaultManagementURIAttr.Constraints = &vaultManagementURIConstraints
+
 	var vaultURI sm.BaseAttributeDtoV3
-	if err := vaultURI.FromDataAttributeV3(vaultManagementURI); err != nil {
+	if err := vaultURI.FromDataAttributeV3(vaultManagementURIAttr); err != nil {
 		log.Error("Error marshaling DataAttributeV3 into BaseAttributeDtoV3", zap.Error(err))
 		internal(w, "Marshaling data structure failed.")
 		return
 	}
 	resp = append(resp, vaultURI)
-
-	var vaultMount sm.BaseAttributeDtoV3
-	if err := vaultMount.FromDataAttributeV3(vaultManagementMount); err != nil {
-		log.Error("Error marshaling DataAttributeV3 into BaseAttributeDtoV3", zap.Error(err))
-		internal(w, "Marshaling data structure failed.")
-		return
-	}
-	resp = append(resp, vaultMount)
 
 	// auth methods
 
@@ -108,14 +255,6 @@ func (s *Server) listVaultAttributes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	resp = append(resp, credentialGroup)
-
-	var vaultPath sm.BaseAttributeDtoV3
-	if err := vaultPath.FromDataAttributeV3(vaultManagementPath); err != nil {
-		log.Error("Error marshaling DataAttributeV3 into BaseAttributeDtoV3", zap.Error(err))
-		internal(w, "Marshaling data structure failed.")
-		return
-	}
-	resp = append(resp, vaultPath)
 
 	toJson(r.Context(), w, http.StatusOK, resp)
 }
