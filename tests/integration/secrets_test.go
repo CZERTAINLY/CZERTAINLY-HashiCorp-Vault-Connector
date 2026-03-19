@@ -153,6 +153,52 @@ func TestSecretProvider_SecretCRUD(t *testing.T) {
 			createValues:  []string{"initial-api-key-abc"},
 			updateValues:  []string{"updated-api-key-xyz"},
 		},
+		{
+			name:          "jwtToken secret",
+			secretType:    "jwtToken",
+			createContent: JwtTokenSecret("initial.jwt.token.value"),
+			updateContent: JwtTokenSecret("updated.jwt.token.value"),
+			createValues:  []string{"initial.jwt.token.value"},
+			updateValues:  []string{"updated.jwt.token.value"},
+		},
+		{
+			name:          "secretKey secret",
+			secretType:    "secretKey",
+			createContent: SecretKeySecret("aW5pdGlhbC1zZWNyZXQta2V5"),
+			updateContent: SecretKeySecret("dXBkYXRlZC1zZWNyZXQta2V5"),
+			createValues:  []string{"aW5pdGlhbC1zZWNyZXQta2V5"},
+			updateValues:  []string{"dXBkYXRlZC1zZWNyZXQta2V5"},
+		},
+		{
+			name:       "privateKey secret",
+			secretType: "privateKey",
+			// The HTTP wire format requires the PEM to be base64-encoded (GetPrivateKeySecretContent
+			// calls base64.StdEncoding.DecodeString before pem.Decode validates the decoded bytes).
+			// Both values are base64 encodings of structurally valid PEM blocks accepted by pem.Decode.
+			createContent: PrivateKeySecret("LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFcEFJQkFBS0NBUUVBMFozVlM1SkpjZHMzCi0tLS0tRU5EIFJTQSBQUklWQVRFIEtFWS0tLS0tCg=="),
+			updateContent: PrivateKeySecret("LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFcEFJQkFBS0NBUUVBMVozVlM1SkpjZHMzCi0tLS0tRU5EIFJTQSBQUklWQVRFIEtFWS0tLS0tCg=="),
+			// Read returns the PEM content re-encoded as base64; assert only that status 200 is received.
+			createValues: []string{},
+			updateValues: []string{},
+		},
+		{
+			name:          "keyValue secret",
+			secretType:    "keyValue",
+			createContent: KeyValueSecret(map[string]any{"mykey": "myvalue-create", "other": "data"}),
+			updateContent: KeyValueSecret(map[string]any{"mykey": "myvalue-update", "other": "newdata"}),
+			createValues:  []string{"myvalue-create"},
+			updateValues:  []string{"myvalue-update"},
+		},
+		{
+			name:     "keyStore secret",
+			secretType: "keyStore",
+			// base64("fake-keystore-initial") = "ZmFrZS1rZXlzdG9yZS1pbml0aWFs"
+			createContent: KeyStoreSecret("ZmFrZS1rZXlzdG9yZS1pbml0aWFs", "keystorepass", "PKCS12"),
+			// base64("fake-keystore-updated") = "ZmFrZS1rZXlzdG9yZS11cGRhdGVk"
+			updateContent: KeyStoreSecret("ZmFrZS1rZXlzdG9yZS11cGRhdGVk", "newkeystorepass", "JKS"),
+			createValues:  []string{"ZmFrZS1rZXlzdG9yZS1pbml0aWFs"},
+			updateValues:  []string{"ZmFrZS1rZXlzdG9yZS11cGRhdGVk"},
+		},
 	}
 
 	for _, tt := range tests {

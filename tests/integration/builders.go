@@ -117,6 +117,44 @@ func ApiKeySecret(key string) map[string]any {
 	return map[string]any{"type": "apiKey", "content": key}
 }
 
+// JwtTokenSecret produces the SecretContent JSON for a JWT token.
+// The token is stored and returned as-is (no JWT signature validation by the connector).
+func JwtTokenSecret(token string) map[string]any {
+	return map[string]any{"type": "jwtToken", "content": token}
+}
+
+// SecretKeySecret produces the SecretContent JSON for a symmetric secret key.
+// content should be a base64-encoded string.
+func SecretKeySecret(content string) map[string]any {
+	return map[string]any{"type": "secretKey", "content": content}
+}
+
+// PrivateKeySecret produces the SecretContent JSON for a PEM-encoded private key.
+// pemBase64 must be the standard-encoding base64 of the PEM text (the HTTP layer decodes
+// it before calling pem.Decode to validate structure). On read, the connector re-encodes
+// the stored PEM as base64 in the response.
+func PrivateKeySecret(pemBase64 string) map[string]any {
+	return map[string]any{"type": "privateKey", "content": pemBase64}
+}
+
+// KeyValueSecret produces the SecretContent JSON for arbitrary key-value pairs.
+// data is stored as-is in Vault with no schema validation.
+func KeyValueSecret(data map[string]any) map[string]any {
+	return map[string]any{"type": "keyValue", "content": data}
+}
+
+// KeyStoreSecret produces the SecretContent JSON for a JKS or PKCS12 keystore.
+// content should be the keystore bytes base64-encoded.
+// keyStoreType must be "JKS" or "PKCS12" (case-sensitive).
+func KeyStoreSecret(content, password, keyStoreType string) map[string]any {
+	return map[string]any{
+		"type":         "keyStore",
+		"content":      content,
+		"password":     password,
+		"keyStoreType": keyStoreType,
+	}
+}
+
 // --- Internal attribute builders ---
 
 // vaultAttrs returns the vault-instance attributes (URI + credential type + AppRole creds).

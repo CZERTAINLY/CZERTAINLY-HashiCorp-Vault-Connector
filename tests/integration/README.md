@@ -56,20 +56,26 @@ go test ./...
 |------|----------|-------------------|
 | `TestSecretProvider_ListVaultAttributes` | `GET /v1/secretProvider/vaults/attributes` | Returns 200 with all expected attribute UUIDs (static — no Vault needed) |
 | `TestSecretProvider_CheckVaultConnection` | `POST /v1/secretProvider/vaults` | Valid AppRole → 204; invalid secret-id → 400 |
-| `TestSecretProvider_SecretCRUD` | `POST`, `PUT`, `DELETE /v1/secretProvider/secrets*` | Full lifecycle (create → read → update → read → delete → 404) for `generic`, `basicAuth`, `apiKey` types |
+| `TestSecretProvider_SecretCRUD` | `POST`, `PUT`, `DELETE /v1/secretProvider/secrets*` | Full lifecycle (create → read → update → read → delete → 404) for all 8 secret types: `generic`, `apiKey`, `basicAuth`, `jwtToken`, `secretKey`, `privateKey`, `keyValue`, `keyStore` |
+| `TestSecretProvider_CrossTypeRead` | `POST /v1/secretProvider/secrets/content` | Reading a secret with a different type than it was created with — compatible pairs return 200, incompatible pairs return 500 |
+| `TestSecretProvider_DuplicateCreate` | `POST /v1/secretProvider/secrets` | Creating the same secret name twice → 412 Precondition Failed |
+| `TestSecretProvider_NotFoundOperations` | `POST`, `PUT`, `DELETE /v1/secretProvider/secrets*` | Read/Update non-existent → 404; Delete non-existent → 204 (idempotent) |
+| `TestSecretProvider_UpdateChangesType` | `PUT /v1/secretProvider/secrets` | Updating to a different type replaces the stored structure; reading with old type fails |
+| `TestSecretProvider_SecretPathPrefix` | `POST`, `DELETE /v1/secretProvider/secrets*` | Secrets stored under a sub-path are isolated from the root path |
 
 ## File Structure
 
 ```
 tests/integration/
-├── README.md           — this file
-├── constants.go        — timeouts, attribute UUIDs, credential type constants
-├── setup.go            — shared HTTP helpers (newHTTPClient, doRequest, bytesReader)
-├── vault.go            — VaultContainer: starts Vault testcontainer, configures KV+AppRole
-├── builders.go         — RequestBuilder: constructs RequestAttributeV3 JSON payloads
-├── assertions.go       — assertStatus, assertBodyContains, assertNotFound
-├── fixtures.go         — SecretTestHarness: Vault container + httptest.Server
-└── secrets_test.go     — test functions
+├── README.md                    — this file
+├── constants.go                 — timeouts, attribute UUIDs, credential type constants
+├── setup.go                     — shared HTTP helpers (newHTTPClient, doRequest, bytesReader)
+├── vault.go                     — VaultContainer: starts Vault testcontainer, configures KV+AppRole
+├── builders.go                  — RequestBuilder + secret content helpers for all 8 types
+├── assertions.go                — assertStatus, assertBodyContains, assertNotFound
+├── fixtures.go                  — SecretTestHarness: Vault container + httptest.Server
+├── secrets_test.go              — CRUD lifecycle + connection check + attribute listing
+└── secrets_extended_test.go     — cross-type reads, duplicate create, not-found ops, path prefix
 ```
 
 All files carry `//go:build integration` — excluded from `go test ./...`, only included with `-tags=integration`.
