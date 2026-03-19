@@ -38,6 +38,7 @@ type Needs struct {
 	pathPrefix, secretPath string
 	reqTimeout             time.Duration
 	credType               string
+	namespace              string
 
 	// credential type specific attribute values
 	roleID, roleSecret string
@@ -97,14 +98,25 @@ func (n *Needs) Process(ctx context.Context, vaultAttrs, vaultProfileAttrs, secr
 			}
 
 		case vaultManagementProfilePath.Uuid:
-			if n.pathPrefix, err = strContentTypeDataAttrSingle(vaultManagementProfilePath, attr); err != nil {
+			var pathPrefix string
+			if pathPrefix, err = strContentTypeDataAttrSingle(vaultManagementProfilePath, attr); err != nil {
 				return err
 			}
+			n.pathPrefix = strings.TrimLeft(strings.TrimRight(pathPrefix, "/"), "/")
 
 		case secretManagementPath.Uuid:
-			if n.secretPath, err = strContentTypeDataAttrSingle(secretManagementPath, attr); err != nil {
+			var secretPath string
+			if secretPath, err = strContentTypeDataAttrSingle(secretManagementPath, attr); err != nil {
 				return err
 			}
+			n.secretPath = strings.TrimLeft(strings.TrimRight(secretPath, "/"), "/")
+
+		case vaultManagementNamespace.Uuid:
+			var namespace string
+			if namespace, err = strContentTypeDataAttrSingle(vaultManagementNamespace, attr); err != nil {
+				return err
+			}
+			n.namespace = strings.TrimSpace(namespace)
 
 		default:
 			logger.Get().Debug("Unknown RequestAttributeV3 encountered.", zap.String("uuid", attr.Uuid.String()), zap.String("name", attr.Name))
@@ -282,8 +294,10 @@ func (n Needs) credTypeCheck() error {
 }
 
 func (n Needs) Client(ctx context.Context) (*vcg.Client, error) {
+	var err error
+	var client *vcg.Client
 
-	client, err := vcg.New(
+	client, err = vcg.New(
 		vcg.WithAddress(n.address),
 		vcg.WithRequestTimeout(n.reqTimeout),
 	)
@@ -291,9 +305,17 @@ func (n Needs) Client(ctx context.Context) (*vcg.Client, error) {
 		return nil, err
 	}
 
+	if n.namespace != "" {
+		if err := client.SetNamespace(n.namespace); err != nil {
+			return nil, err
+		}
+	}
+
+	var resp *vcg.Response[map[string]interface{}]
+
 	switch n.credType {
 	case credentialTypeAppRole.Data:
-		resp, err := client.Auth.AppRoleLogin(
+		resp, err = client.Auth.AppRoleLogin(
 			ctx,
 			vcgSchema.AppRoleLoginRequest{
 				RoleId:   n.roleID,
@@ -302,15 +324,12 @@ func (n Needs) Client(ctx context.Context) (*vcg.Client, error) {
 		if err != nil {
 			return nil, err
 		}
-		if err := client.SetToken(resp.Auth.ClientToken); err != nil {
-			return nil, err
-		}
 
 	case credentialTypeJwt.Data:
 		if n.k8sToken == nil {
 			return nil, fmt.Errorf("unknown credential type %q", credentialTypeJwt.Data)
 		}
-		resp, err := client.Auth.JwtLogin(
+		resp, err = client.Auth.JwtLogin(
 			ctx,
 			vcgSchema.JwtLoginRequest{
 				Jwt:  *n.k8sToken,
@@ -320,15 +339,11 @@ func (n Needs) Client(ctx context.Context) (*vcg.Client, error) {
 			return nil, err
 		}
 
-		if err := client.SetToken(resp.Auth.ClientToken); err != nil {
-			return nil, err
-		}
-
 	case credentialTypeK8s.Data:
 		if n.k8sToken == nil {
 			return nil, fmt.Errorf("unknown credential type %q", credentialTypeK8s.Data)
 		}
-		resp, err := client.Auth.KubernetesLogin(
+		resp, err = client.Auth.KubernetesLogin(
 			ctx,
 			vcgSchema.KubernetesLoginRequest{
 				Jwt:  *n.k8sToken,
@@ -337,9 +352,15 @@ func (n Needs) Client(ctx context.Context) (*vcg.Client, error) {
 		if err != nil {
 			return nil, err
 		}
-		if err := client.SetToken(resp.Auth.ClientToken); err != nil {
-			return nil, err
-		}
+
+	default:
+		return nil, fmt.Errorf("unknown credential type %q", n.credType)
+	}
+	if resp == nil || resp.Auth == nil {
+		return nil, fmt.Errorf("auth response is nil for credential type %q", n.credType)
+	}
+	if err := client.SetToken(resp.Auth.ClientToken); err != nil {
+		return nil, err
 	}
 
 	return client, nil
