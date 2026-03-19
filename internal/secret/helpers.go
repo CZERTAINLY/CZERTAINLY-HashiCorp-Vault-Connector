@@ -129,6 +129,8 @@ func handleOpError(w http.ResponseWriter, r *http.Request, statusCode int, err e
 			Name: reqName,
 			Type: sm.SecretType(reqType),
 		})
+	} else if statusCode > 0 {
+		w.WriteHeader(statusCode)
 	}
 
 	return false

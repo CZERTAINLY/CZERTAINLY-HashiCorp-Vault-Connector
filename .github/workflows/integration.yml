@@ -1,0 +1,39 @@
+name: Integration Tests
+
+on:
+  push:
+    paths-ignore:
+      - 'deploy/charts/**'
+    branches: [main]
+  pull_request:
+    paths-ignore:
+      - 'deploy/charts/**'
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-integration
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  integration:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up Go
+        uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
+        with:
+          go-version: '1.26'
+          cache: 'true'
+
+      - name: Pull Docker images
+        run: docker pull hashicorp/vault:latest
+
+      - name: Run integration tests
+        run: go test -v -race -tags=integration ./tests/integration/...
