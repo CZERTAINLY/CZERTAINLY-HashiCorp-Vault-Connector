@@ -221,3 +221,35 @@ const (
 	VaultManagementCredentialGroupUUID = "2371992e-e074-4128-a53a-a877d6e548c6"
 	VaultManagementCredentialGroupName = "group_vault_management_credential"
 )
+
+// Metadata attribute definitions
+var (
+	canonicalSecretPath = sm.MetadataAttributeV3{
+		Uuid:        "aa471f64-fa56-448e-8794-7d0cbc06b29d",
+		Name:        "meta_canonical_secret_path",
+		Description: ptr("Canonical secret path in Vault"),
+		Version:     1,
+		Type:        sm.Meta,
+		ContentType: sm.AttributeContentTypeString,
+		Properties: sm.MetadataAttributeProperties{
+			Label:     "Canonical Vault secret path",
+			Visible:   true,
+			Overwrite: ptr(true),
+		},
+		SchemaVersion: sm.V3,
+	}
+	keyvalueEngineVersion = sm.MetadataAttributeV3{
+		Uuid:        "310387bc-915a-49ae-8425-77f5192bb456",
+		Name:        "meta_keyvalue_engine_version",
+		Description: ptr("Version of Vault KeyValue secret engine"),
+		Version:     1,
+		Type:        sm.Meta,
+		ContentType: sm.AttributeContentTypeString,
+		Properties: sm.MetadataAttributeProperties{
+			Label:     "Vault KeyValue secret engine version",
+			Visible:   true,
+			Overwrite: ptr(true),
+		},
+		SchemaVersion: sm.V3,
+	}
+)

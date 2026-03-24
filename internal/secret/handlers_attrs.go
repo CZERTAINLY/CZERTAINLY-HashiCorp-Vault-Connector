@@ -75,7 +75,7 @@ func (s *Server) listVaultProfileAttributes(w http.ResponseWriter, r *http.Reque
 	}
 
 	mnts, err := s.m.ListVisibleMounts(r.Context(), c)
-	if handleOpError(w, r, 0, err, "", "") {
+	if handleOpError(w, r, 0, err, "", "", "", "") {
 		return
 	}
 
