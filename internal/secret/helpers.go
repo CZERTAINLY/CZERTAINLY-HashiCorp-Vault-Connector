@@ -150,7 +150,7 @@ func handleOpError(w http.ResponseWriter, r *http.Request, statusCode int, err e
 		// keyvalue engine version
 		keyvalueEngineVersionAttrV3ContentItemV3 := sm.StringAttributeContentV3{
 			ContentType: sm.AttributeContentTypeString,
-			Data:        canonicalPath,
+			Data:        engineVersion,
 		}
 		var keyvalueEngineVersionAttrV3ContentItem sm.BaseAttributeContentDtoV3
 		if err := keyvalueEngineVersionAttrV3ContentItem.FromStringAttributeContentV3(keyvalueEngineVersionAttrV3ContentItemV3); err != nil {
