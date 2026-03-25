@@ -232,7 +232,7 @@ var (
 		Type:        sm.Meta,
 		ContentType: sm.AttributeContentTypeString,
 		Properties: sm.MetadataAttributeProperties{
-			Label:     "Canonical Vault secret path",
+			Label:     "Canonical secret path",
 			Visible:   true,
 			Overwrite: ptr(true),
 		},
@@ -246,7 +246,7 @@ var (
 		Type:        sm.Meta,
 		ContentType: sm.AttributeContentTypeString,
 		Properties: sm.MetadataAttributeProperties{
-			Label:     "Vault KeyValue secret engine version",
+			Label:     "Secret engine version",
 			Visible:   true,
 			Overwrite: ptr(true),
 		},
