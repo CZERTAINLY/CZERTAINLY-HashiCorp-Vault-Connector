@@ -58,6 +58,8 @@ func (m *Manager) Create(ctx context.Context, client *vcg.Client, mount, path st
 			}
 			return secretType, canonicalPath, KVVersionV2.String(), toPkgErr(err)
 		}
+		return secretType, canonicalPath, KVVersionV2.String(), errors.New("unknown kv engine version")
+
 	}
 
 	return secretType, "", "", errors.New("unknown kv engine version")
