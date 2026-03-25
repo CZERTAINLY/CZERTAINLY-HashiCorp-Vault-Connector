@@ -130,7 +130,10 @@ func (s *Server) deleteSecret(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err := s.m.Delete(r.Context(), c, n.mount, vaultPath(n.pathPrefix, n.secretPath, req.Name))
-	_ = handleOpError(w, r, http.StatusNoContent, err, "", "", "", "")
+	if doReturn := handleOpError(w, r, http.StatusNoContent, err, "", "", "", ""); doReturn {
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (s *Server) rotateSecretValue(w http.ResponseWriter, _ *http.Request) {
