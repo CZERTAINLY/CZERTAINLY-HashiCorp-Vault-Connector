@@ -132,7 +132,7 @@ func handleOpError(w http.ResponseWriter, r *http.Request, statusCode int, err e
 		}
 		var canonicalSecretPathAttrV3ContentItem sm.BaseAttributeContentDtoV3
 		if err := canonicalSecretPathAttrV3ContentItem.FromStringAttributeContentV3(canonicalSecretPathAttrV3ContentItemV3); err != nil {
-			log.Error("Error marshaling MetadataAttributeV3 into MetadataAttribute.", zap.Error(err), zap.String("http-path", r.URL.Path))
+			log.Error("Error marshaling StringAttributeContentV3 into BaseAttributeContentDtoV3.", zap.Error(err), zap.String("http-path", r.URL.Path))
 			internal(w, "Operation failed.")
 			return true
 		}
@@ -154,7 +154,7 @@ func handleOpError(w http.ResponseWriter, r *http.Request, statusCode int, err e
 		}
 		var keyvalueEngineVersionAttrV3ContentItem sm.BaseAttributeContentDtoV3
 		if err := keyvalueEngineVersionAttrV3ContentItem.FromStringAttributeContentV3(keyvalueEngineVersionAttrV3ContentItemV3); err != nil {
-			log.Error("Error marshaling MetadataAttributeV3 into MetadataAttribute.", zap.Error(err), zap.String("http-path", r.URL.Path))
+			log.Error("Error marshaling StringAttributecontentV3 into BaseAttributeContentDtoV3.", zap.Error(err), zap.String("http-path", r.URL.Path))
 			internal(w, "Operation failed.")
 			return true
 		}
