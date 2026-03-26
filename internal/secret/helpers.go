@@ -101,7 +101,7 @@ func obtainNeeds(_ context.Context, w http.ResponseWriter, r *http.Request, k8sT
 	return &n
 }
 
-func handleOpError(w http.ResponseWriter, r *http.Request, statusCode int, err error, reqName, reqType string) (doReturn bool) {
+func handleOpError(w http.ResponseWriter, r *http.Request, statusCode int, err error, reqName, reqType, canonicalPath, engineVersion string) (doReturn bool) {
 	log := logger.Get()
 	switch {
 	case errors.Is(err, internalVault.ErrForbidden):
@@ -125,9 +125,56 @@ func handleOpError(w http.ResponseWriter, r *http.Request, statusCode int, err e
 	}
 
 	if reqName != "" && reqType != "" {
+		// canonical secret path
+		canonicalSecretPathAttrV3ContentItemV3 := sm.StringAttributeContentV3{
+			ContentType: sm.AttributeContentTypeString,
+			Data:        canonicalPath,
+		}
+		var canonicalSecretPathAttrV3ContentItem sm.BaseAttributeContentDtoV3
+		if err := canonicalSecretPathAttrV3ContentItem.FromStringAttributeContentV3(canonicalSecretPathAttrV3ContentItemV3); err != nil {
+			log.Error("Error marshaling StringAttributeContentV3 into BaseAttributeContentDtoV3.", zap.Error(err), zap.String("http-path", r.URL.Path))
+			internal(w, "Operation failed.")
+			return true
+		}
+		canonicalSecretPathAttrV3Content := []sm.BaseAttributeContentDtoV3{canonicalSecretPathAttrV3ContentItem}
+		canonicalSecretPathAttrV3 := canonicalSecretPath
+		canonicalSecretPathAttrV3.Content = ptr(canonicalSecretPathAttrV3Content)
+
+		var canonicalSecretPathAttr sm.MetadataAttribute
+		if err := canonicalSecretPathAttr.FromMetadataAttributeV3(canonicalSecretPathAttrV3); err != nil {
+			log.Error("Error marshaling MetadataAttributeV3 into MetadataAttribute.", zap.Error(err), zap.String("http-path", r.URL.Path))
+			internal(w, "Operation failed.")
+			return true
+		}
+
+		// keyvalue engine version
+		keyvalueEngineVersionAttrV3ContentItemV3 := sm.StringAttributeContentV3{
+			ContentType: sm.AttributeContentTypeString,
+			Data:        engineVersion,
+		}
+		var keyvalueEngineVersionAttrV3ContentItem sm.BaseAttributeContentDtoV3
+		if err := keyvalueEngineVersionAttrV3ContentItem.FromStringAttributeContentV3(keyvalueEngineVersionAttrV3ContentItemV3); err != nil {
+			log.Error("Error marshaling StringAttributecontentV3 into BaseAttributeContentDtoV3.", zap.Error(err), zap.String("http-path", r.URL.Path))
+			internal(w, "Operation failed.")
+			return true
+		}
+		keyvalueEngineVersionAttrV3Content := []sm.BaseAttributeContentDtoV3{keyvalueEngineVersionAttrV3ContentItem}
+		keyvalueEngineVersionAttrV3 := keyvalueEngineVersion
+		keyvalueEngineVersionAttrV3.Content = ptr(keyvalueEngineVersionAttrV3Content)
+
+		var keyvalueEngineVersionAttr sm.MetadataAttribute
+		if err := keyvalueEngineVersionAttr.FromMetadataAttributeV3(keyvalueEngineVersionAttrV3); err != nil {
+			log.Error("Error marshaling MetadataAttributeV3 into MetadataAttribute.", zap.Error(err), zap.String("http-path", r.URL.Path))
+			internal(w, "Operation failed.")
+			return true
+		}
+
+		metadata := []sm.MetadataAttribute{canonicalSecretPathAttr, keyvalueEngineVersionAttr}
+
 		toJson(r.Context(), w, statusCode, sm.SecretResponseDto{
-			Name: reqName,
-			Type: sm.SecretType(reqType),
+			Name:     reqName,
+			Type:     sm.SecretType(reqType),
+			Metadata: ptr(metadata),
 		})
 	}
 

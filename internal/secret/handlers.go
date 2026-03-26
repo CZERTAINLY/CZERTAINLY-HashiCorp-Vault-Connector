@@ -33,8 +33,8 @@ func (s *Server) createSecret(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	scrtType, err := s.m.Create(r.Context(), c, n.mount, vaultPath(n.pathPrefix, n.secretPath, req.Name), req.Secret)
-	_ = handleOpError(w, r, http.StatusCreated, err, req.Name, string(scrtType))
+	scrtType, canonicalPath, engineVersion, err := s.m.Create(r.Context(), c, n.mount, vaultPath(n.pathPrefix, n.secretPath, req.Name), req.Secret)
+	_ = handleOpError(w, r, http.StatusCreated, err, req.Name, string(scrtType), canonicalPath, engineVersion)
 }
 
 func (s *Server) updateSecret(w http.ResponseWriter, r *http.Request) {
@@ -63,8 +63,8 @@ func (s *Server) updateSecret(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	secretType, err := s.m.Update(r.Context(), c, n.mount, vaultPath(n.pathPrefix, n.secretPath, req.Name), req.Secret)
-	_ = handleOpError(w, r, http.StatusOK, err, req.Name, string(secretType))
+	secretType, canonicalPath, engineVersion, err := s.m.Update(r.Context(), c, n.mount, vaultPath(n.pathPrefix, n.secretPath, req.Name), req.Secret)
+	_ = handleOpError(w, r, http.StatusOK, err, req.Name, string(secretType), canonicalPath, engineVersion)
 }
 
 func (s *Server) getSecretValue(w http.ResponseWriter, r *http.Request) {
@@ -94,7 +94,7 @@ func (s *Server) getSecretValue(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sc, err := s.m.Read(r.Context(), c, n.mount, vaultPath(n.pathPrefix, n.secretPath, req.Name), req.Type)
-	if handleOpError(w, r, 0, err, "", "") {
+	if handleOpError(w, r, 0, err, "", "", "", "") {
 		return
 	}
 
@@ -130,7 +130,10 @@ func (s *Server) deleteSecret(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err := s.m.Delete(r.Context(), c, n.mount, vaultPath(n.pathPrefix, n.secretPath, req.Name))
-	_ = handleOpError(w, r, http.StatusNoContent, err, "", "")
+	if doReturn := handleOpError(w, r, http.StatusNoContent, err, "", "", "", ""); doReturn {
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (s *Server) rotateSecretValue(w http.ResponseWriter, _ *http.Request) {

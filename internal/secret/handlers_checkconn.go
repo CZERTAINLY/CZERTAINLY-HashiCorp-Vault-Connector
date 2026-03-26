@@ -34,7 +34,7 @@ func (s *Server) checkVaultConnection(w http.ResponseWriter, r *http.Request) {
 	}
 
 	_, err := s.m.ListVisibleMounts(r.Context(), c)
-	if handleOpError(w, r, 0, err, "", "") {
+	if handleOpError(w, r, 0, err, "", "", "", "") {
 		return
 	}
 
