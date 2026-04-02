@@ -18,7 +18,7 @@ func (s *Server) checkVaultConnection(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	n := obtainNeeds(r.Context(), w, r, s.k8sToken, &req, nil, nil, ckBody)
+	n := obtainNeeds(r.Context(), w, r, s.k8sToken, &req, nil, nil)
 	if n == nil {
 		return
 	}
@@ -28,7 +28,7 @@ func (s *Server) checkVaultConnection(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c := obtainVClient(r.Context(), w, r, *n, ckBody)
+	c := obtainVClient(r.Context(), w, r, *n)
 	if c == nil {
 		return
 	}

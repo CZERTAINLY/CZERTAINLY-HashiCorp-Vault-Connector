@@ -21,7 +21,7 @@ func (s *Server) createSecret(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	n := obtainNeeds(r.Context(), w, r, s.k8sToken, req.VaultAttributes, req.VaultProfileAttributes, req.SecretAttributes, crtBody)
+	n := obtainNeeds(r.Context(), w, r, s.k8sToken, req.VaultAttributes, req.VaultProfileAttributes, req.SecretAttributes)
 	if n == nil {
 		return
 	}
@@ -31,7 +31,7 @@ func (s *Server) createSecret(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c := obtainVClient(r.Context(), w, r, *n, crtBody)
+	c := obtainVClient(r.Context(), w, r, *n)
 	if c == nil {
 		return
 	}
@@ -58,7 +58,7 @@ func (s *Server) updateSecret(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	n := obtainNeeds(r.Context(), w, r, s.k8sToken, req.VaultAttributes, req.VaultProfileAttributes, req.SecretAttributes, uptdBody)
+	n := obtainNeeds(r.Context(), w, r, s.k8sToken, req.VaultAttributes, req.VaultProfileAttributes, req.SecretAttributes)
 	if n == nil {
 		return
 	}
@@ -68,7 +68,7 @@ func (s *Server) updateSecret(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c := obtainVClient(r.Context(), w, r, *n, uptdBody)
+	c := obtainVClient(r.Context(), w, r, *n)
 	if c == nil {
 		return
 	}
@@ -95,7 +95,7 @@ func (s *Server) getSecretValue(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	n := obtainNeeds(r.Context(), w, r, s.k8sToken, req.VaultAttributes, req.VaultProfileAttributes, req.SecretAttributes, getBody)
+	n := obtainNeeds(r.Context(), w, r, s.k8sToken, req.VaultAttributes, req.VaultProfileAttributes, req.SecretAttributes)
 	if n == nil {
 		return
 	}
@@ -105,7 +105,7 @@ func (s *Server) getSecretValue(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c := obtainVClient(r.Context(), w, r, *n, getBody)
+	c := obtainVClient(r.Context(), w, r, *n)
 	if c == nil {
 		return
 	}
@@ -115,7 +115,7 @@ func (s *Server) getSecretValue(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logger.FromCtx(r.Context()).Info("Secret content retrieved.",
+	logger.FromCtx(r.Context()).Debug("Secret content retrieved.",
 		zap.String("name", req.Name))
 
 	toJson(r.Context(), w, http.StatusOK, sm.SecretContentResponseDto{
@@ -134,7 +134,7 @@ func (s *Server) deleteSecret(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	n := obtainNeeds(r.Context(), w, r, s.k8sToken, req.VaultAttributes, req.VaultProfileAttributes, req.SecretAttributes, b)
+	n := obtainNeeds(r.Context(), w, r, s.k8sToken, req.VaultAttributes, req.VaultProfileAttributes, req.SecretAttributes)
 	if n == nil {
 		return
 	}
@@ -144,7 +144,7 @@ func (s *Server) deleteSecret(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c := obtainVClient(r.Context(), w, r, *n, b)
+	c := obtainVClient(r.Context(), w, r, *n)
 	if c == nil {
 		return
 	}
