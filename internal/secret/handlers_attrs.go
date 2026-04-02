@@ -59,7 +59,7 @@ func (s *Server) listVaultProfileAttributes(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	n := obtainNeeds(r.Context(), w, r, s.k8sToken, &lvpReq, nil, nil, lvpBody)
+	n := obtainNeeds(r.Context(), w, r, s.k8sToken, &lvpReq, nil, nil)
 	if n == nil {
 		return
 	}
@@ -69,7 +69,7 @@ func (s *Server) listVaultProfileAttributes(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	c := obtainVClient(r.Context(), w, r, *n, lvpBody)
+	c := obtainVClient(r.Context(), w, r, *n)
 	if c == nil {
 		return
 	}

@@ -47,7 +47,7 @@ func toJson(_ context.Context, w http.ResponseWriter, statusCode int, resp any) 
 	_, _ = w.Write(b)
 }
 
-func obtainVClient(ctx context.Context, w http.ResponseWriter, r *http.Request, n Needs, body []byte) *vcg.Client {
+func obtainVClient(ctx context.Context, w http.ResponseWriter, r *http.Request, n Needs) *vcg.Client {
 	c, err := n.Client(ctx)
 	switch {
 	case vcg.IsErrorStatus(err, http.StatusUnauthorized):
@@ -62,7 +62,8 @@ func obtainVClient(ctx context.Context, w http.ResponseWriter, r *http.Request, 
 		logger.Get().Debug("Could not connect to Vault.",
 			zap.Error(err),
 			zap.String("http-path", r.URL.Path),
-			zap.String("request-body", string(body)))
+			zap.String("vault-address", n.address),
+			zap.String("mount", n.mount))
 		badrequest(w, fmt.Sprintf("Could not connect to Vault: %s", err), sm.ATTRIBUTESERROR)
 		return nil
 	}
@@ -88,13 +89,14 @@ func unmrshl(w http.ResponseWriter, body []byte, req any) bool {
 	return true
 }
 
-func obtainNeeds(_ context.Context, w http.ResponseWriter, r *http.Request, k8sToken *string, vaultAttrs, vaultProfileAttrs, secretAttrs *[]sm.RequestAttribute, b []byte) *Needs {
+func obtainNeeds(_ context.Context, w http.ResponseWriter, r *http.Request, k8sToken *string, vaultAttrs, vaultProfileAttrs, secretAttrs *[]sm.RequestAttribute) *Needs {
 	n := NewNeeds(k8sToken)
 	if err := n.Process(r.Context(), vaultAttrs, vaultProfileAttrs, secretAttrs); err != nil {
 		logger.Get().Debug("Processing request attributes failed.",
 			zap.Error(err),
 			zap.String("http-path", r.URL.Path),
-			zap.String("request-body", string(b)))
+			zap.String("vault-address", n.address),
+			zap.String("mount", n.mount))
 		badrequest(w, fmt.Sprintf("Processing request attributes failed: %s.", err), sm.ATTRIBUTESERROR)
 		return nil
 	}

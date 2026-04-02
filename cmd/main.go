@@ -13,10 +13,8 @@ import (
 	sm "CZERTAINLY-HashiCorp-Vault-Connector/internal/secret/model"
 	"CZERTAINLY-HashiCorp-Vault-Connector/internal/utils"
 
-	"bytes"
 	"context"
 	"encoding/json"
-	"io"
 	"net/http"
 	"strings"
 
@@ -147,13 +145,7 @@ func logMiddleware(next http.Handler) http.Handler {
 
 		r = r.WithContext(logger.WithCtx(ctx, l))
 
-		//TODO: remove body logging
-		buf, _ := io.ReadAll(r.Body)
-		rdr1 := io.NopCloser(bytes.NewBuffer(buf))
-		rdr2 := io.NopCloser(bytes.NewBuffer(buf))
-		body, _ := io.ReadAll(rdr1)
-		log.Debug("Request received", zap.String("path", r.URL.Path), zap.String("body", string(body)))
-		r.Body = rdr2
+		log.Debug("Request received", zap.String("path", r.URL.Path))
 
 		next.ServeHTTP(w, r)
 	})

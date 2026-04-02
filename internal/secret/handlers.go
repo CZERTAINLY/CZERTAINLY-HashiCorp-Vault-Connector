@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"net/http"
 
+	"CZERTAINLY-HashiCorp-Vault-Connector/internal/logger"
 	sm "CZERTAINLY-HashiCorp-Vault-Connector/internal/secret/model"
+
+	"go.uber.org/zap"
 )
 
 func (s *Server) createSecret(w http.ResponseWriter, r *http.Request) {
@@ -18,7 +21,7 @@ func (s *Server) createSecret(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	n := obtainNeeds(r.Context(), w, r, s.k8sToken, req.VaultAttributes, req.VaultProfileAttributes, req.SecretAttributes, crtBody)
+	n := obtainNeeds(r.Context(), w, r, s.k8sToken, req.VaultAttributes, req.VaultProfileAttributes, req.SecretAttributes)
 	if n == nil {
 		return
 	}
@@ -28,12 +31,19 @@ func (s *Server) createSecret(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c := obtainVClient(r.Context(), w, r, *n, crtBody)
+	c := obtainVClient(r.Context(), w, r, *n)
 	if c == nil {
 		return
 	}
 
 	scrtType, canonicalPath, engineVersion, err := s.m.Create(r.Context(), c, n.mount, vaultPath(n.pathPrefix, n.secretPath, req.Name), req.Secret)
+	if err == nil {
+		logger.FromCtx(r.Context()).Info("Secret created.",
+			zap.String("name", req.Name),
+			zap.String("type", string(scrtType)),
+			zap.String("path", canonicalPath),
+			zap.String("engine", engineVersion))
+	}
 	_ = handleOpError(w, r, http.StatusCreated, err, req.Name, string(scrtType), canonicalPath, engineVersion)
 }
 
@@ -48,7 +58,7 @@ func (s *Server) updateSecret(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	n := obtainNeeds(r.Context(), w, r, s.k8sToken, req.VaultAttributes, req.VaultProfileAttributes, req.SecretAttributes, uptdBody)
+	n := obtainNeeds(r.Context(), w, r, s.k8sToken, req.VaultAttributes, req.VaultProfileAttributes, req.SecretAttributes)
 	if n == nil {
 		return
 	}
@@ -58,12 +68,19 @@ func (s *Server) updateSecret(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c := obtainVClient(r.Context(), w, r, *n, uptdBody)
+	c := obtainVClient(r.Context(), w, r, *n)
 	if c == nil {
 		return
 	}
 
 	secretType, canonicalPath, engineVersion, err := s.m.Update(r.Context(), c, n.mount, vaultPath(n.pathPrefix, n.secretPath, req.Name), req.Secret)
+	if err == nil {
+		logger.FromCtx(r.Context()).Info("Secret updated.",
+			zap.String("name", req.Name),
+			zap.String("type", string(secretType)),
+			zap.String("path", canonicalPath),
+			zap.String("engine", engineVersion))
+	}
 	_ = handleOpError(w, r, http.StatusOK, err, req.Name, string(secretType), canonicalPath, engineVersion)
 }
 
@@ -78,7 +95,7 @@ func (s *Server) getSecretValue(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	n := obtainNeeds(r.Context(), w, r, s.k8sToken, req.VaultAttributes, req.VaultProfileAttributes, req.SecretAttributes, getBody)
+	n := obtainNeeds(r.Context(), w, r, s.k8sToken, req.VaultAttributes, req.VaultProfileAttributes, req.SecretAttributes)
 	if n == nil {
 		return
 	}
@@ -88,7 +105,7 @@ func (s *Server) getSecretValue(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c := obtainVClient(r.Context(), w, r, *n, getBody)
+	c := obtainVClient(r.Context(), w, r, *n)
 	if c == nil {
 		return
 	}
@@ -97,6 +114,9 @@ func (s *Server) getSecretValue(w http.ResponseWriter, r *http.Request) {
 	if handleOpError(w, r, 0, err, "", "", "", "") {
 		return
 	}
+
+	logger.FromCtx(r.Context()).Debug("Secret content retrieved.",
+		zap.String("name", req.Name))
 
 	toJson(r.Context(), w, http.StatusOK, sm.SecretContentResponseDto{
 		Content: sc,
@@ -114,7 +134,7 @@ func (s *Server) deleteSecret(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	n := obtainNeeds(r.Context(), w, r, s.k8sToken, req.VaultAttributes, req.VaultProfileAttributes, req.SecretAttributes, b)
+	n := obtainNeeds(r.Context(), w, r, s.k8sToken, req.VaultAttributes, req.VaultProfileAttributes, req.SecretAttributes)
 	if n == nil {
 		return
 	}
@@ -124,7 +144,7 @@ func (s *Server) deleteSecret(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c := obtainVClient(r.Context(), w, r, *n, b)
+	c := obtainVClient(r.Context(), w, r, *n)
 	if c == nil {
 		return
 	}
@@ -133,6 +153,9 @@ func (s *Server) deleteSecret(w http.ResponseWriter, r *http.Request) {
 	if doReturn := handleOpError(w, r, http.StatusNoContent, err, "", "", "", ""); doReturn {
 		return
 	}
+
+	logger.FromCtx(r.Context()).Info("Secret deleted.",
+		zap.String("name", req.Name))
 	w.WriteHeader(http.StatusNoContent)
 }
 
